@@ -5,7 +5,7 @@ import { OtherMessage } from '../Message/OtherMessage';
 import { StartScreen } from '../StartScreen/StartScreen';
 
 export const ChatBox = ({ activeChat, sidebarState }) => {
-  const { sidebarOn, setSidebarOn } = sidebarState;
+  const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const { username, lastMessage } = activeChat;
 
   if (!username || !lastMessage) {
@@ -19,7 +19,7 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
           <div className="flex items-center gap-3">
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
-              onClick={() => setSidebarOn(!sidebarOn)}
+              onClick={() => setIsSidebarOn(!isSidebarOn)}
               className="block lg:hidden hover:text-pink-400 duration-200 text-xl"
             >
               <HiOutlineMenu />
@@ -52,7 +52,7 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
 
         {/* input */}
         <form className="bg-gray-100 absolute bottom-0 inset-x-0 min-h-[1rem] flex items-center justify-center gap-3 p-2">
-          <textarea className="bg-gray-200 pt-1.5 outline-none shadow-inner basis-11/12 rounded-full px-8 resize-none flex items-center justify-center h-9"></textarea>
+          <textarea className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner basis-11/12 rounded-full px-8 resize-none flex items-center justify-center h-9"></textarea>
           <button className="w-8 h-8 rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner duration-200 flex items-center justify-center shadow">
             <FaPaperPlane className="relative right-[1px]" />
           </button>

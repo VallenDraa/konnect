@@ -3,7 +3,7 @@ import { HiOutlineMenu } from 'react-icons/hi';
 import { IoPeopleSharp, IoCall, IoChatbubbles } from 'react-icons/io5';
 
 export const StartScreen = ({ sidebarState }) => {
-  const { sidebarOn, setSidebarOn } = sidebarState;
+  const { isSidebarOn, setIsSidebarOn } = sidebarState;
 
   return (
     <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 relative h-screen flex flex-col gap-3 items-center justify-center tracking-wide px-5">
@@ -12,7 +12,7 @@ export const StartScreen = ({ sidebarState }) => {
           <div className="flex items-center gap-3">
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
-              onClick={() => setSidebarOn(!sidebarOn)}
+              onClick={() => setIsSidebarOn(!isSidebarOn)}
               className="block lg:hidden hover:text-pink-400 duration-200 text-xl"
             >
               <HiOutlineMenu />

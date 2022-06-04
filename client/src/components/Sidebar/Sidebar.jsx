@@ -2,11 +2,16 @@ import { RiMenu3Line, RiContactsBook2Line } from 'react-icons/ri';
 import { BsChatText } from 'react-icons/bs';
 import { IoPeopleSharp, IoCall, IoChatbubbles } from 'react-icons/io5';
 import { ChatPreview } from '../ChatPreview/ChatPreview';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const Sidebar = ({ chatState, setActiveChat, sidebarState }) => {
-  const { sidebarOn, setSidebarOn } = sidebarState;
   const { chats, setChats } = chatState;
+  const { isSidebarOn, setIsSidebarOn } = sidebarState;
+  const sidebar = useRef();
+  const OPEN =
+    'animate-fade-in fixed inset-0 z-20 lg:static lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3 shadow-lg lg:shadow-none';
+  const CLOSED =
+    'animate-slide-left-out fixed inset-0 z-20 transform -translate-x-full lg:-translate-x-0 lg:static lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3 shadow-lg lg:shadow-none';
 
   const handleActiveChat = (target) => {
     const updatedChat = chats.map((chat) => {
@@ -20,12 +25,39 @@ export const Sidebar = ({ chatState, setActiveChat, sidebarState }) => {
     });
 
     setChats(updatedChat);
+    // close sidebar for smaller screen
+    setIsSidebarOn(false);
   };
 
-  useEffect(() => {}, [sidebarOn]);
+  // for handling close and open through button press
+  useEffect(() => {
+    if (!sidebar.current) return;
+
+    if (isSidebarOn) {
+      sidebar.current.className = OPEN;
+    } else {
+      sidebar.current.className = CLOSED;
+    }
+  }, [isSidebarOn]);
+
+  // for handling close and open through screen size
+  useEffect(() => {
+    const closeSidebar = () => {
+      if (window.innerWidth >= 1024) {
+        isSidebarOn && setIsSidebarOn(false);
+      }
+    };
+
+    window.addEventListener('resize', () => closeSidebar());
+
+    return () => window.removeEventListener('resize', () => closeSidebar());
+  }, [setIsSidebarOn, isSidebarOn]);
 
   return (
-    <aside className="fixed lg:static lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3">
+    <aside
+      ref={sidebar}
+      className="fixed inset-0 z-20 lg:static lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3"
+    >
       <header className="border-b-2 pb-2 space-y-5">
         {/* profile and more menu */}
         <div className="flex justify-between">

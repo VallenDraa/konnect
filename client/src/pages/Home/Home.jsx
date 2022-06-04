@@ -47,18 +47,18 @@ export const Home = () => {
   ]);
   const [activeChat, setActiveChat] = useState({});
 
-  const [sidebarOn, setSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
+  const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
 
   return (
     <div className="min-h-screen flex">
       <Sidebar
         chatState={{ chats, setChats }}
         setActiveChat={setActiveChat}
-        sidebarState={sidebarOn}
+        sidebarState={{ isSidebarOn, setIsSidebarOn }}
       />
       <ChatBox
         activeChat={activeChat}
-        sidebarState={{ sidebarOn, setSidebarOn }}
+        sidebarState={{ isSidebarOn, setIsSidebarOn }}
       />
     </div>
   );
