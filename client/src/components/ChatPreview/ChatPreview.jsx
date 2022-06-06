@@ -6,7 +6,6 @@ export const ChatPreview = ({ chat, handleActiveChat }) => {
   return (
     <li
       onClick={() => handleActiveChat(chat)}
-      key={chat.id}
       className={`flex items-center p-2 cursor-pointer ${
         chat.activeChat ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-100'
       } duration-200 rounded-md`}

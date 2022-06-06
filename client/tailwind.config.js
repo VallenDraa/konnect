@@ -6,26 +6,70 @@ module.exports = {
         xxs: '0.65rem',
       },
       keyframes: {
-        'fade-in': {
+        'sidebar-in': {
+          '0%': {
+            transform: 'translateY(100%)',
+          },
+          '100%': {
+            transform: 'translateY(0)',
+          },
+        },
+        'sidebar-out': {
+          '0%': {
+            transform: 'translateY(0)',
+          },
+          '100%': {
+            transform: 'translateY(100%)',
+          },
+        },
+        'pop-in': {
           '0%': {
             opacity: 0,
+            transform: 'scale(95%)',
           },
           '100%': {
             opacity: 1,
+            transform: 'scale(100%)',
           },
         },
-        'slide-left-out': {
+        'pop-out': {
           '0%': {
-            transform: 'translateX(0)',
+            opacity: 1,
+            transform: 'scale(100%)',
           },
           '100%': {
-            transform: 'translateX(-100%)',
+            opacity: 0,
+            transform: 'scale(95%)',
+          },
+        },
+        'd-down-open': {
+          from: {
+            scale: '95%',
+            opacity: '10%',
+          },
+          to: {
+            scale: '1',
+            opacity: 1,
+          },
+        },
+        'd-down-close': {
+          from: {
+            scale: '1',
+            opacity: 1,
+          },
+          to: {
+            scale: '95%',
+            opacity: '10%',
           },
         },
       },
       animation: {
-        'fade-in': 'fade-in 200ms ease-out',
-        'slide-left-out': 'slide-left-out 350ms ease-in',
+        'sidebar-in': 'sidebar-in 350ms ease-out',
+        'sidebar-out': 'sidebar-out 350ms ease-in',
+        'pop-in': 'pop-in 200ms ease-in',
+        'pop-out': 'pop-out 200ms ease-in',
+        'd-down-open': 'd-down-open 200ms ease-out',
+        'd-down-close': 'd-down-close 200ms ease-out',
       },
     },
   },

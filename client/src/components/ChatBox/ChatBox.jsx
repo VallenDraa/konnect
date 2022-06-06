@@ -13,8 +13,8 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
   }
 
   return (
-    <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 h-screen relative">
-      <header className="h-14 bg-gray-50 absolute inset-x-0 z-10 shadow-inner p-2 border-b-2">
+    <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen relative">
+      <header className="h-14 sticky top-0 inset-x-0 z-10 bg-gray-50 shadow-inner p-2 border-b-2">
         <div className="flex justify-between">
           <div className="flex items-center gap-3">
             {/* sidebar btn (will show up when screen is <lg) */}
@@ -43,17 +43,23 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
           </div>
         </div>
       </header>
-      <main className="h-full max-w-screen-xl w-full mx-auto max-w-screen relative pt-16">
+      <main className="max-w-screen-xl w-full mx-auto relative">
         {/* message */}
-        <div className="p-2 space-y-5">
+        <div className="px-2 py-4 space-y-5 bg-gray-100">
+          <MyMessage />
+          <MyMessage />
+          <MyMessage />
+          <MyMessage />
+          <MyMessage />
+          <MyMessage />
           <MyMessage />
           <OtherMessage />
         </div>
 
         {/* input */}
-        <form className="bg-gray-100 absolute bottom-0 inset-x-0 min-h-[1rem] flex items-center justify-center gap-3 p-2">
-          <textarea className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner basis-11/12 rounded-full px-8 resize-none flex items-center justify-center h-9"></textarea>
-          <button className="w-8 h-8 rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner duration-200 flex items-center justify-center shadow">
+        <form className="bg-gray-100 sticky bottom-0 inset-x-0 min-h-[1rem] flex items-center justify-center gap-3 p-2">
+          <textarea className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner basis-full rounded-full px-6 resize-none flex items-center justify-center h-8"></textarea>
+          <button className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner duration-200 flex items-center justify-center shadow aspect-square text-xs">
             <FaPaperPlane className="relative right-[1px]" />
           </button>
         </form>
