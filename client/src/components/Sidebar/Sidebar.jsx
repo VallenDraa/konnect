@@ -1,4 +1,3 @@
-import { RiMenu3Line } from 'react-icons/ri';
 import { useState, useEffect, useRef, useContext } from 'react';
 import { BsChatText } from 'react-icons/bs';
 import { RiContactsBook2Line } from 'react-icons/ri';
@@ -7,9 +6,8 @@ import { ContactList } from '../ContactList/ContactList';
 import { Menu } from '../Menu/Menu';
 import { ModalContext } from '../../context/Modal/modalContext';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
-import Dropdown from '../Dropdown/Dropdown';
-import DropdownItem from '../Dropdown/DropdownItem/DropdownItem';
 import CTA from '../CTA/CTA';
+import { ProfileModalContent } from '../Modal/Content/ProfileModalContent/ProfileModalContent';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const MENUS = [
@@ -64,15 +62,18 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
 
   return (
     <aside ref={sidebar}>
-      <header className="border-b-2 pb-2 space-y-5 basis-1/6">
+      <header className="border-b-2 pb-2 space-y-5 basis-1/6 ">
         {/* profile and more menu */}
         <div className="flex justify-between">
           {/* profile  */}
           <button
             onClick={() =>
-              modalDispatch({ type: MODAL_ACTIONS.show, content: null })
+              modalDispatch({
+                type: MODAL_ACTIONS.show,
+                content: <ProfileModalContent />,
+              })
             }
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 hover:bg-gray-200 w-full p-2 duration-200"
           >
             <img
               src="https://picsum.photos/200/200"
@@ -86,12 +87,6 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
               </span>
             </div>
           </button>
-          {/* more menu */}
-          <Dropdown icon={<RiMenu3Line />}>
-            <DropdownItem>Hello</DropdownItem>
-            <DropdownItem>Hello</DropdownItem>
-            <DropdownItem>Hello</DropdownItem>
-          </Dropdown>
         </div>
         {/* menus */}
         <Menu menus={MENUS} activeMenuState={{ activeMenu, setActiveMenu }} />

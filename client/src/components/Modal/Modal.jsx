@@ -34,17 +34,17 @@ export const Modal = () => {
         <div className="fixed z-30 inset-0 sm:bg-black/40 flex justify-center items-center">
           <div
             ref={modal}
-            className="w-full h-full sm:h-3/4 sm:w-[30rem] bg-white relative flex flex-col p-4 rounded-md animate-pop-in"
+            className="h-full md:h-3/4 bg-white relative flex flex-col  animate-pop-in"
           >
-            <header className="basis-8 flex justify-between items-center px-1">
-              <h1 className="font-semibold text-xl"></h1>
+            <header className="flex justify-end items-center px-4 py-3">
               <button
-                className="text-xl p-2 hover:bg-slate-100 active:bg-slate-200 rounded-full aspect-square flex items-center justify-center duration-200"
+                className="text-xl hover:text-pink-400  rounded-full flex items-center justify-center duration-200"
                 onClick={handleModalClose}
               >
                 <IoClose />
               </button>
             </header>
+            <main className="grow">{modalState.content}</main>
           </div>
         </div>
       </RenderIf>
