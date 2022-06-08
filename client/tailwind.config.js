@@ -44,21 +44,21 @@ module.exports = {
         },
         'd-down-open': {
           from: {
-            scale: '95%',
+            transform: 'scale(95%)',
             opacity: '10%',
           },
           to: {
-            scale: '1',
+            transform: 'scale(1)',
             opacity: 1,
           },
         },
         'd-down-close': {
           from: {
-            scale: '1',
+            transform: 'scale(1)',
             opacity: 1,
           },
           to: {
-            scale: '95%',
+            transform: 'scale(95%)',
             opacity: '10%',
           },
         },

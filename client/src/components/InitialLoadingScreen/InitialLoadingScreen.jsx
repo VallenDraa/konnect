@@ -1,16 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { isInitialLoadingContext } from '../../context/isInitialLoading/IsInitialLoading';
+import socket from '../../socketClient/socketClient';
 
 export const InitialLoadingScreen = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const { isInitialLoading, setIsInitialLoading } = useContext(
+    isInitialLoadingContext
+  );
   const loading = useRef();
+
   useEffect(() => {
-    setTimeout(() => loading.current.classList.add('animate-pop-out'), 500);
-    setTimeout(() => setIsLoading(false), 650);
-  }, [loading]);
+    socket.on('connect', () => {
+      loading.current?.classList.add('animate-pop-out');
+      setTimeout(() => setIsInitialLoading(false), 200);
+    });
+  }, []);
 
   return (
     <>
-      {isLoading && (
+      {isInitialLoading && (
         <div
           ref={loading}
           className="fixed inset-0 bg-white z-30 flex items-center justify-center"

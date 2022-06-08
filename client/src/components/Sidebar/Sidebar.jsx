@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { BsChatText } from 'react-icons/bs';
+import { BiLogOut } from 'react-icons/bi';
 import { RiContactsBook2Line } from 'react-icons/ri';
 import { ChatList } from '../ChatList/ChatList';
 import { ContactList } from '../ContactList/ContactList';
 import { Menu } from '../Menu/Menu';
 import { ModalContext } from '../../context/Modal/modalContext';
+import { ProfileModalContent } from '../Modal/Content/ProfileModalContent/ProfileModalContent';
+import { useNavigate } from 'react-router-dom';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
 import CTA from '../CTA/CTA';
-import { ProfileModalContent } from '../Modal/Content/ProfileModalContent/ProfileModalContent';
+import Pill from '../Buttons/Pill';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const MENUS = [
@@ -19,11 +22,15 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
     CLOSED:
       'animate-sidebar-out transform translate-y-full lg:translate-y-0 inset-0 z-20 fixed lg:sticky top-0 h-screen lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3 shadow-lg lg:shadow-none flex flex-col',
   };
-
+  const Navigate = useNavigate();
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
   const { modalDispatch } = useContext(ModalContext);
   const sidebar = useRef();
+
+  const handleLogout = () => {
+    Navigate('/login');
+  };
 
   // for handling close and open through button press
   useEffect(() => {
@@ -64,7 +71,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
     <aside ref={sidebar}>
       <header className="border-b-2 pb-2 space-y-5 basis-1/6 ">
         {/* profile and more menu */}
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center gap-2">
           {/* profile  */}
           <button
             onClick={() =>
@@ -73,7 +80,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
                 content: <ProfileModalContent />,
               })
             }
-            className="flex items-center gap-1 hover:bg-gray-200 w-full p-2 duration-200"
+            className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 w-full p-2 duration-200 rounded-full"
           >
             <img
               src="https://picsum.photos/200/200"
@@ -87,6 +94,13 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
               </span>
             </div>
           </button>
+          <Pill
+            onClick={handleLogout}
+            className="max-w-[100px] hover:bg-pink-400 hover:text-white"
+          >
+            <BiLogOut />
+            <span>Log Out</span>
+          </Pill>
         </div>
         {/* menus */}
         <Menu menus={MENUS} activeMenuState={{ activeMenu, setActiveMenu }} />

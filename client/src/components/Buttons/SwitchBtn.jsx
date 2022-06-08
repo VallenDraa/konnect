@@ -52,7 +52,7 @@ export default function SwitchBtn({
         onClick && onClick(isActive);
         handleThumb();
       }}
-      className={`relative py-1 px-3 rounded-full cursor-pointer duration-200 shadow flex items-center justify-between min-w-[80px] ${className}`}
+      className={`relative py-1 px-3 rounded-full cursor-pointer duration-200 shadow flex items-center justify-between min-w-[80px] max-w-[80px] ${className}`}
     >
       {/* thumb */}
       <div
