@@ -4,13 +4,14 @@ import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
 import { Input } from '../../components/Input/Input';
 import { useRef } from 'react';
+import api from '../../apiAxios/apiAxios';
 
 export const Register = () => {
   const email = useRef();
   const username = useRef();
   const password = useRef();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formValue = {
       email: email.current.value,
@@ -18,7 +19,7 @@ export const Register = () => {
       password: password.current.value,
     };
 
-    console.log(formValue);
+    await api.post('/auth/register', formValue);
   };
   return (
     <main className="flex h-screen w-full">
@@ -50,9 +51,9 @@ export const Register = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input label="Email" innerRef={email} />
-                <Input label="Username" innerRef={username} />
-                <Input label="Password" innerRef={password} />
+                <Input type="email" label="Email" innerRef={email} />
+                <Input type="text" label="Username" innerRef={username} />
+                <Input type="password" label="Password" innerRef={password} />
               </div>
             </div>
 

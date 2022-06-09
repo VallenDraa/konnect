@@ -16,7 +16,9 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
   useEffect(() => {
     if (!innerRef) return;
 
-    innerRef.current.type = isPwPeeked ? 'text' : 'password';
+    if (type === 'password') {
+      innerRef.current.type = isPwPeeked ? 'text' : 'password';
+    }
   }, [isPwPeeked]);
 
   useEffect(() => {
@@ -36,12 +38,12 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
 
   return (
     <div className="flex flex-col-reverse">
-      <RenderIf conditionIs={type === 'text' || !type}>
+      <RenderIf conditionIs={type === 'text' || type === 'email'}>
         <input
           required
           ref={innerRef}
           className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200"
-          type={'text'}
+          type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}
           value={content}
@@ -82,11 +84,12 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
           </label>
         </div>
       </RenderIf>
-      <RenderIf conditionIs={type && type !== 'password' && type !== 'text'}>
+      <RenderIf
+        conditionIs={type !== 'email' && type !== 'password' && type !== 'text'}
+      >
         <input
           required
           ref={innerRef}
-          className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200"
           type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}

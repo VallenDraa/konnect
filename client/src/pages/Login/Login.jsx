@@ -17,8 +17,6 @@ export const Login = () => {
       password: password.current.value,
       rememberMe: rememberMe.current.checked,
     };
-
-    console.log(formValue);
   };
   return (
     <main className="flex h-screen w-full">
@@ -52,8 +50,8 @@ export const Login = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input label="Username" innerRef={username} />
-                <Input label="Password" innerRef={password} />
+                <Input type="text" label="Username" innerRef={username} />
+                <Input type="password" label="Password" innerRef={password} />
               </div>
               <div className="text-xxs md:text-xs flex justify-between text-gray-500">
                 <div className="flex items-center gap-1">

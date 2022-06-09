@@ -1,23 +1,23 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const UserSchema = new Schema({
-  username: {
-    type: String,
-    required: true,
+const UserSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profilePicture: { type: String, default: '' },
+    isAdmin: { type: Boolean, default: false },
+    contacts: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+        messageLog: [{ type: mongoose.Schema.Types.ObjectId, ref: 'message' }],
+      },
+    ],
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
   },
-  email: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  profilePicture: {
-    type: String,
-  },
-});
+  { timestamps: true }
+);
 
-const UserModel = model('user', UserSchema);
+const UserModel = mongoose.model('user', UserSchema);
 
 export default UserModel;

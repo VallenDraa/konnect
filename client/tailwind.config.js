@@ -32,6 +32,7 @@ module.exports = {
             transform: 'scale(100%)',
           },
         },
+
         'pop-out': {
           '0%': {
             opacity: 1,
@@ -40,6 +41,22 @@ module.exports = {
           '100%': {
             opacity: 0,
             transform: 'scale(95%)',
+          },
+        },
+        'fade-in': {
+          '0%': {
+            opacity: 0,
+          },
+          '100%': {
+            opacity: 1,
+          },
+        },
+        'fade-out': {
+          '0%': {
+            opacity: 1,
+          },
+          '100%': {
+            opacity: 0,
           },
         },
         'd-down-open': {
@@ -68,6 +85,8 @@ module.exports = {
         'sidebar-out': 'sidebar-out 350ms ease-in',
         'pop-in': 'pop-in 200ms ease-in',
         'pop-out': 'pop-out 200ms ease-in',
+        'fade-in': 'fade-in 200ms ease-in',
+        'fade-out': 'fade-out 200ms ease-in',
         'd-down-open': 'd-down-open 200ms ease-out',
         'd-down-close': 'd-down-close 200ms ease-out',
       },

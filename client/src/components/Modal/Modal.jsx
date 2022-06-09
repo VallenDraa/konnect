@@ -7,6 +7,7 @@ import RenderIf from '../../utils/RenderIf';
 export const Modal = () => {
   const { modalState, modalDispatch } = useContext(ModalContext);
   const modal = useRef();
+  const modalWrapper = useRef();
 
   useEffect(() => {
     if (modalState.isActive) {
@@ -15,10 +16,12 @@ export const Modal = () => {
   }, [modalState]);
 
   const handleModalClose = () => {
-    if (!modal.current) return;
+    if (!modal.current || !modalWrapper.current) return;
     const modalClasses = modal.current.classList;
+    const modalWrapperClasses = modalWrapper.current.classList;
 
     modalClasses.replace('animate-pop-in', 'animate-pop-out');
+    modalWrapperClasses.replace('animate-fade-in', 'animate-fade-out');
 
     // only re-show scrollbar when the screen width is >=1024px
     if (window.innerWidth >= 1024) {
@@ -31,10 +34,13 @@ export const Modal = () => {
   return (
     <>
       <RenderIf conditionIs={modalState.isActive === true}>
-        <div className="fixed z-30 inset-0 sm:bg-black/40 flex justify-center items-center">
+        <div
+          ref={modalWrapper}
+          className="fixed z-30 inset-0 sm:bg-gray-900/40 flex justify-center items-center animate-fade-in"
+        >
           <div
             ref={modal}
-            className="h-full md:h-3/4 bg-white relative flex flex-col  animate-pop-in"
+            className="h-full md:h-3/4 bg-white relative flex flex-col animate-pop-in z-100"
           >
             <header className="flex justify-end items-center px-4 py-3">
               <button
