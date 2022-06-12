@@ -1,12 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
 import { Input } from '../../components/Input/Input';
 import { useRef } from 'react';
-import api from '../../apiAxios/apiAxios';
+import api from '../../utils/apiAxios/apiAxios';
 
 export const Register = () => {
+  const navigate = useNavigate();
   const email = useRef();
   const username = useRef();
   const password = useRef();
@@ -19,10 +20,18 @@ export const Register = () => {
       password: password.current.value,
     };
 
-    await api.post('/auth/register', formValue);
+    try {
+      const { data } = await api.post('/auth/register', formValue);
+
+      if (data.registerSuccess) {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
-    <main className="flex h-screen w-full">
+    <main className="flex min-h-screen w-full">
       <section
         className="basis-full md:basis-2/3 min-h-screen shadow-inner blur-2xl md:blur-none"
         style={{
@@ -33,7 +42,7 @@ export const Register = () => {
         }}
       ></section>
       <section className="md:basis-1/3 md:min-w-[400px] min-h-screen md:bg-slate-50 shadow-xl absolute md:static inset-x-0 flex flex-col">
-        <div className="px-5 py-10 space-y-10 h-full flex flex-col grow">
+        <div className="px-5 py-10 space-y-10 h-full flex flex-col grow sticky top-0">
           <header className="space-y-3 md:space-y-5">
             <div className="absolute top-0 h-16 inset-x-0 p-2 z-20">
               <Logo />

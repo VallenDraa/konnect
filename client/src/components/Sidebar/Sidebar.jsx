@@ -11,6 +11,9 @@ import { useNavigate } from 'react-router-dom';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
 import CTA from '../CTA/CTA';
 import Pill from '../Buttons/Pill';
+import { UserContext } from '../../context/User/userContext';
+import USER_ACTIONS from '../../context/User/userAction';
+import socket from '../../utils/socketClient/socketClient';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const MENUS = [
@@ -27,9 +30,19 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
   const { modalDispatch } = useContext(ModalContext);
   const sidebar = useRef();
+  const { userState, userDispatch } = useContext(UserContext);
 
   const handleLogout = () => {
-    Navigate('/login');
+    console.log(userState);
+    socket.emit('logout', userState.user._id, (success, message) => {
+      if (success) {
+        userDispatch({ type: USER_ACTIONS.logout });
+        sessionStorage.removeItem('token');
+        Navigate('/login');
+      } else {
+        alert(message);
+      }
+    });
   };
 
   // for handling close and open through button press

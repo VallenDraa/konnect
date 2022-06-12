@@ -1,11 +1,12 @@
 import { useEffect, useState, Fragment, useRef } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { HiOutlineMenu } from 'react-icons/hi';
-import socket from '../../socketClient/socketClient';
+import useSocket from '../../utils/socketClient/socketClient';
 import RenderIf from '../../utils/RenderIf';
 import { MyMessage } from '../Message/MyMessage';
 import { OtherMessage } from '../Message/OtherMessage';
 import { StartScreen } from '../StartScreen/StartScreen';
+import socket from '../../utils/socketClient/socketClient';
 
 export const ChatBox = ({ activeChat, sidebarState }) => {
   const chatBoxRef = useRef();
@@ -18,9 +19,8 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
     socket.on('receive-message', (incomingMessage) => {
       const newMessageLog = [...messageLog, incomingMessage];
       setMessageLog(newMessageLog);
+      window.scrollTo({ top: window.scrollMaxY });
     });
-
-    window.scrollTo({ top: window.scrollMaxY });
   }, [messageLog]);
 
   const handleNewMessage = (e) => {

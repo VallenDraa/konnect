@@ -1,25 +1,47 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
 import { Input } from '../../components/Input/Input';
-import { useRef } from 'react';
+import { useRef, useContext } from 'react';
+import api from '../../utils/apiAxios/apiAxios';
+import { UserContext } from '../../context/User/userContext';
+import USER_ACTIONS from '../../context/User/userAction';
+import socket from '../../utils/socketClient/socketClient';
 
 export const Login = () => {
   const username = useRef();
   const password = useRef();
   const rememberMe = useRef();
+  const navigate = useNavigate();
+  const { userState, userDispatch } = useContext(UserContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    userDispatch({ type: USER_ACTIONS.loginStart });
     const formValue = {
       username: username.current.value,
       password: password.current.value,
-      rememberMe: rememberMe.current.checked,
     };
+
+    try {
+      const { data } = await api.post('/auth/login', formValue);
+
+      // callback for handling error
+      socket.emit('login', data.user._id, (success, message) => {
+        if (success) {
+          sessionStorage.setItem('token', data.token);
+          userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
+          navigate('/');
+        } else {
+          alert(message);
+        }
+      });
+    } catch (error) {}
   };
   return (
-    <main className="flex h-screen w-full">
+    <main className="flex min-h-screen w-full">
       <section
         className="basis-full md:basis-2/3 min-h-screen shadow-inner blur-2xl md:blur-none"
         style={{
