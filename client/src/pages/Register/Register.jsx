@@ -2,22 +2,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
-import { Input } from '../../components/Input/Input';
-import { useRef } from 'react';
+import Input from '../../components/Input/Input';
 import api from '../../utils/apiAxios/apiAxios';
+import { useRef } from 'react';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const email = useRef();
-  const username = useRef();
-  const password = useRef();
+  const emailRef = useRef();
+  const usernameRef = useRef();
+  const passwordRef = useRef();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formValue = {
-      email: email.current.value,
-      username: username.current.value,
-      password: password.current.value,
+      email: emailRef.current.value,
+      username: usernameRefemailRef.current.value,
+      password: passwordRefemailRef.current.value,
     };
 
     try {
@@ -60,9 +60,13 @@ export const Register = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input type="email" label="Email" innerRef={email} />
-                <Input type="text" label="Username" innerRef={username} />
-                <Input type="password" label="Password" innerRef={password} />
+                <Input type="email" label="Email" innerRef={emailRef} />
+                <Input type="text" label="Username" innerRef={usernameRef} />
+                <Input
+                  type="password"
+                  label="Password"
+                  innerRef={passwordRef}
+                />
               </div>
             </div>
 

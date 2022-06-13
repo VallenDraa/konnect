@@ -33,9 +33,10 @@ export const ProfileModalContent = () => {
       <main className="flex grow shadow-inner">
         <aside className="bg-gray-100 basis-1/4 md:basis-1/3">
           <ul>
-            {options.map((opt) => {
+            {options.map((opt, i) => {
               return (
                 <li
+                  key={i}
                   onClick={() => setActiveOpt(opt.name)}
                   className={`${
                     opt.name === activeOpt

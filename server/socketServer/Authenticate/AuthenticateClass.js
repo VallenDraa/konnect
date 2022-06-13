@@ -13,7 +13,7 @@ export default class Authenticate {
    *
    * @param {Array} onlineList
    *
-   * @returns the user that is to be added
+   * @returns the user that's going to be added
    */
   addUserToOnline(onlineList) {
     const isUserOnline = onlineList.some((item) => item.userId === this.userId);
@@ -28,19 +28,13 @@ export default class Authenticate {
    *
    * @param {Array} onlineList
    *
-   * @returns the user that is to be removed
+   * @returns the user that's going to be removed
    *
    */
   removeOnlineUser(onlineList) {
-    const isUserOnline = onlineList.some((item) => {
-      console.log(item.userId, this.userId);
-      return item.userId === this.userId;
-    });
+    const isUserOnline = onlineList.some((item) => item.userId === this.userId);
 
     const user = { userId: this.userId, socketId: this.socketId };
-
-    console.log(onlineList);
-    console.log(isUserOnline);
 
     return isUserOnline
       ? { success: true, user, message: null }

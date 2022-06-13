@@ -2,10 +2,18 @@ import { useEffect, useId, useRef, useState } from 'react';
 import RenderIf from '../../utils/RenderIf';
 import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
 
-export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
+export default function Input({
+  label,
+  icon,
+  disabled,
+  type,
+  value,
+  innerRef,
+  customState,
+}) {
   const labelRef = useRef();
   const inputId = useId();
-  const [content, setContent] = useState(value || '');
+  const [content, setContent] = customState || useState(value || '');
   const [isPwPeeked, setIsPwPeeked] = useState(false);
 
   const emptyClasses =
@@ -15,7 +23,6 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
   // for peeking password
   useEffect(() => {
     if (!innerRef) return;
-
     if (type === 'password') {
       innerRef.current.type = isPwPeeked ? 'text' : 'password';
     }
@@ -24,15 +31,12 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
   useEffect(() => {
     if (!labelRef.current) return;
     const cl = labelRef.current;
+    const currentClasses = [...cl.classList].join(' ');
 
     if (content !== '') {
-      if ([...cl.classList].join(' ') !== notEmptyClasses) {
-        cl.className = notEmptyClasses;
-      }
+      if (currentClasses !== notEmptyClasses) cl.className = notEmptyClasses;
     } else {
-      if ([...cl.classList].join(' ') !== emptyClasses) {
-        cl.className = emptyClasses;
-      }
+      if (currentClasses !== emptyClasses) cl.className = emptyClasses;
     }
   }, [labelRef, content]);
 
@@ -112,4 +116,4 @@ export const Input = ({ label, innerRef, icon, disabled, type, value }) => {
       </RenderIf>
     </div>
   );
-};
+}

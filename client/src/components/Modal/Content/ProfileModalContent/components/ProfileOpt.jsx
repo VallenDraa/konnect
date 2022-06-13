@@ -1,15 +1,16 @@
 import { useId, useRef } from 'react';
-import { Input } from '../../../../Input/Input';
+
 import { FaCamera } from 'react-icons/fa';
 import { FiSave } from 'react-icons/fi';
 import { BiRename, BiHappyHeartEyes } from 'react-icons/bi';
 
 import Pill from '../../../../Buttons/Pill';
+import Input from '../../../../Input/Input';
 
 const ProfileOpt = () => {
   const imageId = useId();
-  const usernameRef = useRef();
   const statusRef = useRef();
+  const usernameRef = useRef();
 
   return (
     <form className="p-3 w-full overflow-y-hidden flex flex-col items-center gap-10">
@@ -33,16 +34,18 @@ const ProfileOpt = () => {
       <div className="w-full space-y-5">
         <div className="flex flex-col w-full">
           <Input
-            label="Username"
-            icon={<BiRename className="text-lg" />}
-            innerRef={usernameRef}
+            label="Status"
+            type="text"
+            innerRef={statusRef}
+            icon={<BiHappyHeartEyes className="text-lg" />}
           />
         </div>
         <div className="flex flex-col w-full">
           <Input
-            icon={<BiHappyHeartEyes className="text-lg" />}
-            label="Status"
-            innerRef={statusRef}
+            label="Username"
+            type="text"
+            innerRef={usernameRef}
+            icon={<BiRename className="text-lg" />}
           />
         </div>
       </div>

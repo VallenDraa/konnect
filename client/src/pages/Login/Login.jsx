@@ -2,16 +2,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
-import { Input } from '../../components/Input/Input';
+
 import { useRef, useContext } from 'react';
 import api from '../../utils/apiAxios/apiAxios';
 import { UserContext } from '../../context/User/userContext';
 import USER_ACTIONS from '../../context/User/userAction';
 import socket from '../../utils/socketClient/socketClient';
+import Input from '../../components/Input/Input';
 
 export const Login = () => {
-  const username = useRef();
-  const password = useRef();
+  const usernameRef = useRef();
+  const passwordRef = useRef();
+
   const rememberMe = useRef();
   const navigate = useNavigate();
   const { userState, userDispatch } = useContext(UserContext);
@@ -21,8 +23,8 @@ export const Login = () => {
 
     userDispatch({ type: USER_ACTIONS.loginStart });
     const formValue = {
-      username: username.current.value,
-      password: password.current.value,
+      username: usernameRef.current.value,
+      password: passworeRef.current.value,
     };
 
     try {
@@ -72,8 +74,12 @@ export const Login = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input type="text" label="Username" innerRef={username} />
-                <Input type="password" label="Password" innerRef={password} />
+                <Input type="text" label="Username" innerRef={usernameRef} />
+                <Input
+                  type="password"
+                  label="Password"
+                  innerRef={passwordRef}
+                />
               </div>
               <div className="text-xxs md:text-xs flex justify-between text-gray-500">
                 <div className="flex items-center gap-1">
