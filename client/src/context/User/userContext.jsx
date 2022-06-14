@@ -3,7 +3,7 @@ import userReducer from './userReducer';
 
 const userInitialValue = {
   user: sessionStorage.getItem('token')
-    ? atob(sessionStorage.getItem('token').split('.')[1])
+    ? JSON.parse(atob(sessionStorage.getItem('token').split('.')[1]))
     : null,
   error: null,
 };

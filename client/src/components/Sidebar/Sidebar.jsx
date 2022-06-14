@@ -37,7 +37,6 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const { userState, userDispatch } = useContext(UserContext);
 
   const handleLogout = () => {
-    console.log(userState);
     socket.emit('logout', userState.user._id, (success, message) => {
       if (success) {
         userDispatch({ type: USER_ACTIONS.logout });

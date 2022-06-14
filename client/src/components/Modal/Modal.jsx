@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
 import { ModalContext } from '../../context/Modal/modalContext';
@@ -8,6 +9,7 @@ export const Modal = () => {
   const { modalState, modalDispatch } = useContext(ModalContext);
   const modal = useRef();
   const modalWrapper = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (modalState.isActive) {
@@ -17,6 +19,7 @@ export const Modal = () => {
 
   const handleModalClose = () => {
     if (!modal.current || !modalWrapper.current) return;
+
     const modalClasses = modal.current.classList;
     const modalWrapperClasses = modalWrapper.current.classList;
 
@@ -28,6 +31,7 @@ export const Modal = () => {
       document.body.style.overflowY = 'auto';
     }
 
+    navigate('/');
     setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
   };
 
@@ -43,6 +47,7 @@ export const Modal = () => {
             className="h-full md:h-3/4 bg-white relative flex flex-col animate-pop-in z-100"
           >
             <header className="flex justify-end items-center px-4 py-3">
+              {/* close button */}
               <button
                 className="text-xl hover:text-pink-400  rounded-full flex items-center justify-center duration-200"
                 onClick={handleModalClose}

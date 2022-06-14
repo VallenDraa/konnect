@@ -3,6 +3,7 @@ import RenderIf from '../../utils/RenderIf';
 import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
 
 export default function Input({
+  labelActive,
   label,
   icon,
   disabled,
@@ -28,15 +29,21 @@ export default function Input({
     }
   }, [isPwPeeked]);
 
+  // for moving label to the top left corner when user is typing
   useEffect(() => {
     if (!labelRef.current) return;
+
     const cl = labelRef.current;
     const currentClasses = [...cl.classList].join(' ');
 
-    if (content !== '') {
-      if (currentClasses !== notEmptyClasses) cl.className = notEmptyClasses;
+    if (!labelActive) {
+      if (content !== '') {
+        if (currentClasses !== notEmptyClasses) cl.className = notEmptyClasses;
+      } else {
+        if (currentClasses !== emptyClasses) cl.className = emptyClasses;
+      }
     } else {
-      if (currentClasses !== emptyClasses) cl.className = emptyClasses;
+      cl.className = notEmptyClasses;
     }
   }, [labelRef, content]);
 

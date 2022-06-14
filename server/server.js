@@ -7,7 +7,9 @@ import messages from './socketServer/messages/messages.js';
 import mongoose from 'mongoose';
 import authRoutes from './api/routes/authRoute.js';
 import cookieParser from 'cookie-parser';
-import authentication from './socketServer/Authenticate/AutheticateSocket.js';
+import authentication, {
+  tabClose,
+} from './socketServer/Authenticate/AutheticateSocket.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,7 +44,7 @@ io.on('connection', (socket) => {
   console.log('new user connected with id: ' + socket.id);
 
   socket.on('disconnect', () => {
-    console.log('disconnected');
+    tabClose(socket);
   });
 
   authentication(socket);

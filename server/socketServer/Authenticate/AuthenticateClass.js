@@ -16,8 +16,8 @@ export default class Authenticate {
    * @returns the user that's going to be added
    */
   addUserToOnline(onlineList) {
-    const isUserOnline = onlineList.some((item) => item.userId === this.userId);
-    const user = { userId: this.userId, socketId: this.socketId };
+    const isUserOnline = this.socketId in onlineList;
+    const user = { [`${this.socketId}`]: this.userId };
 
     return !isUserOnline
       ? { success: true, user, message: null }
@@ -32,9 +32,8 @@ export default class Authenticate {
    *
    */
   removeOnlineUser(onlineList) {
-    const isUserOnline = onlineList.some((item) => item.userId === this.userId);
-
-    const user = { userId: this.userId, socketId: this.socketId };
+    const isUserOnline = this.socketId in onlineList;
+    const user = { [`${this.socketId}`]: this.userId };
 
     return isUserOnline
       ? { success: true, user, message: null }

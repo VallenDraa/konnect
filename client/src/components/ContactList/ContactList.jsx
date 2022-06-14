@@ -94,12 +94,12 @@ export const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
     <>
       {groupedContacts.map(([letter, nameList], i) => {
         return (
-          <dl key={i} className="space-y-3 mb-3">
-            <dt className="sticky top-0 bg-gray-200 px-2 font-bold uppercase text-gray-600">
+          <div key={i} className="space-y-3 mb-3">
+            <span className="block sticky top-0 bg-gray-200 px-2 font-bold uppercase text-gray-600">
               {letter}
-            </dt>
+            </span>
             {nameList.map((contact) => (
-              <dd
+              <div
                 key={contact.id}
                 onClick={() => handleActiveContact(contact)}
                 className={`pl-3 cursor-pointer flex items-center gap-2 ${
@@ -115,9 +115,9 @@ export const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
                 />
 
                 <span className="text-sm">{contact.username}</span>
-              </dd>
+              </div>
             ))}
-          </dl>
+          </div>
         );
       })}
     </>

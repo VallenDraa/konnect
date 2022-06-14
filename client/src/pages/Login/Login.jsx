@@ -2,21 +2,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
-
 import { useRef, useContext } from 'react';
 import api from '../../utils/apiAxios/apiAxios';
 import { UserContext } from '../../context/User/userContext';
 import USER_ACTIONS from '../../context/User/userAction';
 import socket from '../../utils/socketClient/socketClient';
 import Input from '../../components/Input/Input';
+import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
 
 export const Login = () => {
   const usernameRef = useRef();
   const passwordRef = useRef();
-
   const rememberMe = useRef();
   const navigate = useNavigate();
   const { userState, userDispatch } = useContext(UserContext);
+  const { setIsInitialLoading } = useContext(isInitialLoadingContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ export const Login = () => {
     userDispatch({ type: USER_ACTIONS.loginStart });
     const formValue = {
       username: usernameRef.current.value,
-      password: passworeRef.current.value,
+      password: passwordRef.current.value,
     };
 
     try {
@@ -35,6 +35,7 @@ export const Login = () => {
         if (success) {
           sessionStorage.setItem('token', data.token);
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
+          setIsInitialLoading(true);
           navigate('/');
         } else {
           alert(message);

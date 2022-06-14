@@ -9,6 +9,7 @@ export default function CTA({ className = 'flex justify-evenly gap-2' }) {
   return (
     <div className={className}>
       <Pill
+        className="hover:bg-gray-200 active:bg-gray-300 "
         onClick={() =>
           modalDispatch({ type: MODAL_ACTIONS.show, content: null })
         }
@@ -17,6 +18,7 @@ export default function CTA({ className = 'flex justify-evenly gap-2' }) {
         Start Call
       </Pill>
       <Pill
+        className="hover:bg-gray-200 active:bg-gray-300 "
         onClick={() =>
           modalDispatch({ type: MODAL_ACTIONS.show, content: null })
         }
@@ -25,6 +27,7 @@ export default function CTA({ className = 'flex justify-evenly gap-2' }) {
         New Chat
       </Pill>
       <Pill
+        className="hover:bg-gray-200 active:bg-gray-300 "
         onClick={() =>
           modalDispatch({ type: MODAL_ACTIONS.show, content: null })
         }

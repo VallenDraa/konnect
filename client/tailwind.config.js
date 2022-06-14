@@ -32,7 +32,6 @@ module.exports = {
             transform: 'scale(100%)',
           },
         },
-
         'pop-out': {
           '0%': {
             opacity: 1,

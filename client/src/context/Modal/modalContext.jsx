@@ -4,6 +4,7 @@ import modalReducer from './modalReducer';
 const modalInitialValue = {
   isActive: false,
   isLoading: false,
+  onExitReturnToHome: true,
   content: null,
 };
 export const ModalContext = createContext(modalInitialValue);

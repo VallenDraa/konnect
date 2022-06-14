@@ -6,7 +6,6 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profilePicture: { type: String, default: '' },
-    isAdmin: { type: Boolean, default: false },
     contacts: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },

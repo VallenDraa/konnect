@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
+import { IsAuthorizedContext } from '../../context/isAuthorized/isAuthorized';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
 
 export const InitialLoadingScreen = () => {
@@ -6,11 +7,17 @@ export const InitialLoadingScreen = () => {
     isInitialLoadingContext
   );
   const loading = useRef();
+  const isAuthorized = useContext(IsAuthorizedContext);
 
+  // remove initial loading screen when user is authorized
   useEffect(() => {
-    loading.current?.classList.add('animate-pop-out');
-    setTimeout(() => setIsInitialLoading(false), 200);
-  }, []);
+    if (!loading.current) return;
+
+    if (isAuthorized) {
+      loading.current.classList.add('animate-pop-out');
+      setTimeout(() => setIsInitialLoading(false), 190);
+    }
+  }, [loading, isAuthorized]);
 
   return (
     <>

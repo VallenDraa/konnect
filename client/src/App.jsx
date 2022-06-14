@@ -15,9 +15,20 @@ export const App = () => {
           <Route
             path="/"
             element={userState.user ? <Home /> : <Navigate to="/register" />}
+          >
+            <Route
+              path="/user/:username"
+              element={userState.user ? <Home /> : <Navigate to="/register" />}
+            />
+          </Route>
+          <Route
+            path="/login"
+            element={userState.user ? <Navigate to="/" /> : <Login />}
           />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/register"
+            element={userState.user ? <Navigate to="/" /> : <Register />}
+          />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
