@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef } from 'react';
 import { IsAuthorizedContext } from '../../context/isAuthorized/isAuthorized';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
+import RenderIf from '../../utils/RenderIf';
 
 export const InitialLoadingScreen = () => {
   const { isInitialLoading, setIsInitialLoading } = useContext(
@@ -20,15 +21,13 @@ export const InitialLoadingScreen = () => {
   }, [loading, isAuthorized]);
 
   return (
-    <>
-      {isInitialLoading && (
-        <div
-          ref={loading}
-          className="fixed inset-0 bg-white z-30 flex items-center justify-center"
-        >
-          Loading...
-        </div>
-      )}
-    </>
+    <RenderIf conditionIs={isInitialLoading}>
+      <div
+        ref={loading}
+        className="fixed inset-0 bg-white z-30 flex items-center justify-center"
+      >
+        Loading...
+      </div>
+    </RenderIf>
   );
 };

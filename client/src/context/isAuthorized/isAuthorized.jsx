@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useState } from 'react';
 import socket from '../../utils/socketClient/socketClient';
 
 export const IsAuthorizedContext = createContext(false);

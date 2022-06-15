@@ -7,19 +7,18 @@ import { ModalContext } from '../../context/Modal/modalContext';
 import { useEffect } from 'react';
 import { UserContext } from '../../context/User/userContext';
 import socket from '../../utils/socketClient/socketClient';
-import { IsAuthorizedContext } from '../../context/isAuthorized/isAuthorized';
+import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});
   const { modalState } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
-  const isAuthorized = useContext(IsAuthorizedContext);
+  const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
-    console.log(userState.user, isAuthorized);
-    if (userState.user !== {} && !isAuthorized) {
+    if (userState.user !== {} && isLoginViaRefresh) {
       socket.emit('login', userState.user._id, (success, message) => {
         !success && alert(message);
       });

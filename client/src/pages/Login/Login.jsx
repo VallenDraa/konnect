@@ -9,6 +9,7 @@ import USER_ACTIONS from '../../context/User/userAction';
 import socket from '../../utils/socketClient/socketClient';
 import Input from '../../components/Input/Input';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
+import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
 
 export const Login = () => {
   const usernameRef = useRef();
@@ -17,6 +18,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const { userState, userDispatch } = useContext(UserContext);
   const { setIsInitialLoading } = useContext(isInitialLoadingContext);
+  const { setIsLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +37,7 @@ export const Login = () => {
         if (success) {
           sessionStorage.setItem('token', data.token);
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
+          setIsLoginViaRefresh(false);
           setIsInitialLoading(true);
           navigate('/');
         } else {

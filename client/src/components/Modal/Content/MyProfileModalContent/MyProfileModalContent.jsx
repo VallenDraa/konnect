@@ -11,14 +11,15 @@ import GeneralOpt from './components/GeneralOpt';
 import CallsOpt from './components/CallsOpt';
 import MessagesOpt from './components/MessagesOpt';
 
-export const ProfileModalContent = () => {
-  const [options, setOptions] = useState([
+export const MyProfileModalContent = () => {
+  const options = [
     { name: 'profile', icon: <CgProfile /> },
     { name: 'account', icon: <MdOutlineManageAccounts /> },
     { name: 'general', icon: <BsGear /> },
     { name: 'calls', icon: <TbPhoneCall /> },
     { name: 'messages', icon: <BiMessageAltDetail /> },
-  ]);
+  ];
+
 
   const [activeOpt, setActiveOpt] = useState(options[0].name);
 

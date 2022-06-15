@@ -14,7 +14,7 @@ const AccountOpt = () => {
       <li className="flex flex-col w-full">
         <Input
           type="email"
-          disabled="true"
+          disabled={true}
           label="Email"
           innerRef={emailRef}
           value="vallen@gmail.com"

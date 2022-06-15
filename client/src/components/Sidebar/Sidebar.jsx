@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { BsChatDots } from 'react-icons/bs';
 import { BiLogOut } from 'react-icons/bi';
-import { RiContactsBook2Line } from 'react-icons/ri';
-import { IoSearch } from 'react-icons/io5';
 import { ChatList } from '../ChatList/ChatList';
 import { ContactList } from '../ContactList/ContactList';
 import { Menu } from '../Menu/Menu';
 import { ModalContext } from '../../context/Modal/modalContext';
-import { ProfileModalContent } from '../Modal/Content/ProfileModalContent/ProfileModalContent';
-import { useNavigate } from 'react-router-dom';
+import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/User/userContext';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
 import CTA from '../CTA/CTA';
@@ -17,18 +14,10 @@ import USER_ACTIONS from '../../context/User/userAction';
 import socket from '../../utils/socketClient/socketClient';
 import RenderIf from '../../utils/RenderIf';
 import SearchList from '../SearchList/SearchList';
+import MENUS from '../Menu/MenuList/MenuList';
+import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
-  const MENUS = [
-    { name: 'Chats', icon: BsChatDots },
-    { name: 'Contacts', icon: RiContactsBook2Line },
-    { name: 'Search', icon: IoSearch },
-  ];
-  const SIDEBAR_APPEARANCE = {
-    OPEN: 'animate-sidebar-in inset-0 z-20 fixed lg:sticky top-0 h-screen lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3 shadow-lg lg:shadow-none flex flex-col',
-    CLOSED:
-      'animate-sidebar-out transform translate-y-full lg:translate-y-0 inset-0 z-20 fixed lg:sticky top-0 h-screen lg:basis-1/4 lg:min-w-[350px] bg-gray-50 p-3 shadow-lg lg:shadow-none flex flex-col',
-  };
   const Navigate = useNavigate();
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
@@ -89,11 +78,14 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         {/* profile and more menu */}
         <div className="flex justify-between items-center gap-2">
           {/* profile  */}
-          <button
+          <Link
+            to={`user/${userState.user.username}`}
             onClick={() =>
               modalDispatch({
                 type: MODAL_ACTIONS.show,
-                content: <ProfileModalContent />,
+                onExitReturnToHome: true,
+                pathname: `/user/${userState.user.username}`,
+                content: <MyProfileModalContent />,
               })
             }
             className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 w-full p-2 duration-200 rounded-full"
@@ -109,7 +101,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
                 Status
               </span>
             </div>
-          </button>
+          </Link>
           <Pill
             onClick={handleLogout}
             className="max-w-[100px] hover:bg-pink-400 hover:text-white"
@@ -124,19 +116,19 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         <CTA />
       </header>
       <main className="px-1 basis-5/6 overflow-y-auto overflow-x-auto">
-        <RenderIf conditionIs={activeMenu === 'Chats'}>
+        <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
             setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'Contacts'}>
+        <RenderIf conditionIs={activeMenu === 'contacts'}>
           <ContactList
             setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'Search'}>
+        <RenderIf conditionIs={activeMenu === 'search'}>
           <SearchList />
         </RenderIf>
       </main>

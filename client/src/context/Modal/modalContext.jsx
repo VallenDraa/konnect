@@ -3,7 +3,7 @@ import modalReducer from './modalReducer';
 
 const modalInitialValue = {
   isActive: false,
-  isLoading: false,
+  pathname: null,
   onExitReturnToHome: true,
   content: null,
 };

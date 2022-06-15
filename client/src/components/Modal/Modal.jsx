@@ -1,21 +1,59 @@
 import { useContext, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
 import MODAL_ACTIONS from '../../context/Modal/modalActions';
 import { ModalContext } from '../../context/Modal/modalContext';
 import RenderIf from '../../utils/RenderIf';
+import { useState } from 'react';
 
 export const Modal = () => {
   const { modalState, modalDispatch } = useContext(ModalContext);
   const modal = useRef();
   const modalWrapper = useRef();
   const navigate = useNavigate();
+  const location = useLocation();
+  // const [contentExists, setContentExists] = useState({});
 
+  // hides scrollbar when modal is active
   useEffect(() => {
     if (modalState.isActive) {
       document.body.style.overflowY = 'hidden';
     }
+    console.log(modalState);
   }, [modalState]);
+
+  // insert paths that contains modal
+  // useEffect(() => {
+  //   console.log(modalState.isActive);
+  //   if (!modalState.isActive) return;
+  //   if (location.pathname in contentExists) return;
+  //   console.log({ [location.pathname]: location.pathname });
+
+  //   setContentExists({
+  //     [location.pathname]: location.pathname,
+  //     ...contentExists,
+  //   });
+
+  //   console.log(contentExists);
+  // }, [location]);
+
+  // close modal when the path changes
+  useEffect(() => {
+    if (!modal.current || !modalWrapper.current) return;
+
+    const modalClasses = modal.current.classList;
+    const modalWrapperClasses = modalWrapper.current.classList;
+
+    const { pathname, isActive } = modalState;
+
+    if (location.pathname !== pathname && isActive) {
+      // if (location.pathname in contentExists) return;
+
+      modalClasses.replace('animate-pop-in', 'animate-pop-out');
+      modalWrapperClasses.replace('animate-fade-in', 'animate-fade-out');
+      setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
+    }
+  }, [location]);
 
   const handleModalClose = () => {
     if (!modal.current || !modalWrapper.current) return;
@@ -26,13 +64,15 @@ export const Modal = () => {
     modalClasses.replace('animate-pop-in', 'animate-pop-out');
     modalWrapperClasses.replace('animate-fade-in', 'animate-fade-out');
 
-    // only re-show scrollbar when the screen width is >=1024px
+    setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
+
+    // only re-show screen scrollbar when the screen width is >=1024px
     if (window.innerWidth >= 1024) {
       document.body.style.overflowY = 'auto';
     }
 
-    navigate('/');
-    setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
+    // go back to '/' path if the onExitReturnToHome in the modal context is true
+    modalState.onExitReturnToHome && navigate('/');
   };
 
   return (

@@ -1,16 +1,22 @@
 import MODAL_ACTIONS from './modalActions';
-export default function modalReducer(state, action) {
-  switch (action.type) {
+
+export default function modalReducer(
+  state,
+  { type, pathname, onExitReturnToHome, content }
+) {
+  switch (type) {
     case MODAL_ACTIONS.show:
       return {
         isActive: true,
-        onExitReturnToHome: action.onExitReturnToHome || true,
-        content: action.content,
+        pathname: pathname || null,
+        onExitReturnToHome: onExitReturnToHome || false,
+        content: content,
       };
     case MODAL_ACTIONS.close:
       return {
         isActive: false,
-        onExitReturnToHome: action.onExitReturnToHome || true,
+        pathname: pathname || null,
+        onExitReturnToHome: onExitReturnToHome || false,
         content: null,
       };
     default:
