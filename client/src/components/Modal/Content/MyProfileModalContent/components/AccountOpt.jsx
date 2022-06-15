@@ -1,13 +1,15 @@
-import { useRef } from 'react';
+import { useContext, useState } from 'react';
 import { FiSave } from 'react-icons/fi';
 import { HiOutlineMail } from 'react-icons/hi';
 import { RiLockPasswordLine } from 'react-icons/ri';
+import { UserContext } from '../../../../../context/User/userContext';
 import Pill from '../../../../Buttons/Pill';
 import Input from '../../../../Input/Input';
 
 const AccountOpt = () => {
-  const emailRef = useRef();
-  const passworlRef = useRef();
+  const { userState } = useContext(UserContext);
+  const [email, setEmail] = useState(userState.user.email);
+  const [password, setPassword] = useState('');
 
   return (
     <ul className="p-3 w-full overflow-y-hidden flex flex-col items-center gap-5">
@@ -16,8 +18,7 @@ const AccountOpt = () => {
           type="email"
           disabled={true}
           label="Email"
-          innerRef={emailRef}
-          value="vallen@gmail.com"
+          customState={[email, setEmail]}
           icon={<HiOutlineMail className="text-lg" />}
         />
       </li>
@@ -27,7 +28,7 @@ const AccountOpt = () => {
             icon={<RiLockPasswordLine className="text-lg" />}
             type="password"
             label="Password"
-            innerRef={passworlRef}
+            customState={[password, setPassword]}
           />
           <Pill className="text-base flex items-center gap-1 bg-gray-700 text-gray-100 hover:bg-blue-400 hover:text-white">
             <FiSave />

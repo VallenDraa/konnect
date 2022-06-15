@@ -26,7 +26,7 @@ export const Menu = ({ menus, activeMenuState }) => {
           type: MODAL_ACTIONS.show,
           onExitReturnToHome: true,
           pathname: `/user/${username}`,
-          content: <OthersProfileModalContent />,
+          content: <OthersProfileModalContent username={username} />,
         });
       } else {
         modalDispatch({

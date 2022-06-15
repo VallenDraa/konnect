@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import patternBgLight from '../../svg/authPage/patternBgLight.svg';
 import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
-import { useRef, useContext } from 'react';
+import { useRef, useContext, useState } from 'react';
 import api from '../../utils/apiAxios/apiAxios';
 import { UserContext } from '../../context/User/userContext';
 import USER_ACTIONS from '../../context/User/userAction';
@@ -12,10 +12,10 @@ import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitia
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
 
 export const Login = () => {
-  const usernameRef = useRef();
-  const passwordRef = useRef();
   const rememberMe = useRef();
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const { userState, userDispatch } = useContext(UserContext);
   const { setIsInitialLoading } = useContext(isInitialLoadingContext);
   const { setIsLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
@@ -24,10 +24,7 @@ export const Login = () => {
     e.preventDefault();
 
     userDispatch({ type: USER_ACTIONS.loginStart });
-    const formValue = {
-      username: usernameRef.current.value,
-      password: passwordRef.current.value,
-    };
+    const formValue = { username, password };
 
     try {
       const { data } = await api.post('/auth/login', formValue);
@@ -78,11 +75,15 @@ export const Login = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input type="text" label="Username" innerRef={usernameRef} />
+                <Input
+                  type="text"
+                  label="Username"
+                  customState={[username, setUsername]}
+                />
                 <Input
                   type="password"
                   label="Password"
-                  innerRef={passwordRef}
+                  customState={[password, setPassword]}
                 />
               </div>
               <div className="text-xxs md:text-xs flex justify-between text-gray-500">

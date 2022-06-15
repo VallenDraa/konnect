@@ -5,7 +5,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import messages from './socketServer/messages/messages.js';
 import mongoose from 'mongoose';
-import authRoutes from './api/routes/authRoute.js';
+import authRoutes from './api/routes/authRoutes.js';
+import userQueryRoutes from './api/routes/userQueryRoutes.js';
 import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
@@ -31,12 +32,13 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
+app.use('/api/query/user', userQueryRoutes);
 
 const dbConnect = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
   } catch (error) {
-    throw error;
+    next(error);
   }
 };
 

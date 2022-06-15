@@ -1,13 +1,15 @@
+import { useEffect } from 'react';
 import { useState } from 'react';
 
-export const OthersProfileModalContent = () => {
+export const OthersProfileModalContent = ({ username }) => {
+  useEffect(() => {}, []);
   return (
     <section
-      aria-label="settings"
+      aria-label="Profile"
       className="w-screen md:w-[40rem] flex flex-col h-full"
     >
       <header className="text-center">
-        <h1 className="font-semibold pb-3">Settings</h1>
+        <h1 className="font-semibold pb-3">Profile</h1>
       </header>
       <main className="flex grow shadow-inner">
         <aside className="bg-gray-100 basis-1/4 md:basis-1/3">

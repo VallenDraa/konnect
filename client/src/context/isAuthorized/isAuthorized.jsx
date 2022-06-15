@@ -5,7 +5,9 @@ export const IsAuthorizedContext = createContext(false);
 
 export default function IsAuthorizedContextProvider({ children }) {
   const [isAuthorized, setisAuthorized] = useState(false);
-  socket.on('is-authorized', ({ authorized }) => setisAuthorized(authorized));
+  socket.on('is-authorized', ({ authorized }) => {
+    setisAuthorized(authorized);
+  });
 
   return (
     <IsAuthorizedContext.Provider value={isAuthorized}>

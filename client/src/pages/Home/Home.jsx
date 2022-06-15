@@ -18,7 +18,7 @@ export const Home = () => {
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
-    if (userState.user !== {} && isLoginViaRefresh) {
+    if (Object.keys(userState.user).length !== 0 && isLoginViaRefresh) {
       socket.emit('login', userState.user._id, (success, message) => {
         !success && alert(message);
       });

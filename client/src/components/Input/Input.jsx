@@ -8,13 +8,12 @@ export default function Input({
   icon,
   disabled,
   type,
-  value,
-  innerRef,
   customState,
 }) {
   const labelRef = useRef();
+  const inputRef = useRef();
   const inputId = useId();
-  const [content, setContent] = customState || useState(value || '');
+  const [content, setContent] = customState;
   const [isPwPeeked, setIsPwPeeked] = useState(false);
 
   const emptyClasses =
@@ -23,9 +22,9 @@ export default function Input({
 
   // for peeking password
   useEffect(() => {
-    if (!innerRef) return;
+    if (!inputRef) return;
     if (type === 'password') {
-      innerRef.current.type = isPwPeeked ? 'text' : 'password';
+      inputRef.current.type = isPwPeeked ? 'text' : 'password';
     }
   }, [isPwPeeked]);
 
@@ -52,7 +51,7 @@ export default function Input({
       <RenderIf conditionIs={type === 'text' || type === 'email'}>
         <input
           required
-          ref={innerRef}
+          ref={inputRef}
           className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200"
           type={type}
           onChange={(e) => setContent(e.target.value)}
@@ -76,7 +75,7 @@ export default function Input({
           </button>
           <input
             required
-            ref={innerRef}
+            ref={inputRef}
             className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10"
             type="password"
             onChange={(e) => setContent(e.target.value)}
@@ -100,7 +99,7 @@ export default function Input({
       >
         <input
           required
-          ref={innerRef}
+          ref={inputRef}
           type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}

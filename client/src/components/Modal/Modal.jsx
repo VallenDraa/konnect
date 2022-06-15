@@ -19,7 +19,6 @@ export const Modal = () => {
     if (modalState.isActive) {
       document.body.style.overflowY = 'hidden';
     }
-    console.log(modalState);
   }, [modalState]);
 
   // insert paths that contains modal

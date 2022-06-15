@@ -4,21 +4,17 @@ import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
 import Input from '../../components/Input/Input';
 import api from '../../utils/apiAxios/apiAxios';
-import { useRef } from 'react';
+import { useState } from 'react';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const emailRef = useRef();
-  const usernameRef = useRef();
-  const passwordRef = useRef();
+  const [email, setEmail] = useState();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formValue = {
-      email: emailRef.current.value,
-      username: usernameRefemailRef.current.value,
-      password: passwordRefemailRef.current.value,
-    };
+    const formValue = { email, username, password };
 
     try {
       const { data } = await api.post('/auth/register', formValue);
@@ -60,12 +56,20 @@ export const Register = () => {
           >
             <div className="space-y-8 md:space-y-10">
               <div className="space-y-5">
-                <Input type="email" label="Email" innerRef={emailRef} />
-                <Input type="text" label="Username" innerRef={usernameRef} />
+                <Input
+                  type="email"
+                  label="Email"
+                  customState={[email, setEmail]}
+                />
+                <Input
+                  type="text"
+                  label="Username"
+                  customState={[password, setPassword]}
+                />
                 <Input
                   type="password"
                   label="Password"
-                  innerRef={passwordRef}
+                  customState={[password, setPassword]}
                 />
               </div>
             </div>

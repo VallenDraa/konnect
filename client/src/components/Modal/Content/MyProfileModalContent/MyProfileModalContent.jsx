@@ -20,7 +20,6 @@ export const MyProfileModalContent = () => {
     { name: 'messages', icon: <BiMessageAltDetail /> },
   ];
 
-
   const [activeOpt, setActiveOpt] = useState(options[0].name);
 
   return (

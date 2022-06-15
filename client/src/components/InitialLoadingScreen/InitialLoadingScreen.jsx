@@ -13,7 +13,7 @@ export const InitialLoadingScreen = () => {
   // remove initial loading screen when user is authorized
   useEffect(() => {
     if (!loading.current) return;
-
+    console.log(isAuthorized);
     if (isAuthorized) {
       loading.current.classList.add('animate-pop-out');
       setTimeout(() => setIsInitialLoading(false), 190);

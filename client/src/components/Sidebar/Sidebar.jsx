@@ -104,7 +104,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
           </Link>
           <Pill
             onClick={handleLogout}
-            className="max-w-[100px] hover:bg-pink-400 hover:text-white"
+            className="max-w-[100px] hover:bg-red-500 text-red-500 border-red-500 hover:text-white"
           >
             <BiLogOut />
             <span>Log Out</span>

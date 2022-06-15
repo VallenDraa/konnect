@@ -1,5 +1,5 @@
-import { useId, useRef } from 'react';
-
+import { useContext, useId, useRef, useState } from 'react';
+import { UserContext } from '../../../../../context/User/userContext';
 import { FaCamera } from 'react-icons/fa';
 import { FiSave } from 'react-icons/fi';
 import { BiRename, BiHappyHeartEyes } from 'react-icons/bi';
@@ -9,8 +9,9 @@ import Input from '../../../../Input/Input';
 
 const ProfileOpt = () => {
   const imageId = useId();
-  const statusRef = useRef();
-  const usernameRef = useRef();
+  const { userState } = useContext(UserContext);
+  const [status, setStatus] = useState(userState.user.status || '');
+  const [username, setUsername] = useState(userState.user.username);
 
   return (
     <form className="p-3 w-full overflow-y-hidden flex flex-col items-center gap-10">
@@ -36,7 +37,7 @@ const ProfileOpt = () => {
           <Input
             label="Status"
             type="text"
-            innerRef={statusRef}
+            customState={[status, setStatus]}
             icon={<BiHappyHeartEyes className="text-lg" />}
           />
         </div>
@@ -44,7 +45,7 @@ const ProfileOpt = () => {
           <Input
             label="Username"
             type="text"
-            innerRef={usernameRef}
+            customState={[username, setUsername]}
             icon={<BiRename className="text-lg" />}
           />
         </div>

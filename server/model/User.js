@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema(
       },
     ],
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
+    settings: Object,
   },
   { timestamps: true }
 );
