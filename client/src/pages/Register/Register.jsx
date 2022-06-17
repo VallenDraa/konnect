@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState();
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -19,7 +19,7 @@ export const Register = () => {
     try {
       const { data } = await api.post('/auth/register', formValue);
 
-      if (data.registerSuccess) {
+      if (data.success) {
         navigate('/login');
       }
     } catch (error) {
@@ -64,7 +64,7 @@ export const Register = () => {
                 <Input
                   type="text"
                   label="Username"
-                  customState={[password, setPassword]}
+                  customState={[username, setUsername]}
                 />
                 <Input
                   type="password"

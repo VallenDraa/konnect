@@ -8,12 +8,13 @@ export default function Input({
   icon,
   disabled,
   type,
+  value,
   customState,
 }) {
   const labelRef = useRef();
   const inputRef = useRef();
   const inputId = useId();
-  const [content, setContent] = customState;
+  const [content, setContent] = customState || useState(value || '');
   const [isPwPeeked, setIsPwPeeked] = useState(false);
 
   const emptyClasses =

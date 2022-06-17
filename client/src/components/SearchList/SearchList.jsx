@@ -9,7 +9,7 @@ import RenderIf from '../../utils/RenderIf';
 import Input from '../Input/Input';
 
 export default function SearchList() {
-  const [searchValue, setSearchValue] = useState('');
+  const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [SVPreview, setSVPreview] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -17,17 +17,15 @@ export default function SearchList() {
 
   useEffect(() => {
     const searchDebounce = setTimeout(async () => {
-      setSVPreview(searchValue);
+      setSVPreview(query);
       setIsTyping(false);
 
-      if (searchValue === '') {
+      if (query === '') {
         return setSearchResults([]);
       }
 
       try {
-        const { data } = await api.get(
-          `/query/user/find_user?query=${searchValue}`
-        );
+        const { data } = await api.get(`/query/user/find_user?query=${query}`);
         setSearchResults(data);
       } catch (error) {
         console.log(error);
@@ -38,14 +36,14 @@ export default function SearchList() {
       clearTimeout(searchDebounce);
       setIsTyping(true);
     };
-  }, [searchValue]);
+  }, [query]);
 
   return (
     <div className="py-1.5 space-y-5">
       <header className="sticky top-0 space-y-3  ">
         <Input
           labelActive={true}
-          customState={[searchValue, setSearchValue]}
+          customState={[query, setQuery]}
           type="text"
           label="Search"
           icon={<IoSearch />}
@@ -74,8 +72,8 @@ export default function SearchList() {
               </div>
             </RenderIf>
 
-            {/* this svg will appear when the searchValue is empty */}
-            <RenderIf conditionIs={searchValue === ''}>
+            {/* this svg will appear when the query is empty */}
+            <RenderIf conditionIs={query === ''}>
               <div className="text-center space-y-10 mt-10">
                 <img
                   src={initialSvg}
@@ -113,9 +111,7 @@ export default function SearchList() {
             </RenderIf>
 
             {/* svg for when there are no results*/}
-            <RenderIf
-              conditionIs={searchResults.length === 0 && searchValue !== ''}
-            >
+            <RenderIf conditionIs={searchResults.length === 0 && query !== ''}>
               <li className="text-center space-y-10 mt-10">
                 <img
                   src={emptySearchResults}
