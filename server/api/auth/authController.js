@@ -5,6 +5,10 @@ import jwt from 'jsonwebtoken';
 
 export const register = async (req, res, next) => {
   const { username, password, email } = req.body;
+  const initials = username
+    .split(' ')
+    .map((word, i) => i < 3 && word.substring(0, 1))
+    .join('');
 
   try {
     // check if the inputted username or email has already been taken
@@ -18,7 +22,7 @@ export const register = async (req, res, next) => {
           next,
           409,
           'Username or Email has been taken, please choose another one !',
-          { registerSuccess: false }
+          { success: false }
         );
       }
     } catch (error) {
@@ -29,6 +33,7 @@ export const register = async (req, res, next) => {
       const hashedPW = await bcrypt.hash(password, 10);
       await UserModel.create({
         username,
+        initials,
         password: hashedPW,
         email,
       });
@@ -36,7 +41,7 @@ export const register = async (req, res, next) => {
       next(error);
     }
 
-    res.json({ registerSuccess: true });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }
