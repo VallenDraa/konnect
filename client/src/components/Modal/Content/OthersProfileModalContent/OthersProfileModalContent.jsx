@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useContext, useEffect, useReducer } from 'react';
 import { useState } from 'react';
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaPaperPlane } from 'react-icons/fa';
-
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import welcome from '../../../../svg/othersProfile/welcome.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
 import charToRGB from '../../../../utils/charToRGB/charToRGB';
 import RenderIf from '../../../../utils/RenderIf';
@@ -12,9 +12,19 @@ import Input from '../../../Input/Input';
 import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
 import Pill from '../../../Buttons/Pill';
 import { IoPersonAdd } from 'react-icons/io5';
+import addRequestSentReducer, {
+  ADD_REQUEST_SENT_DEFAULT,
+} from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
+import socket from '../../../../utils/socketClient/socketClient';
+import { UserContext } from '../../../../context/User/userContext';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
+  const { userState } = useContext(UserContext);
+  const [addRequestSent, dispatch] = useReducer(
+    addRequestSentReducer,
+    ADD_REQUEST_SENT_DEFAULT
+  );
   const [rgb, setRgb] = useState('');
 
   // fetch user detail from the server
@@ -37,7 +47,6 @@ export const OthersProfileModalContent = ({ username }) => {
   // turn initials to rgb
   useEffect(() => {
     if (!otherUserData.initials) return;
-    console.log(otherUserData);
     const rgbNum = charToRGB(otherUserData.initials.split(''));
 
     const result = {
@@ -52,45 +61,64 @@ export const OthersProfileModalContent = ({ username }) => {
   }, [otherUserData]);
 
   const FriendsSwiperCard = ({ contacts }) => {
-    if (contacts.length === 0) return;
+    // render the swiper slides if the user has contacts
+    if (contacts.length !== 0) {
+      return (
+        <Swiper
+          spaceBetween={8}
+          slidesPerView="auto"
+          navigation
+          className="relative cursor-grab"
+        >
+          {x.map((xa, i) =>
+            contacts.map(({ user }, i) => {
+              const rgb = charToRGB(user.initials.split(''));
 
-    const x = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+              const result = {
+                r: rgb[0],
+                g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
+                b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
+              };
 
-    return (
-      <Swiper
-        spaceBetween={8}
-        slidesPerView="auto"
-        navigation
-        className="relative cursor-grab"
-      >
-        {x.map((xa, i) =>
-          contacts.map(({ user }, i) => {
-            const rgb = charToRGB(user.initials.split(''));
+              return (
+                <SwiperSlide
+                  key={i}
+                  className="flex flex-col items-center gap-y-1.5 max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
+                >
+                  <PicturelessProfile
+                    width={100}
+                    initials={user.initials}
+                    bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
+                  />
+                  <span className="font-semibold">{user.username}</span>
+                </SwiperSlide>
+              );
+            })
+          )}
+          <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
+        </Swiper>
+      );
 
-            const result = {
-              r: rgb[0],
-              g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
-              b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
-            };
+      // render an svg otherwise
+    } else {
+      return (
+        <div className="text-center space-y-3">
+          <img src={welcome} alt="" className="w-1/5 max-w-[160px] mx-auto" />
+          <div className="flex flex-col gap-y-1">
+            <span className="font-semibold text-gray-500">
+              Oops No One Here....
+            </span>
+            <span className="font-light text-gray-400 text-xs">
+              Be the first one here by adding this person to your contact !
+            </span>
+          </div>
+        </div>
+      );
+    }
+  };
 
-            return (
-              <SwiperSlide
-                key={i}
-                className="flex flex-col items-center gap-y-1.5 max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
-              >
-                <PicturelessProfile
-                  width={100}
-                  initials={user.initials}
-                  bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
-                />
-                <span className="font-semibold">{user.username}</span>
-              </SwiperSlide>
-            );
-          })
-        )}
-        <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
-      </Swiper>
-    );
+  const handleAddContact = () => {
+    socket.emit('send-add-contact', userState.user._id, otherUserData._id);
   };
 
   return (
@@ -108,11 +136,11 @@ export const OthersProfileModalContent = ({ username }) => {
           {/* profile pic */}
           <header>
             <RenderIf conditionIs={!otherUserData.profilePic}>
-              <div className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 h-[250px] w-full flex items-center justify-center">
+              <div className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 h-[210px] w-full flex items-center justify-center">
                 <PicturelessProfile
                   initials={otherUserData.initials}
                   bgColor={rgb}
-                  width={160}
+                  width={140}
                 />
               </div>
             </RenderIf>
@@ -132,7 +160,10 @@ export const OthersProfileModalContent = ({ username }) => {
               </div>
               {/* buttons */}
               <div className="flex h-full gap-x-2 items-center">
-                <Pill className="text-base px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2">
+                <Pill
+                  onClick={handleAddContact}
+                  className="text-base px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2"
+                >
                   <IoPersonAdd /> Add
                 </Pill>
                 <Pill className="text-base px-4 py-1 font-bold hover:bg-blue-400 active:bg-blue-500 hover:text-white flex items-center gap-x-2">

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { UserContext } from '../../context/User/userContext';
 import socket from '../../utils/socketClient/socketClient';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
+import USER_ACTIONS from '../../context/User/userAction';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});
@@ -23,6 +24,44 @@ export const Home = () => {
         !success && alert(message);
       });
     }
+  }, []);
+
+  // refresh userState after sending an add contact request
+  useEffect(() => {
+    socket.on('update-client-data', (queueRespond) => {
+      console.log('sender');
+      userDispatch({ type: USER_ACTIONS.updateStart });
+      userDispatch({
+        type: USER_ACTIONS.updateSuccess,
+        payload: queueRespond.newUserData,
+      });
+    });
+
+    return () => socket.off('update-client-data');
+  }, []);
+
+  useEffect(() => {
+    console.log(userState);
+  }, [userState]);
+
+  //the receiving end / recipient of an add contact request
+  useEffect(() => {
+    socket.on('receive-add-contact', (recipient, { username, _id }) => {
+      userDispatch({ type: USER_ACTIONS.updateStart });
+      userDispatch({ type: USER_ACTIONS.updateSuccess, payload: recipient });
+
+      console.log(recipient, username, _id, 'recipient');
+
+      // const ans = confirm(
+      //   `${username} has sent you a contact request, what is your response`
+      // );
+
+      // if (ans) {
+      // } else {
+      // }
+    });
+
+    return () => socket.off('receive-add-contact');
   }, []);
 
   return (

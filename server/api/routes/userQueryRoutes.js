@@ -1,6 +1,9 @@
 import express from 'express';
 
-import { findUser, getUserDetail } from '../userQuery/userQueryController.js';
+import {
+  findUser,
+  getUserDetail,
+} from '../controller/userQuery/userQueryController.js';
 const router = express.Router();
 
 // to find all user that matches the query

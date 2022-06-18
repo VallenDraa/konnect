@@ -40,12 +40,12 @@ export const Menu = ({ menus, activeMenuState }) => {
   }, [location]);
 
   return (
-    <ul className="flex justify-evenly divide-x-2">
+    <ul className="flex flex-wrap justify-evenly gap-y-2">
       {menus.map((menu, i) => (
         <Fragment key={i}>
           <li
             onClick={() => setActiveMenu(menu.name)}
-            className={`cursor-pointer flex flex-col items-center gap-1 text-xxs w-full 
+            className={`basis-1/4 cursor-pointer flex flex-col items-center gap-1 text-xxs w-full 
               ${
                 activeMenu === menu.name
                   ? 'text-blue-400'

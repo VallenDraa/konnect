@@ -13,6 +13,12 @@ const UserSchema = new mongoose.Schema(
         messageLog: [{ type: mongoose.Schema.Types.ObjectId, ref: 'message' }],
       },
     ],
+    requests: {
+      contacts: {
+        to: [{ type: mongoose.Schema.ObjectId, ref: 'user' }],
+        from: [{ type: mongoose.Schema.ObjectId, ref: 'user' }],
+      },
+    },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
     settings: Object,
   },

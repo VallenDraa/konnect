@@ -1,5 +1,4 @@
 export default function PicturelessProfile({ initials, bgColor, width }) {
-  console.log(bgColor);
   return (
     <span
       className="text-6xl font-bold uppercase rounded-full aspect-square  grid place-items-center shadow-md text-gray-800"

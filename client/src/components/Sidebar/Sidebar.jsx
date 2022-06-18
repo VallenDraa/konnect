@@ -19,6 +19,7 @@ import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const Navigate = useNavigate();
+
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
   const { modalDispatch } = useContext(ModalContext);
@@ -96,9 +97,11 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
               className="rounded-full h-8 w-8"
             />
             <div className="flex flex-col items-start">
-              <span className="text-xs max-w-[200px] truncate">VallenDra</span>
+              <span className="text-xs max-w-[200px] truncate">
+                {userState.user.username}
+              </span>
               <span className="text-xxs text-gray-500 relative z-10 max-w-[200px] truncate">
-                Status
+                {userState.user.status || 'Status Unset'}
               </span>
             </div>
           </Link>
@@ -115,6 +118,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         {/* cta */}
         <CTA />
       </header>
+      {/* menu contents */}
       <main className="px-1 basis-5/6 overflow-y-auto overflow-x-auto">
         <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
@@ -131,6 +135,7 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         <RenderIf conditionIs={activeMenu === 'search'}>
           <SearchList />
         </RenderIf>
+        <RenderIf conditionIs={activeMenu === 'notifications'}></RenderIf>
       </main>
     </aside>
   );

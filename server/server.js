@@ -7,16 +7,20 @@ import messages from './socketServer/messages/messages.js';
 import mongoose from 'mongoose';
 import authRoutes from './api/routes/authRoutes.js';
 import userQueryRoutes from './api/routes/userQueryRoutes.js';
+import contactRequestRoutes from './api/routes/contactRequestRoutes.js';
 import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
 } from './socketServer/Authenticate/AutheticateSocket.js';
+import sendContactRequest from './socketServer/sendContactRequest/sendContactRequest.js';
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: ['http://localhost:3000', 'http://192.168.1.5:3000'] },
 });
+// can be accessed and edited from anywhere
+global.onlineUsers = {};
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -33,6 +37,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/query/user', userQueryRoutes);
+app.use('/api/request', contactRequestRoutes);
 
 const dbConnect = async () => {
   try {
@@ -51,6 +56,7 @@ io.on('connection', (socket) => {
 
   authentication(socket);
   messages(socket);
+  sendContactRequest(socket);
 });
 
 app.get('/', (req, res) => {

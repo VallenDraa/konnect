@@ -16,12 +16,14 @@ export default class Authenticate {
    * @returns the user that's going to be added
    */
   addUserToOnline(onlineList) {
-    const isUserOnline = this.socketId in onlineList;
-    const user = { [`${this.socketId}`]: this.userId };
+    const isUserOnline = this.userId in onlineList;
 
-    return !isUserOnline
-      ? { success: true, user, message: null }
-      : { success: false, user: null, message: 'User is already logged in' };
+    if (!isUserOnline) {
+      const user = { [`${this.userId}`]: this.socketId };
+      return { success: true, user, message: null };
+    } else {
+      return { success: false, user: null, message: 'User is already online' };
+    }
   }
 
   /**
@@ -32,23 +34,13 @@ export default class Authenticate {
    *
    */
   removeOnlineUser(onlineList) {
-    const isUserOnline = this.socketId in onlineList;
-    const user = { [`${this.socketId}`]: this.userId };
+    const isUserOnline = this.userId in onlineList;
 
-    return isUserOnline
-      ? { success: true, user, message: null }
-      : { success: false, user: null, message: 'Invalid user' };
-  }
-
-  /**
-   *
-   * @param {Array} onlineList
-   * @param {String} userId
-   * @returns data regarding the target user id
-   */
-  static findOnlineUser(onlineList, userId) {
-    const user = onlineList.find((item) => item.userId === userId);
-
-    return user;
+    if (isUserOnline) {
+      const user = { [`${this.userId}`]: this.socketId };
+      return { success: true, user, message: null };
+    } else {
+      return { success: false, user: null, message: 'Invalid user' };
+    }
   }
 }

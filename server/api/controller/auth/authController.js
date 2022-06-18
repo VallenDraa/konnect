@@ -1,5 +1,5 @@
-import UserModel from '../../model/User.js';
-import createError from '../../utils/createError.js';
+import UserModel from '../../../model/User.js';
+import createError from '../../../utils/createError.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
