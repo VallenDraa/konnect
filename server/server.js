@@ -64,12 +64,13 @@ app.get('/', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const { status, message, ...additionalInfo } = err;
+  const { stack, status, message, ...additionalInfo } = err;
 
   return res.status(status || 500).json({
     success: false,
     status: status || 500,
-    message: message,
+    message,
+    stack,
     additionalInfo,
   });
 });

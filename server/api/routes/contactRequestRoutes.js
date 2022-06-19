@@ -3,12 +3,13 @@ import {
   queueRequestToSender,
   sendRequestToRecipient,
 } from '../controller/contactRequestController/ContactRequestController.js';
+import verifyToken from '../controller/auth/tokenController.js';
 const router = express.Router();
 
 // send request to recipient
-router.get('/send_contact_request', sendRequestToRecipient);
+router.put('/send_contact_request', verifyToken, sendRequestToRecipient);
 
 // queue the sender's request
-router.get('/queue_contact_request', queueRequestToSender);
+router.put('/queue_contact_request', verifyToken, queueRequestToSender);
 
 export default router;

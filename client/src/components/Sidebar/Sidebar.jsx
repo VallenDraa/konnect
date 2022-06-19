@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { BiLogOut } from 'react-icons/bi';
-import { ChatList } from '../ChatList/ChatList';
-import { ContactList } from '../ContactList/ContactList';
 import { Menu } from '../Menu/Menu';
-import { ModalContext } from '../../context/Modal/modalContext';
+import { ModalContext } from '../../context/modal/modalContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserContext } from '../../context/User/userContext';
-import MODAL_ACTIONS from '../../context/Modal/modalActions';
+import { UserContext } from '../../context/user/userContext';
+import ChatList from '../Menu/MenuContents/ChatList/ChatList';
+import ContactList from '../Menu/MenuContents/ContactList/ContactList';
+import SearchList from '../Menu/MenuContents/SearchList/SearchList';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
 import CTA from '../CTA/CTA';
 import Pill from '../Buttons/Pill';
-import USER_ACTIONS from '../../context/User/userAction';
+import USER_ACTIONS from '../../context/user/userAction';
 import socket from '../../utils/socketClient/socketClient';
 import RenderIf from '../../utils/RenderIf';
-import SearchList from '../SearchList/SearchList';
-import MENUS from '../Menu/MenuList/MenuList';
+import MENUS from '../Menu/MENUS';
 import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
+import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const Navigate = useNavigate();
@@ -135,7 +136,9 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         <RenderIf conditionIs={activeMenu === 'search'}>
           <SearchList />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'notifications'}></RenderIf>
+        <RenderIf conditionIs={activeMenu === 'notifications'}>
+          <NotificationList />
+        </RenderIf>
       </main>
     </aside>
   );

@@ -1,7 +1,7 @@
-import { ChatPreview } from '../ChatPreview/ChatPreview';
+import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useState } from 'react';
 
-export const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
+const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
   const [chats, setChats] = useState([
     {
       username: 'john',
@@ -72,3 +72,5 @@ export const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
     </ul>
   );
 };
+
+export default ChatList;

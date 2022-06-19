@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
-import MODAL_ACTIONS from '../../context/Modal/modalActions';
-import { ModalContext } from '../../context/Modal/modalContext';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
+import { ModalContext } from '../../context/modal/modalContext';
 import RenderIf from '../../utils/RenderIf';
 import { useState } from 'react';
 

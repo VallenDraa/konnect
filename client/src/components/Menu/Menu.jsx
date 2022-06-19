@@ -1,17 +1,21 @@
 import { useContext, useEffect } from 'react';
 import { Fragment } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ModalContext } from '../../context/Modal/modalContext';
-import MODAL_ACTIONS from '../../context/Modal/modalActions';
-import { UserContext } from '../../context/User/userContext';
+import { ModalContext } from '../../context/modal/modalContext';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
+import { UserContext } from '../../context/user/userContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
+import NotifBadge from '../NotifBadge/NotifBadge';
+import RenderIf from '../../utils/RenderIf';
+import { NotificationsContext } from '../../context/notifications/notificationsContext';
 
 export const Menu = ({ menus, activeMenuState }) => {
   const { activeMenu, setActiveMenu } = activeMenuState;
   const location = useLocation();
   const { modalDispatch } = useContext(ModalContext);
   const { userState } = useContext(UserContext);
+  const { notifications } = useContext(NotificationsContext);
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
@@ -39,6 +43,30 @@ export const Menu = ({ menus, activeMenuState }) => {
     }
   }, [location]);
 
+  const NotifBadgeSwitcher = ({ menuName }) => {
+    console.log(menuName);
+    switch (menuName) {
+      case 'chats':
+        return;
+      case 'contacts':
+        return;
+      case 'search':
+        return;
+      case 'notifications':
+        const { inbox, outbox } = notifications;
+        const totalNotifs = inbox.length + outbox.length;
+        console.log(totalNotifs, inbox, outbox);
+
+        return (
+          <NotifBadge isActive={totalNotifs !== 0}>
+            {totalNotifs <= 99 ? totalNotifs : '99+'}
+          </NotifBadge>
+        );
+      default:
+        break;
+    }
+  };
+
   return (
     <ul className="flex flex-wrap justify-evenly gap-y-2">
       {menus.map((menu, i) => (
@@ -50,9 +78,12 @@ export const Menu = ({ menus, activeMenuState }) => {
                 activeMenu === menu.name
                   ? 'text-blue-400'
                   : 'text-gray-500 hover:text-blue-400'
-              } p-1 rounded-lg duration-200`}
+              } p-1 rounded-lg duration-200 relative`}
           >
             <menu.icon className="text-lg" />
+
+            <NotifBadgeSwitcher menuName={menu.name} />
+
             <span className="capitalize">{menu.name}</span>
           </li>
         </Fragment>

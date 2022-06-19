@@ -15,8 +15,18 @@ const UserSchema = new mongoose.Schema(
     ],
     requests: {
       contacts: {
-        to: [{ type: mongoose.Schema.ObjectId, ref: 'user' }],
-        from: [{ type: mongoose.Schema.ObjectId, ref: 'user' }],
+        inbox: [
+          {
+            by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            iat: { type: Date, default: Date.now() },
+          },
+        ],
+        outbox: [
+          {
+            by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            iat: { type: Date, default: Date.now() },
+          },
+        ],
       },
     },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],

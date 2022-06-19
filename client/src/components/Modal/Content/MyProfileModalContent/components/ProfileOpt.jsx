@@ -1,5 +1,5 @@
 import { useContext, useId, useRef, useState } from 'react';
-import { UserContext } from '../../../../../context/User/userContext';
+import { UserContext } from '../../../../../context/user/userContext';
 import { FaCamera } from 'react-icons/fa';
 import { FiSave } from 'react-icons/fi';
 import { BiRename, BiHappyHeartEyes } from 'react-icons/bi';

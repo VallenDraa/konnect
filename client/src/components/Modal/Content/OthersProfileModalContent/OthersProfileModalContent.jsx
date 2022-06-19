@@ -16,7 +16,7 @@ import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
 } from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
 import socket from '../../../../utils/socketClient/socketClient';
-import { UserContext } from '../../../../context/User/userContext';
+import { UserContext } from '../../../../context/user/userContext';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -118,7 +118,13 @@ export const OthersProfileModalContent = ({ username }) => {
   };
 
   const handleAddContact = () => {
-    socket.emit('send-add-contact', userState.user._id, otherUserData._id);
+    const senderToken = sessionStorage.getItem('token');
+    socket.emit(
+      'send-add-contact',
+      userState.user._id,
+      otherUserData._id,
+      senderToken
+    );
   };
 
   return (

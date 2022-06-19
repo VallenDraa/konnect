@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import NotifBadge from '../NotifBadge/NotifBadge';
 
-export default function Dropdown({ children, icon, notifBadgeContent }) {
+export default function Dropdown({
+  children,
+  icon,
+  text,
+  notifBadgeContent,
+  position,
+}) {
   const [open, setOpen] = useState(false);
   const dropDownWrapper = useRef();
   const dropDown = useRef();
+  const btn = useRef();
+  const [btnOffsetHeight, setBtnOffsetHeight] = useState(0);
 
   useEffect(() => {
     const autoCloseDropdown = (e) => {
@@ -22,6 +30,11 @@ export default function Dropdown({ children, icon, notifBadgeContent }) {
       window.removeEventListener('click', (e) => autoCloseDropdown(e));
     };
   }, [dropDown]);
+
+  useEffect(() => {
+    if (!btn.current) return;
+    setBtnOffsetHeight(btn.current.offsetHeight);
+  }, [btn]);
 
   const handleOpen = () => {
     if (!open) {
@@ -46,17 +59,22 @@ export default function Dropdown({ children, icon, notifBadgeContent }) {
         className="relative flex justify-center items-center"
       >
         <button
+          ref={btn}
           onClick={handleOpen}
-          className="relative text-lg p-2 hover:text-pink-400 duration-200 rounded-lg"
+          className="relative text-xs font-semibold py-1 px-3 capitalize hover:text-pink-400 duration-200 rounded flex items-center gap-x-1 border-2 border-gray-300 shadow"
         >
           {icon}
+          {text}
           {notifBadgeContent && <NotifBadge>{notifBadgeContent}</NotifBadge>}
         </button>
 
         {open && (
           <ul
             ref={dropDown}
-            className="origin-top-right z-30 absolute max-h-[18rem] w-72 sm:w-60 bg-gray-50 shadow-md right-0 top-10 rounded p-1 divide-y-2 animate-d-down-open overflow-y-auto border-2 border-gray-200"
+            className={`${position} z-30 absolute max-h-[18rem] w-72 sm:w-60 bg-gray-50 shadow-md rounded p-1 divide-y-2 animate-d-down-open overflow-y-auto border-2 border-gray-200`}
+            style={{
+              top: `${btnOffsetHeight + 2}px`,
+            }}
           >
             {children}
           </ul>

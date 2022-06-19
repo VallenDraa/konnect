@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-export const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
+const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
   const [contacts, setContacts] = useState([
     {
       username: 'john',
@@ -123,3 +123,5 @@ export const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
     </>
   );
 };
+
+export default ContactList;

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
-import emptySearchResults from '../../svg/SearchList/emptySearchResults.svg';
-import initialSvg from '../../svg/SearchList/initialSvg.svg';
-import api from '../../utils/apiAxios/apiAxios';
-import RenderIf from '../../utils/RenderIf';
-import Input from '../Input/Input';
+import emptySearchResults from '../../../../svg/SearchList/emptySearchResults.svg';
+import initialSvg from '../../../../svg/SearchList/initialSvg.svg';
+import api from '../../../../utils/apiAxios/apiAxios';
+import RenderIf from '../../../../utils/RenderIf';
+import Input from '../../../Input/Input';
 
 export default function SearchList() {
   const [query, setQuery] = useState('');
@@ -39,7 +39,7 @@ export default function SearchList() {
   }, [query]);
 
   return (
-    <div className="py-1.5 space-y-5">
+    <section aria-label="searchList" className="py-1.5 space-y-5">
       <header className="sticky top-0 space-y-3  ">
         <Input
           labelActive={true}
@@ -126,6 +126,6 @@ export default function SearchList() {
           </ul>
         </RenderIf>
       </main>
-    </div>
+    </section>
   );
 }

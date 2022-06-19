@@ -1,14 +1,14 @@
 import { useContext, useState } from 'react';
 import { Sidebar } from '../../components/Sidebar/Sidebar';
 import { ChatBox } from '../../components/ChatBox/ChatBox';
-import { Modal } from '../../components/Modal/Modal';
+import { Modal } from '../../components/modal/Modal';
 import { InitialLoadingScreen } from '../../components/InitialLoadingScreen/InitialLoadingScreen';
-import { ModalContext } from '../../context/Modal/modalContext';
+import { ModalContext } from '../../context/modal/modalContext';
 import { useEffect } from 'react';
-import { UserContext } from '../../context/User/userContext';
+import { UserContext } from '../../context/user/userContext';
 import socket from '../../utils/socketClient/socketClient';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
-import USER_ACTIONS from '../../context/User/userAction';
+import USER_ACTIONS from '../../context/user/userAction';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});
@@ -24,41 +24,42 @@ export const Home = () => {
         !success && alert(message);
       });
     }
+
+    return () => socket.off('login');
   }, []);
 
   // refresh userState after sending an add contact request
   useEffect(() => {
-    socket.on('update-client-data', (queueRespond) => {
-      console.log('sender');
-      userDispatch({ type: USER_ACTIONS.updateStart });
-      userDispatch({
-        type: USER_ACTIONS.updateSuccess,
-        payload: queueRespond.newUserData,
-      });
+    socket.on('update-client-data', (queueResponse) => {
+      if (queueResponse.success) {
+        const { user, token } = queueResponse;
+
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
+        sessionStorage.setItem('token', token);
+      } else {
+        console.log(queueResponse.message);
+      }
     });
 
     return () => socket.off('update-client-data');
   }, []);
 
-  useEffect(() => {
-    console.log(userState);
-  }, [userState]);
-
   //the receiving end / recipient of an add contact request
   useEffect(() => {
     socket.on('receive-add-contact', (recipient, { username, _id }) => {
-      userDispatch({ type: USER_ACTIONS.updateStart });
-      userDispatch({ type: USER_ACTIONS.updateSuccess, payload: recipient });
+      if (recipient.success) {
+        const { token, user } = recipient;
 
-      console.log(recipient, username, _id, 'recipient');
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
+        sessionStorage.setItem('token', token);
 
-      // const ans = confirm(
-      //   `${username} has sent you a contact request, what is your response`
-      // );
-
-      // if (ans) {
-      // } else {
-      // }
+        const ans = confirm(
+          `${username} has sent you a contact request, what is your response`
+        );
+        console.log('answer: ' + ans);
+      } else {
+        console.log(recipient.message);
+      }
     });
 
     return () => socket.off('receive-add-contact');

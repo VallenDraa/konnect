@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { IoPeopleSharp, IoCall, IoChatbubbles } from 'react-icons/io5';
-import MODAL_ACTIONS from '../../context/Modal/modalActions';
-import { ModalContext } from '../../context/Modal/modalContext';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
+import { ModalContext } from '../../context/modal/modalContext';
 import Pill from '../Buttons/Pill';
 
 export default function CTA({ className = 'flex justify-evenly gap-2' }) {

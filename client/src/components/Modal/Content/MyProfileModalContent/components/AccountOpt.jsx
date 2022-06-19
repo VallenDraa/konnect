@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { FiSave } from 'react-icons/fi';
 import { HiOutlineMail } from 'react-icons/hi';
 import { RiLockPasswordLine } from 'react-icons/ri';
-import { UserContext } from '../../../../../context/User/userContext';
+import { UserContext } from '../../../../../context/user/userContext';
 import Pill from '../../../../Buttons/Pill';
 import Input from '../../../../Input/Input';
 
