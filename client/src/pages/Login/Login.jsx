@@ -4,19 +4,18 @@ import { RiLoginCircleLine } from 'react-icons/ri';
 import { Logo } from '../../components/Logo/Logo';
 import { useRef, useContext, useState } from 'react';
 import api from '../../utils/apiAxios/apiAxios';
-import { UserContext } from '../../context/User/userContext';
 import USER_ACTIONS from '../../context/User/userAction';
 import socket from '../../utils/socketClient/socketClient';
 import Input from '../../components/Input/Input';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
 
-export const Login = () => {
+export const Login = ({ user }) => {
+  const { userState, userDispatch } = user;
   const rememberMe = useRef();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { userState, userDispatch } = useContext(UserContext);
   const { setIsInitialLoading } = useContext(isInitialLoadingContext);
   const { setIsLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
 

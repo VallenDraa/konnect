@@ -16,14 +16,17 @@ export default function Dropdown({
 
   useEffect(() => {
     const autoCloseDropdown = (e) => {
-      if (!dropDown.current?.contains(e.target)) {
-        if (!dropDown.current?.classList.contains('animate-d-down-open')) {
-          dropDown.current?.classList.add('animate-d-down-close');
-          setTimeout(() => setOpen(false), 195);
-        }
-      }
-    };
+      if (!dropDown.current) return;
 
+      [...dropDown.current.children].forEach((child) => {
+        if (!dropDown.current.contains(e.target) || child.contains(e.target)) {
+          if (!dropDown.current.classList.contains('animate-d-down-open')) {
+            dropDown.current.classList.add('animate-d-down-close');
+            setTimeout(() => setOpen(false), 195);
+          }
+        }
+      });
+    };
     window.addEventListener('click', (e) => autoCloseDropdown(e));
 
     return () => {

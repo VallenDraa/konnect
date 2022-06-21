@@ -13,7 +13,7 @@ import CTA from '../CTA/CTA';
 import Pill from '../Buttons/Pill';
 import USER_ACTIONS from '../../context/user/userAction';
 import socket from '../../utils/socketClient/socketClient';
-import RenderIf from '../../utils/RenderIf';
+import RenderIf from '../../utils/React/RenderIf';
 import MENUS from '../Menu/MENUS';
 import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';

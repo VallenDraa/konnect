@@ -4,7 +4,7 @@ import { MdOutlineManageAccounts } from 'react-icons/md';
 import { BsGear } from 'react-icons/bs';
 import { TbPhoneCall } from 'react-icons/tb';
 import { BiMessageAltDetail } from 'react-icons/bi';
-import RenderIf from '../../../../utils/RenderIf';
+import RenderIf from '../../../../utils/React/RenderIf';
 import ProfileOpt from './components/ProfileOpt';
 import AccountOpt from './components/AccountOpt';
 import GeneralOpt from './components/GeneralOpt';

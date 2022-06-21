@@ -7,7 +7,7 @@ import { UserContext } from '../../context/user/userContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
 import NotifBadge from '../NotifBadge/NotifBadge';
-import RenderIf from '../../utils/RenderIf';
+import RenderIf from '../../utils/React/RenderIf';
 import { NotificationsContext } from '../../context/notifications/notificationsContext';
 
 export const Menu = ({ menus, activeMenuState }) => {
@@ -44,7 +44,6 @@ export const Menu = ({ menus, activeMenuState }) => {
   }, [location]);
 
   const NotifBadgeSwitcher = ({ menuName }) => {
-    console.log(menuName);
     switch (menuName) {
       case 'chats':
         return;
@@ -53,9 +52,12 @@ export const Menu = ({ menus, activeMenuState }) => {
       case 'search':
         return;
       case 'notifications':
-        const { inbox, outbox } = notifications;
-        const totalNotifs = inbox.length + outbox.length;
-        console.log(totalNotifs, inbox, outbox);
+        const totalNotifs = Object.entries(notifications).reduce(
+          (prev, [type, not]) => {
+            return prev + not.inbox.length + not.outbox.length;
+          },
+          0
+        );
 
         return (
           <NotifBadge isActive={totalNotifs !== 0}>

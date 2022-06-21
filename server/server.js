@@ -7,7 +7,8 @@ import messages from './socketServer/messages/messages.js';
 import mongoose from 'mongoose';
 import authRoutes from './api/routes/authRoutes.js';
 import userQueryRoutes from './api/routes/userQueryRoutes.js';
-import contactRequestRoutes from './api/routes/contactRequestRoutes.js';
+import requestRoutes from './api/routes/requestRoutes.js';
+import notificationRoutes from './api/routes/notificationRoutes.js';
 import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
@@ -37,7 +38,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/query/user', userQueryRoutes);
-app.use('/api/request', contactRequestRoutes);
+app.use('/api/request', requestRoutes);
+app.use('/api/notification', notificationRoutes);
 
 const dbConnect = async () => {
   try {

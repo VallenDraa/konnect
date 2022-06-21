@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment, useRef } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { HiOutlineMenu } from 'react-icons/hi';
-import RenderIf from '../../utils/RenderIf';
+import RenderIf from '../../utils/React/RenderIf';
 import { MyMessage } from '../Message/MyMessage';
 import { OtherMessage } from '../Message/OtherMessage';
 import { StartScreen } from '../StartScreen/StartScreen';

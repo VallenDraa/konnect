@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import emptySearchResults from '../../../../svg/SearchList/emptySearchResults.svg';
 import initialSvg from '../../../../svg/SearchList/initialSvg.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
-import RenderIf from '../../../../utils/RenderIf';
+import RenderIf from '../../../../utils/React/RenderIf';
 import Input from '../../../Input/Input';
 
 export default function SearchList() {

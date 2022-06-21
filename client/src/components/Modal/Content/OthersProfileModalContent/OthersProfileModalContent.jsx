@@ -7,7 +7,7 @@ import 'swiper/css';
 import welcome from '../../../../svg/othersProfile/welcome.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
 import charToRGB from '../../../../utils/charToRGB/charToRGB';
-import RenderIf from '../../../../utils/RenderIf';
+import RenderIf from '../../../../utils/React/RenderIf';
 import Input from '../../../Input/Input';
 import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
 import Pill from '../../../Buttons/Pill';

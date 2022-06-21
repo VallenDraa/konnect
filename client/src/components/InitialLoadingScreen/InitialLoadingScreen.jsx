@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from 'react';
 import { IsAuthorizedContext } from '../../context/isAuthorized/isAuthorized';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
-import RenderIf from '../../utils/RenderIf';
+import RenderIf from '../../utils/React/RenderIf';
 
 export const InitialLoadingScreen = () => {
   const { isInitialLoading, setIsInitialLoading } = useContext(

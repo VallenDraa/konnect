@@ -2,7 +2,7 @@ import express from 'express';
 import {
   queueRequestToSender,
   sendRequestToRecipient,
-} from '../controller/contactRequestController/ContactRequestController.js';
+} from '../controller/requests/contactRequestController/ContactRequestController.js';
 import verifyToken from '../controller/auth/tokenController.js';
 const router = express.Router();
 

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import { ModalContext } from '../../context/modal/modalContext';
-import RenderIf from '../../utils/RenderIf';
+import RenderIf from '../../utils/React/RenderIf';
 import { useState } from 'react';
 
 export const Modal = () => {

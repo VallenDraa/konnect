@@ -18,12 +18,14 @@ const UserSchema = new mongoose.Schema(
         inbox: [
           {
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            seen: { type: Boolean, default: false },
             iat: { type: Date, default: Date.now() },
           },
         ],
         outbox: [
           {
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            seen: { type: Boolean, default: false },
             iat: { type: Date, default: Date.now() },
           },
         ],

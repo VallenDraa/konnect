@@ -1,6 +1,6 @@
-import User from '../../../model/User.js';
 import jwt from 'jsonwebtoken';
-import createError from '../../../utils/createError.js';
+import User from '../../../../model/User.js';
+import createError from '../../../../utils/createError.js';
 
 export const sendRequestToRecipient = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
@@ -45,11 +45,26 @@ export const sendRequestToRecipient = async (req, res, next) => {
     await recipient.save();
 
     // send the updated token & user data to the client
-    const { password, __v, iat, ...user } = recipient._doc;
-    const token = jwt.sign(user, JWT_SECRET);
-    return isRequestExists
-      ? res.json({ token, user, cancelRequest: true, success: true })
-      : res.json({ token, user, cancelRequest: false, success: true });
+    try {
+      const user = await User.findById(recipientId).select([
+        '-password',
+        '-requests.contacts.inbox.by',
+        '-requests.contacts.inbox.seen',
+        '-requests.contacts.inbox.iat',
+        '-requests.contacts.outbox.by',
+        '-requests.contacts.outbox.seen',
+        '-requests.contacts.outbox.iat',
+      ]);
+
+      const { _doc } = user;
+
+      const token = jwt.sign(_doc, JWT_SECRET);
+      return isRequestExists
+        ? res.json({ token, user: _doc, cancelRequest: true, success: true })
+        : res.json({ token, user: _doc, cancelRequest: false, success: true });
+    } catch (error) {
+      next(error);
+    }
   } catch (error) {
     next(error);
   }
@@ -97,11 +112,26 @@ export const queueRequestToSender = async (req, res, next) => {
     await sender.save();
 
     // send the updated token & user data to the client
-    const { password, __v, iat, ...user } = sender._doc;
-    const token = jwt.sign(user, JWT_SECRET);
-    return isRequestExists
-      ? res.json({ token, user, cancelRequest: true, success: true })
-      : res.json({ token, user, cancelRequest: false, success: true });
+    try {
+      const user = await User.findById(senderId).select([
+        '-password',
+        '-requests.contacts.inbox.by',
+        '-requests.contacts.inbox.seen',
+        '-requests.contacts.inbox.iat',
+        '-requests.contacts.outbox.by',
+        '-requests.contacts.outbox.seen',
+        '-requests.contacts.outbox.iat',
+      ]);
+
+      const { _doc } = user;
+
+      const token = jwt.sign(_doc, JWT_SECRET);
+      return isRequestExists
+        ? res.json({ token, user: _doc, cancelRequest: true, success: true })
+        : res.json({ token, user: _doc, cancelRequest: false, success: true });
+    } catch (error) {
+      next(error);
+    }
   } catch (error) {
     next(error);
   }

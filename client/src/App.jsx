@@ -6,7 +6,8 @@ import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
 
 export const App = () => {
-  const { userState } = useContext(UserContext);
+  const { userState, userDispatch } = useContext(UserContext);
+  console.log(userState);
 
   return (
     <div className="text-gray-800">
@@ -23,7 +24,13 @@ export const App = () => {
           </Route>
           <Route
             path="/login"
-            element={userState.user ? <Navigate to="/" /> : <Login />}
+            element={
+              userState.user ? (
+                <Navigate to="/" />
+              ) : (
+                <Login user={{ userState, userDispatch }} />
+              )
+            }
           />
           <Route
             path="/register"
