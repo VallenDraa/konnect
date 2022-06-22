@@ -2,6 +2,7 @@ import { useContext, useEffect, useReducer } from 'react';
 import { useState } from 'react';
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaPaperPlane } from 'react-icons/fa';
+import { IoPersonAdd } from 'react-icons/io5';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import welcome from '../../../../svg/othersProfile/welcome.svg';
@@ -11,12 +12,12 @@ import RenderIf from '../../../../utils/React/RenderIf';
 import Input from '../../../Input/Input';
 import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
 import Pill from '../../../Buttons/Pill';
-import { IoPersonAdd } from 'react-icons/io5';
 import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
 } from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
 import socket from '../../../../utils/socketClient/socketClient';
 import { UserContext } from '../../../../context/user/userContext';
+import generateRgb from '../../../../utils/generateRgb/generateRgb';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -47,17 +48,9 @@ export const OthersProfileModalContent = ({ username }) => {
   // turn initials to rgb
   useEffect(() => {
     if (!otherUserData.initials) return;
-    const rgbNum = charToRGB(otherUserData.initials.split(''));
+    const newRgb = generateRgb(otherUserData.initials);
 
-    const result = {
-      r: rgbNum[0],
-      g:
-        rgbNum[1] || rgbNum[0] + rgbNum[0] <= 200 ? rgbNum[0] + rgbNum[0] : 200,
-      b:
-        rgbNum[2] || rgbNum[0] + rgbNum[1] <= 200 ? rgbNum[0] + rgbNum[1] : 200,
-    };
-
-    setRgb(`rgb(${result.r} ${result.g} ${result.b})`);
+    setRgb(newRgb);
   }, [otherUserData]);
 
   const FriendsSwiperCard = ({ contacts }) => {

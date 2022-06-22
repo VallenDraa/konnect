@@ -7,6 +7,7 @@ export default function Dropdown({
   text,
   notifBadgeContent,
   position,
+  fontSize,
 }) {
   const [open, setOpen] = useState(false);
   const dropDownWrapper = useRef();
@@ -64,7 +65,8 @@ export default function Dropdown({
         <button
           ref={btn}
           onClick={handleOpen}
-          className="relative text-xs font-semibold py-1 px-3 capitalize hover:text-pink-400 duration-200 rounded flex items-center gap-x-1 border-2 border-gray-300 shadow"
+          className="relative font-semibold py-1 px-3 capitalize hover:text-pink-400 duration-200 rounded flex items-center gap-x-1 border-2 border-gray-300 shadow"
+          style={{ fontSize }}
         >
           {icon}
           {text}

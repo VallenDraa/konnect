@@ -49,7 +49,7 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   const { username, password } = req.body;
-
+  console.log(req.body);
   try {
     const user = await UserModel.findOne({ username }).select([
       '-requests.contacts.inbox.by',

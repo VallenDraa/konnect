@@ -6,8 +6,8 @@ export const sendRequestToRecipient = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
 
+  // check if passed ids exists
   try {
-    // check if passed ids exists
     if (!(await User.exists({ _id: recipientId })))
       return createError(
         next,
@@ -20,15 +20,20 @@ export const sendRequestToRecipient = async (req, res, next) => {
         404,
         "The sender for the contact request doesn't exist"
       );
+  } catch (error) {
+    next(error);
+  }
 
+  // sending the request to the recipient
+  try {
     const recipient = await User.findById(recipientId);
     const isRequestExists = recipient.requests.contacts.inbox.some(
       (request) => request.by.toString() === senderId
     );
-    console.log(isRequestExists);
+
     const contactInbox = recipient.requests.contacts.inbox;
 
-    // if request exists then cancel the request
+    // if request exists then cancel/remove the request
     if (isRequestExists) {
       recipient.requests.contacts.inbox = contactInbox.filter(
         (request) => request.by.toString() !== senderId
@@ -74,8 +79,8 @@ export const queueRequestToSender = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
 
+  // check if passed ids exists
   try {
-    // check if passed ids exists
     if (!(await User.exists({ _id: recipientId })))
       return createError(
         next,
@@ -88,14 +93,19 @@ export const queueRequestToSender = async (req, res, next) => {
         404,
         "The sender for the contact request doesn't exist"
       );
+  } catch (error) {
+    next(error);
+  }
 
+  // queueing the request that has been sent to the senders contact requests field
+  try {
     const sender = await User.findById(senderId);
     const isRequestExists = sender.requests.contacts.outbox.some(
       (request) => request.by.toString() === recipientId
     );
     const contactOutbox = sender.requests.contacts.outbox;
 
-    // if request exists then cancel the request
+    // if request exists then cancel/remove the request
     if (isRequestExists) {
       sender.requests.contacts.outbox = contactOutbox.filter(
         (request) => request.by.toString() !== recipientId
@@ -137,4 +147,11 @@ export const queueRequestToSender = async (req, res, next) => {
   }
 };
 
-export const removeContactRequest = async (senderId, recipientId) => {};
+export const contactRequestRespond = async (req, res, next) => {
+  const { recipientId, senderId } = req.body;
+
+  try {
+  } catch (error) {
+    next(error);
+  }
+};

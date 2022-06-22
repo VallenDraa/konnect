@@ -34,7 +34,7 @@ export default function addRequestSentReducer(state, { type, payload }) {
     case isError:
       return {
         isLoading: false,
-        error: payload.error,
+        error: payload,
         isSent: false,
       };
 

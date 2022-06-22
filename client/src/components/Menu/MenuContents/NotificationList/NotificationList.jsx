@@ -1,10 +1,18 @@
-import { useEffect, useContext, useState } from 'react';
+import { useEffect, useContext, useState, Fragment } from 'react';
 import { MdOutlineMoveToInbox, MdOutlineOutbox } from 'react-icons/md';
 import { NotificationsContext } from '../../../../context/notifications/notificationsContext';
+import { UserContext } from '../../../../context/user/userContext';
+import RenderIf from '../../../../utils/React/RenderIf';
 import api from '../../../../utils/apiAxios/apiAxios';
 import Dropdown from '../../../Dropdown/Dropdown';
 import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
-import { UserContext } from '../../../../context/user/userContext';
+import NotifListItem from './NotifListItem/NotifListItem';
+import ContactNotif from './type/ContactNotif/ContactNotif';
+import { useReducer } from 'react';
+import notificationsReducer, {
+  NOTIFICATIONS_ACTIONS,
+  NOTIFICATIONS_DEFAULT,
+} from '../../../../reducer/notifications/notificationsReducer';
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
@@ -14,38 +22,62 @@ export default function NotificationList() {
   const [activeTab, setActiveTab] = useState(NOTIFICATION_TABS[0]);
   const { notifications } = useContext(NotificationsContext);
   const { userState } = useContext(UserContext);
-  const [detailedNotifs, setDetailedNotifs] = useState({
-    inbox: [],
-    outbox: [],
-  });
+  const [detailedNotifs, detailedNotifsDispatch] = useReducer(
+    notificationsReducer,
+    NOTIFICATIONS_DEFAULT
+  );
 
   useEffect(() => {
     const notifsArray = Object.entries(notifications);
 
     const getNotificationDetail = async (type, notif) => {
+      detailedNotifsDispatch({ type: NOTIFICATIONS_ACTIONS.isLoading });
       const { inbox, outbox } = notif;
+      setTimeout(async () => {
+        try {
+          // fetch the notification detail according to the type
+          const { data } = await api.post(
+            `/notification/notif_${type}_detail`,
+            {
+              ids: { inbox, outbox },
+              userId: userState.user._id,
+              token: sessionStorage.getItem('token'),
+            }
+          );
 
-      const { data } = await api.post(`/notification/notif_${type}_detail`, {
-        ids: { inbox, outbox },
-        userId: userState.user._id,
-        token: sessionStorage.getItem('token'),
-      });
-
-      setDetailedNotifs(data);
+          // assign the type of notification to the final result
+          const result = {
+            inbox: [
+              ...detailedNotifs.contents.inbox,
+              ...data.inbox.map((item) => ({ type, ...item })),
+            ],
+            outbox: [
+              ...detailedNotifs.contents.outbox,
+              ...data.outbox.map((item) => ({ type, ...item })),
+            ],
+          };
+          detailedNotifsDispatch({
+            type: NOTIFICATIONS_ACTIONS.isLoaded,
+            payload: result,
+          });
+        } catch (error) {
+          detailedNotifsDispatch({
+            type: NOTIFICATIONS_ACTIONS.isError,
+            payload: error,
+          });
+        }
+      }, 1000);
     };
 
     notifsArray.forEach(([type, value]) => getNotificationDetail(type, value));
   }, [notifications, userState]);
-
-  useEffect(() => {
-    console.log(detailedNotifs);
-  }, [detailedNotifs]);
 
   return (
     <div className="py-4 space-y-5">
       <header>
         <nav className="relative w-fit">
           <Dropdown
+            fontSize={14}
             icon={activeTab.icon()}
             text={activeTab.name}
             position={'origin-top-left left-0'}
@@ -65,17 +97,33 @@ export default function NotificationList() {
         </nav>
       </header>
       <main>
-        <ul>
-          {detailedNotifs[activeTab.name].map(({ by, iat }) => {
-            return (
-              <li>
-                {by.username}
-                {by.initials}
-                {iat}
-              </li>
-            );
-          })}
-        </ul>
+        <RenderIf conditionIs={detailedNotifs.error !== null}>
+          {detailedNotifs.error}
+        </RenderIf>
+        <RenderIf
+          conditionIs={detailedNotifs.isLoading && !detailedNotifs.error}
+        >
+          <span>loading</span>
+        </RenderIf>
+        <RenderIf
+          conditionIs={!detailedNotifs.isLoading && !detailedNotifs.error}
+        >
+          <ul className="border-y-2 divide-y-2">
+            {detailedNotifs.contents[activeTab.name].map(
+              ({ type, _id, by, iat }) => {
+                return (
+                  <Fragment key={_id}>
+                    <RenderIf conditionIs={type === 'contacts'}>
+                      <NotifListItem>
+                        <ContactNotif by={by} iat={iat} type={activeTab.name} />
+                      </NotifListItem>
+                    </RenderIf>
+                  </Fragment>
+                );
+              }
+            )}
+          </ul>
+        </RenderIf>
       </main>
     </div>
   );

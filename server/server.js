@@ -29,7 +29,7 @@ if (process.env.NODE_ENV !== 'production') {
     cors({
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization'],
-      origin: ['http://localhost:3000'],
+      origin: ['http://localhost:3000', 'http://192.168.1.5:3000'],
     })
   );
 }

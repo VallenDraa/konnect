@@ -21,13 +21,20 @@ export const contactRequestDetails = async (req, res, next) => {
       user.requests.contacts[type].forEach((details, i) => {
         if (details._id.toString() !== ids[type][i]._id) return;
 
-        const { _id, ...otherDetails } = details._doc;
-        result.outbox.push(otherDetails);
+        result[type].push(details._doc);
       });
     });
 
+    console.log(result, user.username);
     // returns the finishing results
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const setNotifToSeen = async (req, res, next) => {
+  try {
   } catch (error) {
     next(error);
   }

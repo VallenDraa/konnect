@@ -19,6 +19,7 @@ const UserSchema = new mongoose.Schema(
           {
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
             seen: { type: Boolean, default: false },
+            answer: { type: Boolean, default: null },
             iat: { type: Date, default: Date.now() },
           },
         ],
@@ -26,6 +27,7 @@ const UserSchema = new mongoose.Schema(
           {
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
             seen: { type: Boolean, default: false },
+            answer: { type: Boolean, default: null },
             iat: { type: Date, default: Date.now() },
           },
         ],
