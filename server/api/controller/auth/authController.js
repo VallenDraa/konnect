@@ -49,16 +49,10 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   const { username, password } = req.body;
-  console.log(req.body);
   try {
-    const user = await UserModel.findOne({ username }).select([
-      '-requests.contacts.inbox.by',
-      '-requests.contacts.inbox.seen',
-      '-requests.contacts.inbox.iat',
-      '-requests.contacts.outbox.by',
-      '-requests.contacts.outbox.seen',
-      '-requests.contacts.outbox.iat',
-    ]);
+    const user = await UserModel.findOne({ username }).select(
+      global.exemptedUserInfos
+    );
     if (user === null) {
       return createError(next, 401, 'Username or password is invalid !');
     }

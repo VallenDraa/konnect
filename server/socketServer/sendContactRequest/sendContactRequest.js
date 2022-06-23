@@ -12,14 +12,14 @@ export default function sendContactRequest(socket) {
     try {
       // add sender id to recipients requests parameter in the DB and returns an updated recipient data
       const send = await axios.put(
-        `http://localhost:3001/api/request/send_contact_request`,
+        `${process.env.API_URL}/request/send_contact_request`,
         { recipientId, senderId, token: senderToken }
       );
       const sendResponse = send.data || null;
 
       // add recipient id to senders requests parameter in the DB and returns an updated sender data
       const queue = await axios.put(
-        `http://localhost:3001/api/request/queue_contact_request`,
+        `${process.env.API_URL}/request/queue_contact_request`,
         { recipientId, senderId, token: senderToken }
       );
       const queueResponse = queue.data || null;

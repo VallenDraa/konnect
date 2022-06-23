@@ -18,6 +18,7 @@ import addRequestSentReducer, {
 import socket from '../../../../utils/socketClient/socketClient';
 import { UserContext } from '../../../../context/user/userContext';
 import generateRgb from '../../../../utils/generateRgb/generateRgb';
+import { Link } from 'react-router-dom';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -63,31 +64,36 @@ export const OthersProfileModalContent = ({ username }) => {
           navigation
           className="relative cursor-grab"
         >
-          {x.map((xa, i) =>
-            contacts.map(({ user }, i) => {
-              const rgb = charToRGB(user.initials.split(''));
+          {contacts.map(({ user }, i) => {
+            const rgb = charToRGB(user.initials.split(''));
 
-              const result = {
-                r: rgb[0],
-                g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
-                b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
-              };
+            const result = {
+              r: rgb[0],
+              g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
+              b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
+            };
 
-              return (
-                <SwiperSlide
-                  key={i}
-                  className="flex flex-col items-center gap-y-1.5 max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
+            return (
+              <SwiperSlide
+                key={i}
+                className="max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
+              >
+                <Link
+                  to={`/user/${user.username}`}
+                  className="flex flex-col items-center gap-y-1.5"
                 >
                   <PicturelessProfile
-                    width={100}
+                    width={80}
                     initials={user.initials}
                     bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
                   />
-                  <span className="font-semibold">{user.username}</span>
-                </SwiperSlide>
-              );
-            })
-          )}
+                  <span className="font-semibold text-sm max-w-full truncate">
+                    {user.username}
+                  </span>
+                </Link>
+              </SwiperSlide>
+            );
+          })}
           <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
         </Swiper>
       );

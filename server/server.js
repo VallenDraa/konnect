@@ -12,8 +12,9 @@ import notificationRoutes from './api/routes/notificationRoutes.js';
 import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
-} from './socketServer/Authenticate/AutheticateSocket.js';
+} from './socketServer/authenticate/autheticateSocket.js';
 import sendContactRequest from './socketServer/sendContactRequest/sendContactRequest.js';
+import contactRequestRespond from './socketServer/contactRequestRespond/contactRequestRespond.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -22,6 +23,12 @@ const io = new Server(httpServer, {
 });
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
+global.exemptedUserInfos = [
+  '-requests.contacts.inbox.by',
+  '-requests.contacts.inbox.iat',
+  '-requests.contacts.outbox.by',
+  '-requests.contacts.outbox.iat',
+];
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -59,6 +66,7 @@ io.on('connection', (socket) => {
   authentication(socket);
   messages(socket);
   sendContactRequest(socket);
+  contactRequestRespond(socket);
 });
 
 app.get('/', (req, res) => {

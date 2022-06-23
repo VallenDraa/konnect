@@ -7,7 +7,6 @@ import { UserContext } from '../../context/user/userContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
 import NotifBadge from '../NotifBadge/NotifBadge';
-import RenderIf from '../../utils/React/RenderIf';
 import { NotificationsContext } from '../../context/notifications/notificationsContext';
 
 export const Menu = ({ menus, activeMenuState }) => {
@@ -21,22 +20,20 @@ export const Menu = ({ menus, activeMenuState }) => {
   useEffect(() => {
     const { pathname } = location;
     if (pathname.includes('/user')) {
-      const username = pathname.split('/')[2];
+      const usernamePath = pathname.split('/')[2];
 
       // check if the target user is the current logged in user
-      if (username !== userState.user.username) {
+      if (usernamePath !== userState.user.username) {
         setActiveMenu('search');
         modalDispatch({
           type: MODAL_ACTIONS.show,
           onExitReturnToHome: true,
-          pathname: `/user/${username}`,
-          content: <OthersProfileModalContent username={username} />,
+          content: <OthersProfileModalContent username={usernamePath} />,
         });
       } else {
         modalDispatch({
           type: MODAL_ACTIONS.show,
           onExitReturnToHome: true,
-          pathname: `/user/${userState.user.username}`,
           content: <MyProfileModalContent />,
         });
       }

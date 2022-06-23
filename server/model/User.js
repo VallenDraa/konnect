@@ -10,7 +10,13 @@ const UserSchema = new mongoose.Schema(
     contacts: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-        messageLog: [{ type: mongoose.Schema.Types.ObjectId, ref: 'message' }],
+        messageLog: [
+          {
+            type: String,
+            content: String,
+            default: null,
+          },
+        ],
       },
     ],
     requests: {
@@ -39,6 +45,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const UserModel = mongoose.model('user', UserSchema);
+const User = mongoose.model('user', UserSchema);
 
-export default UserModel;
+export default User;

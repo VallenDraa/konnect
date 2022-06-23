@@ -22,7 +22,7 @@ export default function createError(next, status, message, additionalInfo) {
 
 /**
  *
- * @param {Error} Error an existing error object
+ * @param {Error} Error an existing error object (optional, if none then pass null)
  * @param {Number} status an HTTP status code
  * @param {String} message message that explains/give further instruction regarding the error
  * @param  {Object} additionalInfo object containing additional info which will be appended to the JSON response

@@ -5,11 +5,20 @@ import generateRgb from '../../../../../../utils/generateRgb/generateRgb';
 import RenderIf from '../../../../../../utils/React/RenderIf';
 import PicturelessProfile from '../../../../../PicturelessProfile/PicturelessProfile';
 import socket from '../../../../../../utils/socketClient/socketClient';
+import { useEffect } from 'react';
 
 export default function ContactNotif({ by, iat, type }) {
   const handleResponse = (res) => {
     socket.emit('contact-requests-response', res);
   };
+
+  const cancelRequest = () => {
+    socket.emit('cancel-contact-request');
+  };
+
+  useEffect(() => {
+    socket.on('recieve-contact-request-respond');
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-between gap-3 w-full">
@@ -62,7 +71,7 @@ export default function ContactNotif({ by, iat, type }) {
       <RenderIf conditionIs={type === 'outbox'}>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => handleResponse(true)}
+            onClick={() => cancelRequest()}
             className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
           >
             <ImBlocked />

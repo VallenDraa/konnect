@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
   const [contacts, setContacts] = useState([
     {

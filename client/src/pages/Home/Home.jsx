@@ -9,13 +9,19 @@ import { UserContext } from '../../context/user/userContext';
 import socket from '../../utils/socketClient/socketClient';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
 import USER_ACTIONS from '../../context/user/userAction';
+import { useLocation } from 'react-router-dom';
+import RenderIf from '../../utils/React/RenderIf';
+import locationForModal from '../../components/Modal/utils/locationForModal';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});
-  const { modalState } = useContext(ModalContext);
+  const { modalState, modalDispatch } = useContext(ModalContext);
+  const [isModalOn, setIsModalOn] = useState(false);
   const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
   const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
+  const location = useLocation();
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
@@ -65,10 +71,27 @@ export const Home = () => {
     return () => socket.off('receive-add-contact');
   }, []);
 
+  // for checking if the page needs to render the modal
+  useEffect(() => {
+    const willTurnOn = locationForModal(location.pathname);
+
+    if (!willTurnOn) {
+      // time for the modal closing animation to play
+      setTimeout(() => {
+        modalDispatch({ type: MODAL_ACTIONS.close });
+        setIsModalOn(willTurnOn);
+      }, 200);
+    } else {
+      setIsModalOn(willTurnOn);
+    }
+  }, [location]);
+
   return (
     <>
       <div className="min-h-screen">
-        <Modal />
+        <RenderIf conditionIs={isModalOn}>
+          <Modal />
+        </RenderIf>
         <InitialLoadingScreen />
         <div
           className={`flex ${modalState.isActive && 'blur-sm'} duration-200`}

@@ -2,27 +2,10 @@ import jwt from 'jsonwebtoken';
 import User from '../../../../model/User.js';
 import createError from '../../../../utils/createError.js';
 
+// for sending contact request response
 export const sendRequestToRecipient = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
-
-  // check if passed ids exists
-  try {
-    if (!(await User.exists({ _id: recipientId })))
-      return createError(
-        next,
-        404,
-        "The recipient for the contact request doesn't exist"
-      );
-    if (!(await User.exists({ _id: senderId })))
-      return createError(
-        next,
-        404,
-        "The sender for the contact request doesn't exist"
-      );
-  } catch (error) {
-    next(error);
-  }
 
   // sending the request to the recipient
   try {
@@ -53,12 +36,7 @@ export const sendRequestToRecipient = async (req, res, next) => {
     try {
       const user = await User.findById(recipientId).select([
         '-password',
-        '-requests.contacts.inbox.by',
-        '-requests.contacts.inbox.seen',
-        '-requests.contacts.inbox.iat',
-        '-requests.contacts.outbox.by',
-        '-requests.contacts.outbox.seen',
-        '-requests.contacts.outbox.iat',
+        ...global.exemptedUserInfos,
       ]);
 
       const { _doc } = user;
@@ -74,28 +52,9 @@ export const sendRequestToRecipient = async (req, res, next) => {
     next(error);
   }
 };
-
 export const queueRequestToSender = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
-
-  // check if passed ids exists
-  try {
-    if (!(await User.exists({ _id: recipientId })))
-      return createError(
-        next,
-        404,
-        "The recipient for the contact request doesn't exist"
-      );
-    if (!(await User.exists({ _id: senderId })))
-      return createError(
-        next,
-        404,
-        "The sender for the contact request doesn't exist"
-      );
-  } catch (error) {
-    next(error);
-  }
 
   // queueing the request that has been sent to the senders contact requests field
   try {
@@ -125,12 +84,7 @@ export const queueRequestToSender = async (req, res, next) => {
     try {
       const user = await User.findById(senderId).select([
         '-password',
-        '-requests.contacts.inbox.by',
-        '-requests.contacts.inbox.seen',
-        '-requests.contacts.inbox.iat',
-        '-requests.contacts.outbox.by',
-        '-requests.contacts.outbox.seen',
-        '-requests.contacts.outbox.iat',
+        ...global.exemptedUserInfos,
       ]);
 
       const { _doc } = user;
@@ -147,10 +101,89 @@ export const queueRequestToSender = async (req, res, next) => {
   }
 };
 
-export const contactRequestRespond = async (req, res, next) => {
-  const { recipientId, senderId } = req.body;
+// for handling contact request response
+async function handleRequestResponse({
+  recipientId,
+  senderId,
+  answer,
+  isSenderMode,
+}) {
+  const targetId = isSenderMode ? senderId : recipientId;
+  const oppositeId = isSenderMode ? recipientId : senderId;
+  const boxTarget = isSenderMode ? 'outbox' : 'inbox';
 
+  const target = await User.findById(targetId);
+  const box = target.requests.contacts[boxTarget];
+
+  // find a request in the target's requests box that has the same id as the oppposite's
+  box.forEach(({ by }, i) => {
+    if (by.toString() === oppositeId) {
+      target.requests.contacts[boxTarget][i].answer = answer;
+    }
+  });
+
+  // check if answer is true then add oppositeId to targetId and vice versa
+  answer && target.contacts.push({ user: oppositeId });
+
+  // save the new data
+  await target.save();
+} // the logic
+async function sendBackNewUserData(userId, exemptedUserInfos) {
+  const JWT_SECRET = process.env.JWT_SECRET;
+  const user = await User.findById(userId)
+    .select(['-password', ...exemptedUserInfos])
+    .lean();
+
+  const token = jwt.sign(user, JWT_SECRET);
+  return { token, user, success: true };
+}
+export const contactRequestRespondRecipient = async (req, res, next) => {
+  const { recipientId, senderId, answer } = req.body;
+
+  // update the recipients requests field
   try {
+    handleRequestResponse({
+      recipientId,
+      senderId,
+      answer,
+      isSenderMode: false,
+    }).finally(async () => {
+      try {
+        const user = await sendBackNewUserData(
+          recipientId,
+          global.exemptedUserInfos
+        );
+        res.json(user);
+      } catch (error) {
+        next(error);
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const contactRequestRespondSender = async (req, res, next) => {
+  const { recipientId, senderId, answer } = req.body;
+
+  // update the sender requests field
+  try {
+    handleRequestResponse({
+      recipientId,
+      senderId,
+      answer,
+      isSenderMode: true,
+    }).finally(async () => {
+      // send the updated sender data
+      try {
+        const user = await sendBackNewUserData(
+          senderId,
+          global.exemptedUserInfos
+        );
+        res.json(user);
+      } catch (error) {
+        next(error);
+      }
+    });
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,4 @@
-import Authenticate from './AuthenticateClass.js';
+import Authenticate from './authenticateClass.js';
 
 export default function authentication(socket) {
   socket.on('login', (userId, cb) => {
