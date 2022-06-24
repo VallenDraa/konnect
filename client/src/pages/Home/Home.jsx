@@ -74,7 +74,6 @@ export const Home = () => {
   // for checking if the page needs to render the modal
   useEffect(() => {
     const willTurnOn = locationForModal(location.pathname);
-
     if (!willTurnOn) {
       // time for the modal closing animation to play
       setTimeout(() => {

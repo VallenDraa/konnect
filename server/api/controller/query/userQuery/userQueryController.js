@@ -1,4 +1,4 @@
-import User from '../../../model/User.js';
+import User from '../../../../model/User.js';
 
 export const findUser = async (req, res, next) => {
   const { query } = req.query;
@@ -13,7 +13,7 @@ export const findUser = async (req, res, next) => {
   }
 };
 
-export const getUserDetail = async (req, res, next) => {
+export const getOtherUserDetail = async (req, res, next) => {
   const { username } = req.query;
 
   try {

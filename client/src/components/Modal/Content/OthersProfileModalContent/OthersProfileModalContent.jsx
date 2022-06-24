@@ -31,10 +31,10 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // fetch user detail from the server
   useEffect(() => {
-    const getUserDetail = async () => {
+    const getOtherUserDetail = async () => {
       try {
         const { data } = await api.get(
-          `/query/user/get_user_detail?username=${username}`
+          `/query/user/get_other_user_detail?username=${username}`
         );
 
         setOtherUserData(data);
@@ -43,7 +43,7 @@ export const OthersProfileModalContent = ({ username }) => {
       }
     };
 
-    getUserDetail();
+    getOtherUserDetail();
   }, []);
 
   // turn initials to rgb

@@ -7,6 +7,7 @@ import messages from './socketServer/messages/messages.js';
 import mongoose from 'mongoose';
 import authRoutes from './api/routes/authRoutes.js';
 import userQueryRoutes from './api/routes/userQueryRoutes.js';
+import contactQueryRoutes from './api/routes/contactQueryRoutes.js';
 import requestRoutes from './api/routes/requestRoutes.js';
 import notificationRoutes from './api/routes/notificationRoutes.js';
 import cookieParser from 'cookie-parser';
@@ -24,6 +25,8 @@ const io = new Server(httpServer, {
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
 global.exemptedUserInfos = [
+  '-contacts.user',
+  '-contacts.messageLog',
   '-requests.contacts.inbox.by',
   '-requests.contacts.inbox.iat',
   '-requests.contacts.outbox.by',
@@ -45,6 +48,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/query/user', userQueryRoutes);
+app.use('/api/query/contact', contactQueryRoutes);
 app.use('/api/request', requestRoutes);
 app.use('/api/notification', notificationRoutes);
 

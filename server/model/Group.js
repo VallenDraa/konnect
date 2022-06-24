@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 const GroupSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    profilePicture: { type: String, required: false },
+    profilePicture: { type: String, required: false, default: '' },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-    messageLog: [{ type: mongoose.Schema.Types.ObjectId, ref: 'message' }],
+    messageLog: [{ type: String, content: String, default: null }],
   },
   { timestamps: true }
 );

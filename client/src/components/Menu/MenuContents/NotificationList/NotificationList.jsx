@@ -8,6 +8,7 @@ import Dropdown from '../../../Dropdown/Dropdown';
 import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
 import NotifListItem from './NotifListItem/NotifListItem';
 import ContactNotif from './type/ContactNotif/ContactNotif';
+import nothing from '../../../../svg/notificationList/nothing.svg';
 import { useReducer } from 'react';
 import notificationsReducer, {
   NOTIFICATIONS_ACTIONS,
@@ -109,19 +110,34 @@ export default function NotificationList() {
           conditionIs={!detailedNotifs.isLoading && !detailedNotifs.error}
         >
           <ul className="border-y-2 divide-y-2">
-            {detailedNotifs.contents[activeTab.name].map(
-              ({ type, _id, by, iat }) => {
-                return (
-                  <Fragment key={_id}>
-                    <RenderIf conditionIs={type === 'contacts'}>
-                      <NotifListItem>
-                        <ContactNotif by={by} iat={iat} type={activeTab.name} />
-                      </NotifListItem>
-                    </RenderIf>
-                  </Fragment>
-                );
-              }
-            )}
+            {/* if there are no notifications */}
+            <RenderIf
+              conditionIs={detailedNotifs.contents[activeTab.name].length === 0}
+            >
+              <li className="text-center space-y-10 mt-10 py-4">
+                <img src={nothing} alt="" className="max-w-[300px] mx-auto" />
+                <span className="block font-semibold text-xl md:text-lg text-gray-500">
+                  Nothing as far as the eye can see
+                </span>
+                <span className="font-light text-gray-400 text-xs">
+                  Do some stuff and maybe something will show up here !
+                </span>
+              </li>
+            </RenderIf>
+            {/* if there are notifications */}
+            <RenderIf
+              conditionIs={detailedNotifs.contents[activeTab.name].length !== 0}
+            >
+              {detailedNotifs.contents[activeTab.name].map((info) => (
+                <Fragment key={info._id}>
+                  <RenderIf conditionIs={info.type === 'contacts'}>
+                    <NotifListItem>
+                      <ContactNotif info={info} type={activeTab.name} />
+                    </NotifListItem>
+                  </RenderIf>
+                </Fragment>
+              ))}
+            </RenderIf>
           </ul>
         </RenderIf>
       </main>

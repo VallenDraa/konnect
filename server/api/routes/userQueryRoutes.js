@@ -2,12 +2,12 @@ import express from 'express';
 
 import {
   findUser,
-  getUserDetail,
-} from '../controller/userQuery/userQueryController.js';
+  getOtherUserDetail,
+} from '../controller/query/userQuery/userQueryController.js';
 const router = express.Router();
 
 // to find all user that matches the query
 router.get('/find_user', findUser);
-router.get('/get_user_detail', getUserDetail);
+router.get('/get_other_user_detail', getOtherUserDetail);
 
 export default router;
