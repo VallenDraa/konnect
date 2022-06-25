@@ -9,7 +9,6 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function ContactNotif({ info, type }) {
-  console.log(info);
   const handleResponse = (res) => {
     socket.emit('contact-requests-response', res);
   };
@@ -19,7 +18,7 @@ export default function ContactNotif({ info, type }) {
   };
 
   useEffect(() => {
-    socket.on('recieve-contact-request-respond');
+    socket.on('receive-contact-request-respond');
   }, []);
 
   return (
@@ -57,11 +56,8 @@ export default function ContactNotif({ info, type }) {
             <span className="text-lg md:text-sm text-slate-500 flex items-center">
               <IoPersonAdd className="mr-1" />
               {type === 'inbox'
-                ? 'You recieved a contact request !'
+                ? 'You received a contact request !'
                 : 'A contact request has been sent !'}
-            </span>
-            <span className="text-sm md:text-xs text-slate-400">
-              {new Date(info.iat).toLocaleDateString()}
             </span>
           </main>
         </RenderIf>
@@ -78,19 +74,19 @@ export default function ContactNotif({ info, type }) {
       </div>
 
       {/* response options will only render if request hasn't been answered yet */}
-      <RenderIf info={info.answer === null}>
+      <RenderIf conditionIs={info.answer === null}>
         <RenderIf conditionIs={type === 'inbox'}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-2">
             <button
               onClick={() => handleResponse(false)}
-              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
+              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner active:shadow-pink-600 bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
             >
               <FaTimes />
               Reject
             </button>
             <button
               onClick={() => handleResponse(true)}
-              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner bg-gray-200 rounded-md hover:bg-blue-400 active:bg-blue-500 hover:text-white duration-200"
+              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 rounded-md hover:bg-blue-400 active:bg-blue-500 hover:text-white duration-200"
             >
               <FaCheck />
               Accept

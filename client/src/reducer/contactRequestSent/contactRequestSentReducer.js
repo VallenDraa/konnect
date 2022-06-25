@@ -1,41 +1,41 @@
 export const ADD_REQUEST_SENT_ACTIONS = {
-  isStart: 'isStart',
-  isLoading: 'isLoading',
-  isSent: 'isSent',
-  isError: 'isError',
+  Start: 'Start',
+  Loading: 'Loading',
+  Sent: 'Sent',
+  Error: 'Error',
 };
-const { isStart, isLoading, isError, isSent } = ADD_REQUEST_SENT_ACTIONS;
+const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
 
 export const ADD_REQUEST_SENT_DEFAULT = {
-  isLoading: false,
-  isSent: false,
+  Loading: false,
+  Sent: false,
   error: null,
 };
 
 export default function addRequestSentReducer(state, { type, payload }) {
   switch (type) {
-    case isStart:
+    case Start:
       return ADD_REQUEST_SENT_DEFAULT;
 
-    case isLoading:
+    case Loading:
       return {
-        isSent: false,
+        Sent: false,
         error: null,
-        isLoading: true,
+        Loading: true,
       };
 
-    case isSent:
+    case Sent:
       return {
-        isLoading: false,
-        isSent: true,
+        Loading: false,
+        Sent: true,
         error: null,
       };
 
-    case isError:
+    case Error:
       return {
-        isLoading: false,
+        Loading: false,
         error: payload,
-        isSent: false,
+        Sent: false,
       };
 
     default:

@@ -2,7 +2,6 @@ import { useContext, useEffect, useReducer } from 'react';
 import { useState } from 'react';
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaPaperPlane } from 'react-icons/fa';
-import { IoPersonAdd } from 'react-icons/io5';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import welcome from '../../../../svg/othersProfile/welcome.svg';
@@ -14,45 +13,27 @@ import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
 import Pill from '../../../Buttons/Pill';
 import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
+  ADD_REQUEST_SENT_ACTIONS,
 } from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
 import socket from '../../../../utils/socketClient/socketClient';
 import { UserContext } from '../../../../context/user/userContext';
 import generateRgb from '../../../../utils/generateRgb/generateRgb';
 import { Link } from 'react-router-dom';
+import USER_ACTIONS from '../../../../context/user/userAction';
+import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
-  const { userState } = useContext(UserContext);
-  const [addRequestSent, dispatch] = useReducer(
+  const { userState, userDispatch } = useContext(UserContext);
+  const [addRequestSent, requestDispatch] = useReducer(
     addRequestSentReducer,
     ADD_REQUEST_SENT_DEFAULT
   );
+  const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState('');
-
-  // fetch user detail from the server
-  useEffect(() => {
-    const getOtherUserDetail = async () => {
-      try {
-        const { data } = await api.get(
-          `/query/user/get_other_user_detail?username=${username}`
-        );
-
-        setOtherUserData(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getOtherUserDetail();
-  }, []);
-
-  // turn initials to rgb
-  useEffect(() => {
-    if (!otherUserData.initials) return;
-    const newRgb = generateRgb(otherUserData.initials);
-
-    setRgb(newRgb);
-  }, [otherUserData]);
+  const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
+  const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
+  const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
 
   const FriendsSwiperCard = ({ contacts }) => {
     // render the swiper slides if the user has contacts
@@ -117,7 +98,9 @@ export const OthersProfileModalContent = ({ username }) => {
   };
 
   const handleAddContact = () => {
+    requestDispatch({ type: Start });
     const senderToken = sessionStorage.getItem('token');
+    requestDispatch({ type: Loading });
     socket.emit(
       'send-add-contact',
       userState.user._id,
@@ -125,6 +108,82 @@ export const OthersProfileModalContent = ({ username }) => {
       senderToken
     );
   };
+
+  // fetch user detail from the server
+  useEffect(() => {
+    const getOtherUserDetail = async () => {
+      try {
+        const { data } = await api.get(
+          `/query/user/get_other_user_detail?username=${username}`
+        );
+
+        setOtherUserData(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getOtherUserDetail();
+  }, []);
+
+  // turn initials to rgb
+  useEffect(() => {
+    if (!otherUserData.initials) return;
+    const newRgb = generateRgb(otherUserData.initials);
+
+    setRgb(newRgb);
+  }, [otherUserData]);
+
+  // refresh userState after sending an add contact request
+  useEffect(() => {
+    socket.on('update-client-data', (queueResponse) => {
+      if (queueResponse.success) {
+        const { user, token } = queueResponse;
+
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
+        sessionStorage.setItem('token', token);
+        requestDispatch({ type: Sent });
+      } else {
+        requestDispatch({ type: Error, payload: queueResponse.message });
+        console.log(queueResponse.message);
+      }
+    });
+
+    return () => socket.off('update-client-data');
+  }, []);
+
+  useEffect(() => {
+    const otherUserId = otherUserData._id;
+    const { contacts, requests } = userState.user;
+    const { outbox, inbox } = requests.contacts;
+
+    // check if the other user target is already a friend of mine
+    if (contacts.length > 0) {
+      for (const { user } of contacts) {
+        otherUserId === user && setIsAFriend(true);
+      }
+    } else {
+      setIsAFriend(false);
+    }
+
+    // check if the other user target sent a contact request to me
+    if (outbox.length > 0) {
+      for (const { by } of outbox) {
+        by === otherUserId && setIsRequesting(true);
+      }
+    } else {
+      setIsRequesting(false);
+    }
+
+    // check if i've sent the other user a contact request
+    if (inbox.length > 0) {
+      for (const { by } of inbox) {
+        by === otherUserId && setIsRequested(true);
+      }
+    } else {
+      setIsRequested(false);
+    }
+  }, [userState, otherUserData]);
 
   return (
     <section
@@ -169,7 +228,12 @@ export const OthersProfileModalContent = ({ username }) => {
                   onClick={handleAddContact}
                   className="text-base px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2"
                 >
-                  <IoPersonAdd /> Add
+                  <SendRequestBtn
+                    Loading={addRequestSent.Loading}
+                    Sent={addRequestSent.Sent}
+                    error={addRequestSent.error}
+                    others={{ isAFriend, isRequesting, isRequested }}
+                  />
                 </Pill>
                 <Pill className="text-base px-4 py-1 font-bold hover:bg-blue-400 active:bg-blue-500 hover:text-white flex items-center gap-x-2">
                   <FaPaperPlane />

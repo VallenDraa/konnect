@@ -34,22 +34,6 @@ export const Home = () => {
     return () => socket.off('login');
   }, []);
 
-  // refresh userState after sending an add contact request
-  useEffect(() => {
-    socket.on('update-client-data', (queueResponse) => {
-      if (queueResponse.success) {
-        const { user, token } = queueResponse;
-
-        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-        sessionStorage.setItem('token', token);
-      } else {
-        console.log(queueResponse.message);
-      }
-    });
-
-    return () => socket.off('update-client-data');
-  }, []);
-
   //the receiving end / recipient of an add contact request
   useEffect(() => {
     socket.on('receive-add-contact', (recipient, { username, _id }) => {
@@ -59,12 +43,9 @@ export const Home = () => {
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
         sessionStorage.setItem('token', token);
 
-        const ans = confirm(
+        console.log(
           `${username} has sent you a contact request, what is your response`
         );
-        console.log('answer: ' + ans);
-      } else {
-        console.log(recipient.message);
       }
     });
 

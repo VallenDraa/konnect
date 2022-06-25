@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import User from '../../../../model/User.js';
-import createError from '../../../../utils/createError.js';
 
 // for sending contact request response
 export const sendRequestToRecipient = async (req, res, next) => {

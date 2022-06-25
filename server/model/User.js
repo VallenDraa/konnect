@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema(
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
         messageLog: [
           {
+            by: String,
             type: String,
             content: String,
             default: null,

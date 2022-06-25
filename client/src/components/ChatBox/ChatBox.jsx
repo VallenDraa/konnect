@@ -1,4 +1,5 @@
 import { useEffect, useState, Fragment, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { FaPaperPlane } from 'react-icons/fa';
 import { HiOutlineMenu } from 'react-icons/hi';
 import RenderIf from '../../utils/React/RenderIf';
@@ -55,7 +56,7 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
               <HiOutlineMenu />
             </button>
             {/* profile  */}
-            <button className="flex items-center gap-1">
+            <Link to={`user/${username}`} className="flex items-center gap-1">
               <img
                 src="https://picsum.photos/200/200"
                 alt=""
@@ -69,7 +70,7 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
                   Status
                 </span>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
       </header>

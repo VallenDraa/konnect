@@ -24,14 +24,7 @@ const io = new Server(httpServer, {
 });
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
-global.exemptedUserInfos = [
-  '-contacts.user',
-  '-contacts.messageLog',
-  '-requests.contacts.inbox.by',
-  '-requests.contacts.inbox.iat',
-  '-requests.contacts.outbox.by',
-  '-requests.contacts.outbox.iat',
-];
+global.exemptedUserInfos = ['-contacts.user', '-contacts.messageLog'];
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();

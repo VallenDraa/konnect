@@ -1,12 +1,11 @@
-import { useContext, useEffect } from 'react';
-import { Fragment } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Fragment, useContext, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ModalContext } from '../../context/modal/modalContext';
-import MODAL_ACTIONS from '../../context/modal/modalActions';
 import { UserContext } from '../../context/user/userContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
 import NotifBadge from '../NotifBadge/NotifBadge';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
 import { NotificationsContext } from '../../context/notifications/notificationsContext';
 
 export const Menu = ({ menus, activeMenuState }) => {
@@ -40,6 +39,13 @@ export const Menu = ({ menus, activeMenuState }) => {
     }
   }, [location]);
 
+  // to change the active menu according to the current URL path
+  useEffect(() => {
+    const newActiveMenu = location.pathname.split('/')[1];
+
+    setActiveMenu(newActiveMenu || 'chats');
+  }, [location]);
+
   const NotifBadgeSwitcher = ({ menuName }) => {
     switch (menuName) {
       case 'chats':
@@ -55,7 +61,6 @@ export const Menu = ({ menus, activeMenuState }) => {
           },
           0
         );
-
         return (
           <NotifBadge isActive={totalNotifs !== 0}>
             {totalNotifs <= 99 ? totalNotifs : '99+'}
@@ -72,18 +77,23 @@ export const Menu = ({ menus, activeMenuState }) => {
         <Fragment key={i}>
           <li
             onClick={() => setActiveMenu(menu.name)}
-            className={`basis-1/4 cursor-pointer flex flex-col items-center gap-1 text-xxs w-full 
+            className={`basis-1/4 text-xxs w-full 
               ${
                 activeMenu === menu.name
                   ? 'text-blue-400'
                   : 'text-gray-500 hover:text-blue-400'
-              } p-1 rounded-lg duration-200 relative`}
+              } p-1 rounded-lg duration-200`}
           >
-            <menu.icon className="text-lg" />
+            <Link
+              to={`/${menu.name}`}
+              className="cursor-pointer flex flex-col items-center gap-1 relative w-full h-full"
+            >
+              <menu.icon className="text-lg" />
 
-            <NotifBadgeSwitcher menuName={menu.name} />
+              <NotifBadgeSwitcher menuName={menu.name} />
 
-            <span className="capitalize">{menu.name}</span>
+              <span className="capitalize">{menu.name}</span>
+            </Link>
           </li>
         </Fragment>
       ))}

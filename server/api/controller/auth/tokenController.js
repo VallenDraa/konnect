@@ -11,6 +11,7 @@ export default function verifyToken(req, res, next) {
       next();
     }
   } catch (error) {
+    console.log(error, 'verifytoken');
     next(error);
   }
 }

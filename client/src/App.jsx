@@ -7,7 +7,6 @@ import { Register } from './pages/Register/Register';
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
-  console.log(userState);
 
   return (
     <div className="text-gray-800">
@@ -19,6 +18,22 @@ export const App = () => {
           >
             <Route
               path="/user/:username"
+              element={userState.user ? <Home /> : <Navigate to="/register" />}
+            />
+            <Route
+              path="/notifications"
+              element={userState.user ? <Home /> : <Navigate to="/register" />}
+            />
+            <Route
+              path="/search"
+              element={userState.user ? <Home /> : <Navigate to="/register" />}
+            />
+            <Route
+              path="/contacts"
+              element={userState.user ? <Home /> : <Navigate to="/register" />}
+            />
+            <Route
+              path="/chats"
               element={userState.user ? <Home /> : <Navigate to="/register" />}
             />
           </Route>

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
-import emptySearchResults from '../../../../svg/SearchList/emptySearchResults.svg';
-import initialSvg from '../../../../svg/SearchList/initialSvg.svg';
+import emptySearchResults from '../../../../svg/searchList/emptySearchResults.svg';
+import initialSvg from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
 import Input from '../../../Input/Input';
@@ -83,6 +83,9 @@ export default function SearchList() {
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
                   Search For Other People
                 </span>
+                <span className="font-light text-gray-400 text-xs">
+                  Go find another user and add them to your contact !
+                </span>
               </div>
             </RenderIf>
           </div>
@@ -119,7 +122,10 @@ export default function SearchList() {
                   className="max-w-[300px] mx-auto"
                 />
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
-                  Welp we can't find anything :(
+                  Welp nothing here :(
+                </span>
+                <span className="font-light text-gray-400 text-xs">
+                  Try other keywords and maybe we can find something for you
                 </span>
               </li>
             </RenderIf>

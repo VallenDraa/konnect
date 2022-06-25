@@ -14,11 +14,12 @@ export const InitialLoadingScreen = () => {
   useEffect(() => {
     if (!loading.current) return;
     if (isAuthorized) {
-      loading.current.classList.add('animate-pop-out');
-      setTimeout(() => setIsInitialLoading(false), 190);
+      setTimeout(() => {
+        loading.current.classList.add('animate-pop-out');
+        setTimeout(() => setIsInitialLoading(false), 190);
+      }, 300);
     }
   }, [loading, isAuthorized]);
-
   return (
     <RenderIf conditionIs={isInitialLoading}>
       <div

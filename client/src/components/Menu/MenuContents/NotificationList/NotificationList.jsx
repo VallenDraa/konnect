@@ -29,6 +29,7 @@ export default function NotificationList() {
   );
 
   useEffect(() => {
+    console.log(notifications);
     const notifsArray = Object.entries(notifications);
 
     const getNotificationDetail = async (type, notif) => {
@@ -57,6 +58,7 @@ export default function NotificationList() {
               ...data.outbox.map((item) => ({ type, ...item })),
             ],
           };
+
           detailedNotifsDispatch({
             type: NOTIFICATIONS_ACTIONS.isLoaded,
             payload: result,
