@@ -38,13 +38,6 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
     // return as an array of key value pairs array
     const result = Object.entries(temp);
 
-    /**
-     * return as an array of objects
-      const result = tempEntries.map(([letter, nameList]) => ({
-        [letter]: nameList,
-      }));
-    */
-
     setGroupedContacts(result);
   }, [contacts]);
 

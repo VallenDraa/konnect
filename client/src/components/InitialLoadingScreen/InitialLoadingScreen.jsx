@@ -14,10 +14,8 @@ export const InitialLoadingScreen = () => {
   useEffect(() => {
     if (!loading.current) return;
     if (isAuthorized) {
-      setTimeout(() => {
-        loading.current.classList.add('animate-pop-out');
-        setTimeout(() => setIsInitialLoading(false), 190);
-      }, 300);
+      loading.current.classList.add('animate-pop-out');
+      setTimeout(() => setIsInitialLoading(false), 190);
     }
   }, [loading, isAuthorized]);
   return (

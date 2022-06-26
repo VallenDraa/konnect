@@ -122,7 +122,14 @@ async function handleRequestResponse({
   });
 
   // check if answer is true then add oppositeId to targetId and vice versa
-  answer && target.contacts.push({ user: oppositeId });
+  if (answer) {
+    target.contacts.push({ user: oppositeId });
+  } else {
+    target.requests.contacts[boxTarget] = box.filter(
+      (x) => x.by.toString() !== oppositeId
+    );
+    target.markModified(`requests.contacts${[boxTarget]}`);
+  }
 
   // save the new data
   await target.save();

@@ -70,16 +70,22 @@ app.get('/', (req, res) => {
   res.send('this is the konnect API & web sockets');
 });
 
+// error handling
 app.use((err, req, res, next) => {
   const { stack, status, message, ...additionalInfo } = err;
 
-  return res.status(status || 500).json({
+  const TEMPLATE = {
     success: false,
     status: status || 500,
     message,
-    stack,
     additionalInfo,
-  });
+  };
+
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  return res
+    .status(status || 500)
+    .json(isProduction ? TEMPLATE : { stack, ...TEMPLATE });
 });
 
 httpServer.listen(3001, () => {

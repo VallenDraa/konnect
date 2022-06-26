@@ -4,7 +4,6 @@ import { IoPerson, IoPersonAdd } from 'react-icons/io5';
 
 export default function SendRequestBtn({ Loading, Sent, error, others }) {
   const { isAFriend, isRequesting, isRequested } = others;
-  console.log(Loading, error, Sent, others);
 
   // the button initial state
   if (!Loading && !error && !Sent) {

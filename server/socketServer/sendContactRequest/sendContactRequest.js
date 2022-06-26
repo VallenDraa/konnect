@@ -3,7 +3,6 @@ import { createErrorNonExpress } from '../../utils/createError.js';
 
 export default function sendContactRequest(socket) {
   socket.on('send-add-contact', async (senderId, recipientId, senderToken) => {
-    console.log(recipientId, global.onlineUsers);
     const isRecipientOnline = recipientId in global.onlineUsers;
     const recipientSocketId = isRecipientOnline
       ? global.onlineUsers[recipientId]
@@ -33,11 +32,7 @@ export default function sendContactRequest(socket) {
       }
 
       // send notification to the recipient if recipient is online
-      console.log(
-        isRecipientOnline,
-        queueResponse.success,
-        sendResponse.success
-      );
+
       if (isRecipientOnline && queueResponse.success && sendResponse.success) {
         const { username, _id } = queueResponse.user;
         const senderDetail = { username, _id };

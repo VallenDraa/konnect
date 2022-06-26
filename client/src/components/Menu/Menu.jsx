@@ -71,6 +71,14 @@ export const Menu = ({ menus, activeMenuState }) => {
     }
   };
 
+  const linkSwitcher = (menuName) => {
+    if (menuName === 'notifications') {
+      return '/notifications?box=inbox';
+    } else {
+      return `/${menuName}`;
+    }
+  };
+
   return (
     <ul className="flex flex-wrap justify-evenly gap-y-2">
       {menus.map((menu, i) => (
@@ -85,7 +93,7 @@ export const Menu = ({ menus, activeMenuState }) => {
               } p-1 rounded-lg duration-200`}
           >
             <Link
-              to={`/${menu.name}`}
+              to={`${linkSwitcher(menu.name)}`}
               className="cursor-pointer flex flex-col items-center gap-1 relative w-full h-full"
             >
               <menu.icon className="text-lg" />

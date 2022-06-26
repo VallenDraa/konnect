@@ -52,6 +52,21 @@ export const Home = () => {
     return () => socket.off('receive-add-contact');
   }, []);
 
+  // update sender data when the recipient accepts or rejects a contact request
+  useEffect(() => {
+    socket.on('receive-contact-request-response', (data) => {
+      userDispatch({ type: USER_ACTIONS.updateStart });
+      const { success, token, user } = data;
+
+      if (success) {
+        sessionStorage.setItem('token', token);
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
+      } else {
+        userDispatch({ type: USER_ACTIONS.updateFail, payload: data.message });
+      }
+    });
+  }, []);
+
   // for checking if the page needs to render the modal
   useEffect(() => {
     const willTurnOn = locationForModal(location.pathname);

@@ -3,7 +3,7 @@ import USER_ACTIONS from './userAction';
 export default function userReducer(state, action) {
   switch (action.type) {
     case USER_ACTIONS.loginStart:
-      return { user: null, error: null };
+      return { ...state, error: null };
 
     case USER_ACTIONS.loginFail:
       return { user: null, error: action.payload };

@@ -23,7 +23,7 @@ export const contactRequestDetails = async (req, res, next) => {
       const notifBoxes = requests.contacts[type]; //inbox or outbox
 
       notifBoxes.forEach((content, i) => {
-        if (content._id.toString() !== ids[type][i]._id) return;
+        if (content._id.toString() !== ids[type][i]?._id) return;
 
         result[type].push(content._doc);
       });
@@ -37,7 +37,36 @@ export const contactRequestDetails = async (req, res, next) => {
 };
 
 export const setNotifToSeen = async (req, res, next) => {
+  const { userId, notifIds } = req.body;
+
   try {
+    const notifs = await User.findById(userId).select('requests');
+
+    console.time('setNotifToSeen');
+    for (const key of Object.keys(notifs.requests)) {
+      for (const box in notifs.requests[key]) {
+        if (box === 'inbox' || box === 'outbox') {
+          // this'll be inbox or outbox
+          const contents = notifs.requests[key][box];
+
+          // check if boxContents id exists in notifIds
+          contents.forEach(({ _id }, i) => {
+            const isNotifExists = notifIds.includes(_id.toString());
+
+            if (isNotifExists) {
+              notifs.requests[key][box][i].seen = true;
+            }
+          });
+        }
+      }
+    }
+    console.timeEnd('setNotifToSeen');
+
+    console.log(notifs);
+
+    await notifs.save();
+
+    res.json(notifs);
   } catch (error) {
     next(error);
   }
