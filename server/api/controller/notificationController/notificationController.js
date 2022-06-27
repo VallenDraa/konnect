@@ -1,4 +1,5 @@
 import User from '../../../model/User.js';
+import { renewToken } from '../auth/tokenController.js';
 
 export const contactRequestDetails = async (req, res, next) => {
   const { ids, userId } = req.body;
@@ -37,37 +38,36 @@ export const contactRequestDetails = async (req, res, next) => {
 };
 
 export const setNotifToSeen = async (req, res, next) => {
-  const { userId, notifIds } = req.body;
+  console.time('setNotifToSeen');
+
+  const { userId, notifIds, boxType } = req.body;
 
   try {
-    const notifs = await User.findById(userId).select('requests');
+    const user = await User.findById(userId);
 
-    console.time('setNotifToSeen');
-    for (const key of Object.keys(notifs.requests)) {
-      for (const box in notifs.requests[key]) {
-        if (box === 'inbox' || box === 'outbox') {
-          // this'll be inbox or outbox
-          const contents = notifs.requests[key][box];
+    // loop over the requests key ex. contacts, and etc
+    for (const key of Object.keys(user.requests)) {
+      // this'll be inbox or outbox
+      const contents = user.requests[key][boxType];
 
-          // check if boxContents id exists in notifIds
-          contents.forEach(({ _id }, i) => {
-            const isNotifExists = notifIds.includes(_id.toString());
+      // check if boxContents id exists in notifIds
+      contents.forEach(({ _id }, i) => {
+        const isNotifExists = notifIds.includes(_id.toString());
 
-            if (isNotifExists) {
-              notifs.requests[key][box][i].seen = true;
-            }
-          });
+        if (isNotifExists) {
+          user.requests[key][boxType][i].seen = true;
         }
-      }
+      });
     }
-    console.timeEnd('setNotifToSeen');
+    await user.save();
 
-    console.log(notifs);
+    // make a new token
 
-    await notifs.save();
+    const token = renewToken(user._doc, process.env.JWT_SECRET);
 
-    res.json(notifs);
+    res.json({ user, token });
   } catch (error) {
     next(error);
   }
+  console.timeEnd('setNotifToSeen');
 };

@@ -34,7 +34,9 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
         sessionStorage.removeItem('token');
         Navigate('/login');
       } else {
-        alert(message);
+        userDispatch({ type: USER_ACTIONS.logout });
+        sessionStorage.removeItem('token');
+        Navigate('/login');
       }
     });
   };

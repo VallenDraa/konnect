@@ -131,7 +131,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
               </span>
               {nameList.map((contact) => (
                 <div
-                  key={contact.id}
+                  key={contact}
                   onClick={() => handleActiveContact(contact)}
                   className={`pl-3 cursor-pointer flex items-center gap-2 ${
                     contact.activeChat

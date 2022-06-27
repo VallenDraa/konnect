@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
 import User from '../../../../model/User.js';
+import { renewToken } from '../../auth/tokenController.js';
 
 // for sending contact request response
 export const sendRequestToRecipient = async (req, res, next) => {
@@ -40,7 +40,7 @@ export const sendRequestToRecipient = async (req, res, next) => {
 
       const { _doc } = user;
 
-      const token = jwt.sign(_doc, JWT_SECRET);
+      const token = renewToken(_doc, JWT_SECRET);
       return isRequestExists
         ? res.json({ token, user: _doc, cancelRequest: true, success: true })
         : res.json({ token, user: _doc, cancelRequest: false, success: true });
@@ -88,7 +88,7 @@ export const queueRequestToSender = async (req, res, next) => {
 
       const { _doc } = user;
 
-      const token = jwt.sign(_doc, JWT_SECRET);
+      const token = renewToken(_doc, JWT_SECRET);
       return isRequestExists
         ? res.json({ token, user: _doc, cancelRequest: true, success: true })
         : res.json({ token, user: _doc, cancelRequest: false, success: true });
@@ -140,7 +140,7 @@ async function sendBackNewUserData(userId, exemptedUserInfos) {
     .select(['-password', ...exemptedUserInfos])
     .lean();
 
-  const token = jwt.sign(user, JWT_SECRET);
+  const token = renewToken(user, JWT_SECRET);
   return { token, user, success: true };
 }
 export const contactRequestRespondRecipient = async (req, res, next) => {

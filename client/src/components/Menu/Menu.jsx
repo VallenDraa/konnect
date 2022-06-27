@@ -56,16 +56,35 @@ export const Menu = ({ menus, activeMenuState }) => {
         return;
       case 'notifications':
         const totalNotifs = Object.entries(notifications).reduce(
-          (prev, [type, not]) => {
-            return prev + not.inbox.length + not.outbox.length;
+          (prev, [type, { inbox, outbox }], i) => {
+            let { inboxLen, outboxLen } = prev;
+
+            return {
+              inboxLen: inbox[i]
+                ? !inbox[i].seen
+                  ? inboxLen++
+                  : inboxLen
+                : inboxLen,
+              outboxLen: outbox[i]
+                ? !outbox[i].seen
+                  ? outboxLen++
+                  : outboxLen
+                : outboxLen,
+              total: inboxLen + outboxLen,
+            };
           },
-          0
+          { inboxLen: 0, outboxLen: 0, total: 0 }
         );
         return (
-          <NotifBadge isActive={totalNotifs !== 0}>
-            {totalNotifs <= 99 ? totalNotifs : '99+'}
+          <NotifBadge
+            isActive={
+              totalNotifs.total !== 0 && typeof totalNotifs.total === 'number'
+            }
+          >
+            {totalNotifs.total <= 99 ? totalNotifs.total : '99+'}
           </NotifBadge>
         );
+
       default:
         break;
     }

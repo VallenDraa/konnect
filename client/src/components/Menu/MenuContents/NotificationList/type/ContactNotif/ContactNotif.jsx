@@ -45,7 +45,10 @@ export default function ContactNotif({ info, type }) {
           } items-center gap-3`}
         >
           <aside>
-            <Link to={`/user/${info.by.username}`}>
+            <Link
+              title={`Go to ${info.by.username}'s profile`}
+              to={`/user/${info.by.username}`}
+            >
               <RenderIf conditionIs={!info.by.profilePicture}>
                 <PicturelessProfile
                   width={info.answer ? 40 : 50}

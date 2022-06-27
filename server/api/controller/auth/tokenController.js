@@ -15,3 +15,7 @@ export default function verifyToken(req, res, next) {
     next(error);
   }
 }
+
+export function renewToken(data, secret) {
+  return jwt.sign(data, secret, { expiresIn: '6h' });
+}

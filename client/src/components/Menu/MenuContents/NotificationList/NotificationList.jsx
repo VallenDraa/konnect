@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState, Fragment } from 'react';
+import { useEffect, useContext, useState, Fragment, useMemo } from 'react';
 import { MdOutlineMoveToInbox, MdOutlineOutbox } from 'react-icons/md';
 import { NotificationsContext } from '../../../../context/notifications/notificationsContext';
 import { UserContext } from '../../../../context/user/userContext';
@@ -15,6 +15,7 @@ import notificationsReducer, {
   NOTIFICATIONS_DEFAULT,
 } from '../../../../reducer/notifications/notificationsReducer';
 import { useLocation } from 'react-router-dom';
+import USER_ACTIONS from '../../../../context/user/userAction';
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
@@ -23,17 +24,17 @@ export default function NotificationList() {
   ];
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
   const { notifications } = useContext(NotificationsContext);
-  const { userState } = useContext(UserContext);
+  const { userState, userDispatch } = useContext(UserContext);
+  const [userId] = useState(userState.user._id);
   const [detailedNotifs, detailedNotifsDispatch] = useReducer(
     notificationsReducer,
     NOTIFICATIONS_DEFAULT
   );
   const location = useLocation();
+  const [activeLocation, setActiveLocation] = useState(location);
 
   // get notification detail
   useEffect(() => {
-    console.log(notifications);
-
     const notifsArray = Object.entries(notifications);
 
     const getNotificationDetail = async (type, notif) => {
@@ -43,8 +44,8 @@ export default function NotificationList() {
       try {
         // fetch the notification detail according to the type
         const { data } = await api.post(`/notification/notif_${type}_detail`, {
+          userId,
           ids: { inbox, outbox },
-          userId: userState.user._id,
           token: sessionStorage.getItem('token'),
         });
 
@@ -60,6 +61,8 @@ export default function NotificationList() {
           ],
         };
 
+        console.log(result);
+
         detailedNotifsDispatch({
           type: NOTIFICATIONS_ACTIONS.isLoaded,
           payload: result,
@@ -73,15 +76,23 @@ export default function NotificationList() {
     };
 
     notifsArray.forEach(([type, value]) => getNotificationDetail(type, value));
-  }, [notifications, userState]);
+  }, [notifications, userId]);
+
+  // change the active location if the pathname and search query had changed
+  useEffect(() => {
+    if (location.pathname === activeLocation.pathname) return;
+    if (location.search === activeLocation.search) return;
+
+    setActiveLocation(location);
+  }, [location]);
 
   // change the activebox accoridng to the box url
   useEffect(() => {
     // parse the query url
-    if (location.pathname !== '/notifications') return;
+    if (activeLocation.pathname !== '/notifications') return;
 
     const search = Object.fromEntries(
-      location.search
+      activeLocation.search
         .replace('?', '')
         .split('&')
         .map((s) => s.split('='))
@@ -90,7 +101,40 @@ export default function NotificationList() {
     const targetBox = NOTIFICATION_TABS.find((n) => n.name === search.box);
 
     setActiveBox(targetBox || NOTIFICATION_TABS[0]);
-  }, [location]);
+  }, [activeLocation]);
+
+  // if user selected one of the box, then set all the contents of that box to seen
+  useEffect(() => {
+    const updateNotifSeen = async (boxType) => {
+      try {
+        const { data } = await api.put('/notification/set_notif_to_seen', {
+          notifIds,
+          boxType,
+          userId,
+          token: sessionStorage.getItem('token'),
+        });
+
+        sessionStorage.setItem('token', data.token);
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
+      } catch (error) {
+        userDispatch({ type: USER_ACTIONS.updateFailure, payload: error });
+      }
+    };
+
+    const { name } = activeBox;
+    const notifIds = []; // the notif ids whose seen parameter will be changed to true
+
+    // loop over the [NOTIF_TYPES]
+    for (const nt in notifications) {
+      // loop over notif contents to see if it has been seen
+      for (const { seen, _id } of notifications[nt][name]) {
+        !seen && notifIds.push(_id);
+      }
+    }
+
+    // will reach for the api if the notifIds is not empty
+    notifIds.length !== 0 && updateNotifSeen(name);
+  }, [activeBox, userId]);
 
   return (
     <div className="py-4 space-y-5">
@@ -157,11 +201,11 @@ export default function NotificationList() {
                 <Fragment key={info._id}>
                   {/* if the type is contact */}
                   <RenderIf conditionIs={info.type === 'contacts'}>
-                    <RenderIf conditionIs={info.answer !== false}>
-                      <NotifListItem>
-                        <ContactNotif info={info} type={activeBox.name} />
-                      </NotifListItem>
-                    </RenderIf>
+                    {/* <RenderIf conditionIs={info.answer !== false}> */}
+                    <NotifListItem>
+                      <ContactNotif info={info} type={activeBox.name} />
+                    </NotifListItem>
+                    {/* </RenderIf> */}
                   </RenderIf>
                 </Fragment>
               ))}

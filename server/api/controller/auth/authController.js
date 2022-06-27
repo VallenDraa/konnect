@@ -1,7 +1,7 @@
 import UserModel from '../../../model/User.js';
 import createError from '../../../utils/createError.js';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { renewToken } from './tokenController.js';
 
 export const register = async (req, res, next) => {
   const { username, password, email } = req.body;
@@ -63,7 +63,7 @@ export const login = async (req, res, next) => {
 
       // send user data back as a JWT token
       const secret = process.env.JWT_SECRET;
-      const token = jwt.sign(otherData, secret);
+      const token = renewToken(otherData, secret);
       res.json({ token, user: otherData });
     } else {
       return createError(next, 401, 'Username or password is invalid !');
