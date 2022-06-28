@@ -27,7 +27,7 @@ export default function notificationsReducer(state, { type, payload }) {
     case isLoaded:
       return {
         contents: payload,
-        isLoaded: true,
+        isLoading: false,
         error: null,
       };
 

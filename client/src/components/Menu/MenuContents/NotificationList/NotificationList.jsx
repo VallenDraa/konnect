@@ -35,47 +35,73 @@ export default function NotificationList() {
 
   // get notification detail
   useEffect(() => {
-    const notifsArray = Object.entries(notifications);
+    // prevent the codes below from executing if any of the notifs are not seen yet
+    let isSeen = false;
 
-    const getNotificationDetail = async (type, notif) => {
-      detailedNotifsDispatch({ type: NOTIFICATIONS_ACTIONS.isLoading });
-      const { inbox, outbox } = notif;
+    for (const type in notifications) {
+      // if one of the notifications has been seen break
+      if (isSeen) break;
 
-      try {
-        // fetch the notification detail according to the type
-        const { data } = await api.post(`/notification/notif_${type}_detail`, {
-          userId,
-          ids: { inbox, outbox },
-          token: sessionStorage.getItem('token'),
-        });
+      // if the notifs inbox/outbox array is empty
+      if (notifications[type][activeBox.name].length === 0) return;
 
-        // assign the type of notification to the final result
-        const result = {
-          inbox: [
-            ...detailedNotifs.contents.inbox,
-            ...data.inbox.map((item) => ({ type, ...item })),
-          ],
-          outbox: [
-            ...detailedNotifs.contents.outbox,
-            ...data.outbox.map((item) => ({ type, ...item })),
-          ],
-        };
+      const notifBoxContent = notifications[type][activeBox.name];
 
-        console.log(result);
+      isSeen = notifBoxContent.every((notif) => notif.seen === true);
+    }
 
-        detailedNotifsDispatch({
-          type: NOTIFICATIONS_ACTIONS.isLoaded,
-          payload: result,
-        });
-      } catch (error) {
-        detailedNotifsDispatch({
-          type: NOTIFICATIONS_ACTIONS.isError,
-          payload: error,
-        });
-      }
-    };
+    // will only execute if the notifcations are seen
+    if (isSeen) {
+      const notifsArray = Object.entries(notifications);
+      // the type parameter would be something like contact notif, message, and etc
+      const getNotificationDetail = async (type, notif) => {
+        detailedNotifsDispatch({ type: NOTIFICATIONS_ACTIONS.isLoading });
+        const { inbox, outbox } = notif;
 
-    notifsArray.forEach(([type, value]) => getNotificationDetail(type, value));
+        try {
+          // fetch the notification detail according to the type
+          const { data } = await api.post(
+            `/notification/notif_${type}_detail`,
+            {
+              userId,
+              ids: { inbox, outbox },
+              token: sessionStorage.getItem('token'),
+            }
+          );
+
+          // assign the type of notification to the final result
+
+          const result = { inbox: [], outbox: [] };
+
+          // prevent the component from rendering old duplicate notifications
+          for (const box in result) {
+            result[box] = data[box].map((newNotif, i) => {
+              const prev = detailedNotifs.contents.inbox;
+
+              if (!prev[i]) return { type, ...newNotif };
+
+              return prev.senAt <= newNotif.senAt
+                ? { type, ...newNotif }
+                : { type, ...prev[i] };
+            });
+          }
+
+          detailedNotifsDispatch({
+            type: NOTIFICATIONS_ACTIONS.isLoaded,
+            payload: result,
+          });
+        } catch (error) {
+          detailedNotifsDispatch({
+            type: NOTIFICATIONS_ACTIONS.isError,
+            payload: error,
+          });
+        }
+      };
+
+      notifsArray.forEach(([type, value]) =>
+        getNotificationDetail(type, value)
+      );
+    }
   }, [notifications, userId]);
 
   // change the active location if the pathname and search query had changed
@@ -137,7 +163,7 @@ export default function NotificationList() {
   }, [activeBox, userId]);
 
   return (
-    <div className="py-4 space-y-5">
+    <div className="pt-3 space-y-3">
       <header>
         <nav className="relative w-fit">
           <Dropdown
@@ -201,11 +227,9 @@ export default function NotificationList() {
                 <Fragment key={info._id}>
                   {/* if the type is contact */}
                   <RenderIf conditionIs={info.type === 'contacts'}>
-                    {/* <RenderIf conditionIs={info.answer !== false}> */}
                     <NotifListItem>
                       <ContactNotif info={info} type={activeBox.name} />
                     </NotifListItem>
-                    {/* </RenderIf> */}
                   </RenderIf>
                 </Fragment>
               ))}

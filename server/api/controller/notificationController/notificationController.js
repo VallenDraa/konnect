@@ -26,7 +26,7 @@ export const contactRequestDetails = async (req, res, next) => {
       notifBoxes.forEach((content, i) => {
         if (content._id.toString() !== ids[type][i]?._id) return;
 
-        result[type].push(content._doc);
+        result[type].push({ ...content._doc, sentAt: new Date() });
       });
     }
 

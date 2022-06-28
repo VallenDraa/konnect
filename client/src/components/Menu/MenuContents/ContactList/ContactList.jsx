@@ -1,5 +1,15 @@
-import { useState, useEffect, useCallback, useContext } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useReducer,
+} from 'react';
 import { UserContext } from '../../../../context/user/userContext';
+import groupedContactsReducer, {
+  GROUPED_CONTACTS_DEFAULT,
+  GROUPED_CONTACTS_ACTIONS,
+} from '../../../../reducer/groupedContactsReducer/groupedContactsReducer';
 import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
@@ -18,32 +28,18 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
     //   activeChat: false,
     // },
   ]);
-  const [groupedContacts, setGroupedContacts] = useState([]);
-  const getGroupedContacts = useCallback(() => {
-    const temp = {};
-    const sortedContacts = contacts.sort((a, b) =>
-      a.username < b.username ? -1 : 1
-    );
 
-    for (const contact of sortedContacts) {
-      const alphabet = contact.username.substring(0, 1);
-
-      // setting the object keys
-      if (!temp[alphabet]) temp[alphabet] = [];
-
-      // pushing the contact name to the respective first letter alphabet object
-      temp[alphabet].push(contact);
-    }
-
-    // return as an array of key value pairs array
-    const result = Object.entries(temp);
-
-    setGroupedContacts(result);
-  }, [contacts]);
+  const [groupedContacts, dispatch] = useReducer(
+    groupedContactsReducer,
+    GROUPED_CONTACTS_DEFAULT
+  );
 
   // get the contact data from the current logged in user
   useEffect(() => {
+    dispatch({ type: GROUPED_CONTACTS_ACTIONS.isStarting });
+
     const getContacts = async () => {
+      dispatch({ type: GROUPED_CONTACTS_ACTIONS.isLoading });
       const result = [];
 
       try {
@@ -78,6 +74,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
         // update the contacts state
         setContacts(result);
       } catch (error) {
+        dispatch({ type: GROUPED_CONTACTS_ACTIONS.isError, payload: error });
         console.log(error);
       }
     };
@@ -86,7 +83,30 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
   }, [userState]);
 
   // sort the contact
-  useEffect(getGroupedContacts, [getGroupedContacts]);
+  useEffect(() => {
+    if (contacts.length === 0) return;
+
+    const temp = {};
+    const sortedContacts = contacts.sort((a, b) =>
+      a.username < b.username ? -1 : 1
+    );
+
+    for (const contact of sortedContacts) {
+      const alphabet = contact.username.substring(0, 1);
+
+      // setting the object keys
+      if (!temp[alphabet]) temp[alphabet] = [];
+
+      // pushing the contact name to the respective first letter alphabet object
+      temp[alphabet].push(contact);
+    }
+
+    // return as an array of key value pairs array
+    const result = Object.entries(temp);
+
+    dispatch({ type: GROUPED_CONTACTS_ACTIONS.isLoaded, payload: result });
+  }, [contacts]);
+  useEffect(() => console.log(groupedContacts), [groupedContacts]);
 
   const handleActiveContact = (target) => {
     const updatedChat = contacts.map((contact) => {
@@ -106,7 +126,21 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
 
   return (
     <>
-      <RenderIf conditionIs={groupedContacts.length === 0}>
+      {/* if the contacts are still loading */}
+      <RenderIf
+        conditionIs={groupedContacts.isLoading || groupedContacts.isStarting}
+      >
+        Loading
+      </RenderIf>
+
+      {/* if contact is empty */}
+      <RenderIf
+        conditionIs={
+          groupedContacts.contents.length === 0 &&
+          !groupedContacts.isLoading &&
+          !groupedContacts.isStarting
+        }
+      >
         <div className="text-center space-y-10 mt-10">
           <img
             src={emptyContactList}
@@ -122,8 +156,15 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
         </div>
       </RenderIf>
 
-      <RenderIf conditionIs={groupedContacts.length !== 0}>
-        {groupedContacts.map(([letter, nameList], i) => {
+      {/* if contact is not empty */}
+      <RenderIf
+        conditionIs={
+          groupedContacts.contents.length !== 0 &&
+          !groupedContacts.isLoading &&
+          !groupedContacts.isStarting
+        }
+      >
+        {groupedContacts.contents.map(([letter, nameList], i) => {
           return (
             <div key={i} className="space-y-3 mb-3">
               <span className="block sticky top-0 bg-gray-200 px-2 font-bold uppercase text-gray-600">

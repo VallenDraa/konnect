@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { UserContext } from './context/user/userContext';
@@ -8,6 +7,7 @@ import { Register } from './pages/Register/Register';
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
+  console.log(userState);
 
   return (
     <div className="text-gray-800">

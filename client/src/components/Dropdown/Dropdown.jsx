@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import NotifBadge from '../NotifBadge/NotifBadge';
 
 export default function Dropdown({
+  className = '',
   children,
   icon,
   text,
@@ -14,6 +15,19 @@ export default function Dropdown({
   const dropDown = useRef();
   const btn = useRef();
   const [btnOffsetHeight, setBtnOffsetHeight] = useState(0);
+  const DEFAULT_CLASSES = 'relative flex justify-center items-center';
+  const [injectedClasses, setInjectedClasses] = useState(className);
+
+  // filter duplicate classes
+  useEffect(() => {
+    const toBeChecked = injectedClasses.split(' ');
+
+    const result = toBeChecked.filter(
+      (className) => !DEFAULT_CLASSES.includes(className)
+    );
+
+    setInjectedClasses(result);
+  }, []);
 
   useEffect(() => {
     const autoCloseDropdown = (e) => {
@@ -60,7 +74,7 @@ export default function Dropdown({
     <>
       <div
         ref={dropDownWrapper}
-        className="relative flex justify-center items-center"
+        className={`${DEFAULT_CLASSES} ${injectedClasses} `}
       >
         <button
           ref={btn}

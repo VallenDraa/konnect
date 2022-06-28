@@ -7,7 +7,7 @@ import { BiMessageAltDetail } from 'react-icons/bi';
 import RenderIf from '../../../../utils/React/RenderIf';
 import ProfileOpt from './components/ProfileOpt';
 import AccountOpt from './components/AccountOpt';
-import GeneralOpt from './components/GeneralOpt';
+import GeneralOpt from './components/GeneralOpt/GeneralOpt';
 import CallsOpt from './components/CallsOpt';
 import MessagesOpt from './components/MessagesOpt';
 
