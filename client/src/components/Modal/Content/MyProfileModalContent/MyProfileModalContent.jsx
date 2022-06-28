@@ -51,7 +51,7 @@ export const MyProfileModalContent = () => {
             })}
           </ul>
         </aside>
-        <main className="w-full max-h-[90vh] sm:h-[65vh] bg-white overflow-y-auto p-3">
+        <main className="w-full max-h-[90vh] sm:h-[65vh] bg-white overflow-y-auto">
           <RenderIf conditionIs={activeOpt === 'profile'}>
             <ProfileOpt />
           </RenderIf>

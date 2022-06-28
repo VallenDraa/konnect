@@ -15,18 +15,25 @@ export default function Dropdown({
   const dropDown = useRef();
   const btn = useRef();
   const [btnOffsetHeight, setBtnOffsetHeight] = useState(0);
-  const DEFAULT_CLASSES = 'relative flex justify-center items-center';
+  const [defaultClasses, setDefaultClasses] = useState([
+    'relative',
+    'flex',
+    'justify-center',
+    'items-center',
+  ]);
   const [injectedClasses, setInjectedClasses] = useState(className);
 
   // filter duplicate classes
   useEffect(() => {
     const toBeChecked = injectedClasses.split(' ');
 
-    const result = toBeChecked.filter(
-      (className) => !DEFAULT_CLASSES.includes(className)
-    );
+    let result = toBeChecked.filter((cn) => !defaultClasses.includes(cn));
 
-    setInjectedClasses(result);
+    if (result.includes('absolute')) {
+      setDefaultClasses(defaultClasses.filter((cn) => cn !== 'relative'));
+    }
+
+    setInjectedClasses(result.join(' '));
   }, []);
 
   useEffect(() => {
@@ -74,7 +81,7 @@ export default function Dropdown({
     <>
       <div
         ref={dropDownWrapper}
-        className={`${DEFAULT_CLASSES} ${injectedClasses} `}
+        className={`${defaultClasses.join(' ')} ${injectedClasses} `}
       >
         <button
           ref={btn}

@@ -106,7 +106,6 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
 
     dispatch({ type: GROUPED_CONTACTS_ACTIONS.isLoaded, payload: result });
   }, [contacts]);
-  useEffect(() => console.log(groupedContacts), [groupedContacts]);
 
   const handleActiveContact = (target) => {
     const updatedChat = contacts.map((contact) => {

@@ -12,7 +12,7 @@ const AccountOpt = () => {
   const [password, setPassword] = useState('');
 
   return (
-    <ul className="p-3 w-full overflow-y-hidden flex flex-col items-center gap-5">
+    <ul className="p-6 w-full overflow-y-hidden flex flex-col items-center gap-5">
       <li className="flex flex-col w-full">
         <Input
           type="email"

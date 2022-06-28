@@ -38,8 +38,6 @@ export const contactRequestDetails = async (req, res, next) => {
 };
 
 export const setNotifToSeen = async (req, res, next) => {
-  console.time('setNotifToSeen');
-
   const { userId, notifIds, boxType } = req.body;
 
   try {
@@ -62,12 +60,10 @@ export const setNotifToSeen = async (req, res, next) => {
     await user.save();
 
     // make a new token
-
     const token = renewToken(user._doc, process.env.JWT_SECRET);
 
     res.json({ user, token });
   } catch (error) {
     next(error);
   }
-  console.timeEnd('setNotifToSeen');
 };

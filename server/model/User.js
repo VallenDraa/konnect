@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
+    firstName: { type: String, default: '' },
+    lastName: { type: String, default: '' },
     initials: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -20,6 +22,24 @@ const UserSchema = new mongoose.Schema(
         ],
       },
     ],
+    // this'll contain any other type of notifications other than requests
+    notifications: {
+      inbox: [
+        {
+          iat: { type: Date, default: Date.now() },
+          seen: { type: Boolean, default: false },
+          contents: { type: mongoose.Schema.Types.Mixed },
+        },
+      ],
+      outbox: [
+        {
+          iat: { type: Date, default: Date.now() },
+          seen: { type: Boolean, default: false },
+          contents: { type: mongoose.Schema.Types.Mixed },
+        },
+      ],
+    },
+    // this'll only contain requests notifications
     requests: {
       contacts: {
         inbox: [
@@ -41,7 +61,11 @@ const UserSchema = new mongoose.Schema(
       },
     },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
-    settings: Object,
+    settings: {
+      general: { type: Object, default: {} },
+      calls: { type: Object, default: {} },
+      messages: { type: Object, default: {} },
+    },
   },
   { timestamps: true }
 );

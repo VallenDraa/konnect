@@ -10,7 +10,7 @@ import Language from './components/Languange/Language';
 
 const GeneralOpt = () => {
   return (
-    <main className="space-y-10">
+    <section aria-label="General options list" className="space-y-10 p-3">
       {/* appearance options */}
       <section className="border-b-2" aria-label="Appearance options">
         <h2 className="font-semibold flex items-center gap-2 text-gray-500 text-xs mb-2">
@@ -50,7 +50,7 @@ const GeneralOpt = () => {
           </li>
         </ul>
       </section>
-    </main>
+    </section>
   );
 };
 
