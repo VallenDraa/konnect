@@ -2,11 +2,8 @@ import { useContext, useEffect, useReducer } from 'react';
 import { useState } from 'react';
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaPaperPlane } from 'react-icons/fa';
-import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import welcome from '../../../../svg/othersProfile/welcome.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
-import charToRGB from '../../../../utils/charToRGB/charToRGB';
 import RenderIf from '../../../../utils/React/RenderIf';
 import Input from '../../../Input/Input';
 import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
@@ -18,9 +15,10 @@ import addRequestSentReducer, {
 import socket from '../../../../utils/socketClient/socketClient';
 import { UserContext } from '../../../../context/user/userContext';
 import generateRgb from '../../../../utils/generateRgb/generateRgb';
-import { Link } from 'react-router-dom';
 import USER_ACTIONS from '../../../../context/user/userAction';
 import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
+import ContactsSwiperCard from '../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
+import { useNavigate } from 'react-router-dom';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -34,70 +32,10 @@ export const OthersProfileModalContent = ({ username }) => {
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
+  const navigate = useNavigate();
 
-  const FriendsSwiperCard = ({ contacts }) => {
-    // render the swiper slides if the user has contacts
-    if (contacts.length !== 0) {
-      return (
-        <Swiper
-          spaceBetween={8}
-          slidesPerView="auto"
-          navigation
-          className="relative cursor-grab"
-        >
-          {contacts.map(({ user }, i) => {
-            const rgb = charToRGB(user.initials.split(''));
-
-            const result = {
-              r: rgb[0],
-              g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
-              b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
-            };
-
-            return (
-              <SwiperSlide
-                key={i}
-                className="max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
-              >
-                <Link
-                  to={`/user/${user.username}`}
-                  className="flex flex-col items-center gap-y-1.5"
-                >
-                  <PicturelessProfile
-                    width={80}
-                    initials={user.initials}
-                    bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
-                  />
-                  <span className="font-semibold text-sm max-w-full truncate">
-                    {user.username}
-                  </span>
-                </Link>
-              </SwiperSlide>
-            );
-          })}
-          <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
-        </Swiper>
-      );
-
-      // render an svg otherwise
-    } else {
-      return (
-        <div className="text-center space-y-3">
-          <img src={welcome} alt="" className="w-1/5 max-w-[160px] mx-auto" />
-          <div className="flex flex-col gap-y-1">
-            <span className="font-semibold text-gray-500">
-              Oops No One Here....
-            </span>
-            <span className="font-light text-gray-400 text-xs">
-              Be the first one here by adding this person to your contact !
-            </span>
-          </div>
-        </div>
-      );
-    }
-  };
-
-  const handleAddContact = () => {
+  //for both sending and cancelling a contact request
+  const handleContactRequest = () => {
     requestDispatch({ type: Start });
     const senderToken = sessionStorage.getItem('token');
     requestDispatch({ type: Loading });
@@ -109,12 +47,45 @@ export const OthersProfileModalContent = ({ username }) => {
     );
   };
 
-  // fetch user detail from the server
+  // for removing a contact from the user data
+  const handleRemoveContact = () => {
+    console.log('remove');
+    requestDispatch({ type: Start });
+    const senderToken = sessionStorage.getItem('token');
+    requestDispatch({ type: Loading });
+    socket.emit(
+      'remove-contact',
+      userState.user._id,
+      otherUserData._id,
+      senderToken
+    );
+
+    requestDispatch({ type: Sent });
+  };
+
+  // for handling incoming contact request
+  const handleIncomingContactRequest = () => {
+    navigate('/notifications?box=inbox');
+  };
+
+  // to determine which contact function to be executed
+  const handleAction = () => {
+    if (isAFriend) return handleRemoveContact();
+    if (isRequested) return handleIncomingContactRequest();
+
+    return handleContactRequest();
+  };
+
+  useEffect(() => {
+    console.log(isAFriend, isRequesting, isRequested);
+  }, [isAFriend, isRequesting, isRequested]);
+
+  // fetch other user detail from the server
   useEffect(() => {
     const getOtherUserDetail = async () => {
       try {
         const { data } = await api.get(
-          `/query/user/get_other_user_detail?username=${username}`
+          `/query/user/get_user_detail?username=${username}`
         );
 
         setOtherUserData(data);
@@ -124,7 +95,7 @@ export const OthersProfileModalContent = ({ username }) => {
     };
 
     getOtherUserDetail();
-  }, []);
+  }, [userState]);
 
   // turn initials to rgb
   useEffect(() => {
@@ -136,13 +107,20 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // refresh userState after sending an add contact request
   useEffect(() => {
-    socket.on('update-client-data', (queueResponse) => {
+    socket.off('update-client-data');
+
+    socket.on('update-client-data', (queueResponse, ...args) => {
+      console.log(args);
       if (queueResponse.success) {
         const { user, token } = queueResponse;
 
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
         sessionStorage.setItem('token', token);
         requestDispatch({ type: Sent });
+
+        for (const arg of args) {
+          arg.unfriend && setIsAFriend(false);
+        }
       } else {
         requestDispatch({ type: Error, payload: queueResponse.message });
         console.log(queueResponse.message);
@@ -168,8 +146,10 @@ export const OthersProfileModalContent = ({ username }) => {
 
     // check if the other user target sent a contact request to me
     if (outbox.length > 0) {
-      for (const { by } of outbox) {
-        by === otherUserId && setIsRequesting(true);
+      for (const { by, answer } of outbox) {
+        if (by === otherUserId && answer === null) {
+          setIsRequesting(true);
+        }
       }
     } else {
       setIsRequesting(false);
@@ -177,8 +157,10 @@ export const OthersProfileModalContent = ({ username }) => {
 
     // check if i've sent the other user a contact request
     if (inbox.length > 0) {
-      for (const { by } of inbox) {
-        by === otherUserId && setIsRequested(true);
+      for (const { by, answer } of inbox) {
+        if (by === otherUserId && answer === null) {
+          setIsRequested(true);
+        }
       }
     } else {
       setIsRequested(false);
@@ -204,7 +186,7 @@ export const OthersProfileModalContent = ({ username }) => {
                 <PicturelessProfile
                   initials={otherUserData.initials}
                   bgColor={rgb}
-                  width={140}
+                  width={160}
                 />
               </div>
             </RenderIf>
@@ -225,7 +207,7 @@ export const OthersProfileModalContent = ({ username }) => {
               {/* buttons */}
               <div className="flex h-full gap-x-2 items-center">
                 <Pill
-                  onClick={handleAddContact}
+                  onClick={handleAction}
                   className="text-base px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2"
                 >
                   <SendRequestBtn
@@ -261,7 +243,7 @@ export const OthersProfileModalContent = ({ username }) => {
                 {/* swiper */}
 
                 <RenderIf conditionIs={otherUserData.contacts}>
-                  <FriendsSwiperCard contacts={otherUserData.contacts} />
+                  <ContactsSwiperCard contacts={otherUserData.contacts} />
                 </RenderIf>
               </div>
             </main>

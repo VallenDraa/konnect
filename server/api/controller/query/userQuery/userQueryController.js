@@ -13,7 +13,23 @@ export const findUser = async (req, res, next) => {
   }
 };
 
-export const getOtherUserDetail = async (req, res, next) => {
+export const getUsersPreview = async (req, res, next) => {
+  const { userIds } = req.body;
+
+  try {
+    const users = await User.find({ _id: { $in: userIds } }).select([
+      'username',
+      'initials',
+      'profilePicture',
+    ]);
+
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserDetail = async (req, res, next) => {
   const { username } = req.query;
 
   try {
@@ -29,3 +45,5 @@ export const getOtherUserDetail = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getUser = async (req, res, next) => {};

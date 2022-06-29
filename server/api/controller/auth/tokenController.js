@@ -7,9 +7,7 @@ export default function verifyToken(req, res, next) {
     const secret = process.env.JWT_SECRET;
 
     // check if tokeen signature is verified
-    if (jwt.verify(token, secret)) {
-      next();
-    }
+    jwt.verify(token, secret) && next();
   } catch (error) {
     console.log(error, 'verifytoken');
     next(error);

@@ -53,6 +53,8 @@ export const login = async (req, res, next) => {
     const user = await UserModel.findOne({ username }).select(
       global.exemptedUserInfos
     );
+
+    console.log(user.contacts);
     if (user === null) {
       return createError(next, 401, 'Username or password is invalid !');
     }

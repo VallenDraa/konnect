@@ -3,19 +3,21 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import messages from './socketServer/messages/messages.js';
+import messages from './socketServer/messagesSocket/messagesSocket.js';
 import mongoose from 'mongoose';
 import authRoutes from './api/routes/authRoutes.js';
 import userQueryRoutes from './api/routes/userQueryRoutes.js';
 import contactQueryRoutes from './api/routes/contactQueryRoutes.js';
 import requestRoutes from './api/routes/requestRoutes.js';
 import notificationRoutes from './api/routes/notificationRoutes.js';
+import userEditRoutes from './api/routes/userEditRoutes.js';
 import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
-} from './socketServer/authenticate/autheticateSocket.js';
-import sendContactRequest from './socketServer/sendContactRequest/sendContactRequest.js';
-import contactRequestRespond from './socketServer/contactRequestRespond/contactRequestRespond.js';
+} from './socketServer/authenticateSocket/autheticateSocket.js';
+import sendContactRequest from './socketServer/contactsRelated/sendContactRequestSocket/sendContactRequestSocket.js';
+import contactRequestRespond from './socketServer/contactsRelated/contactRequestRespondSocket/contactRequestRespondSocket.js';
+import unfriend from './socketServer/contactsRelated/unfriendSocket/unfriendSocket.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -24,7 +26,7 @@ const io = new Server(httpServer, {
 });
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
-global.exemptedUserInfos = ['-contacts.user', '-contacts.messageLog'];
+global.exemptedUserInfos = ['-contacts.messageLog'];
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -44,6 +46,7 @@ app.use('/api/query/user', userQueryRoutes);
 app.use('/api/query/contact', contactQueryRoutes);
 app.use('/api/request', requestRoutes);
 app.use('/api/notification', notificationRoutes);
+app.use('/api/user', userEditRoutes);
 
 const dbConnect = async () => {
   try {
@@ -64,9 +67,10 @@ io.on('connection', (socket) => {
   messages(socket);
   sendContactRequest(socket);
   contactRequestRespond(socket);
+  unfriend(socket);
 });
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.send('this is the konnect API & web sockets');
 });
 

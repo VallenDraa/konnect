@@ -107,8 +107,8 @@ export const Menu = ({ menus, activeMenuState }) => {
             className={`basis-1/4 text-xxs w-full 
               ${
                 activeMenu === menu.name
-                  ? 'text-blue-400'
-                  : 'text-gray-500 hover:text-blue-400'
+                  ? 'text-blue-500'
+                  : 'text-gray-500 hover:text-blue-300'
               } p-1 rounded-lg duration-200`}
           >
             <Link

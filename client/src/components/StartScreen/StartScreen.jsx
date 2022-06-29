@@ -24,10 +24,10 @@ export const StartScreen = ({ sidebarState }) => {
         </div>
       </header>
       <img src={noActiveChat} className="w-2/3 md:w-1/3" />
-      <h1 className="font-bold text-2xl md:text-3xl text-gray-800">
+      <h1 className="font-bold text-2xl md:text-3xl text-gray-500">
         Go Start a Chat !
       </h1>
-      <span className="text-gray-500 font-light text-xs text-center md:text-sm">
+      <span className="text-gray-400 font-light text-xs text-center md:text-sm">
         Click one of the available messages or go start a new one by pressing
         the <span className="font-semibold text-gray-600">New Chat</span>{' '}
         button.

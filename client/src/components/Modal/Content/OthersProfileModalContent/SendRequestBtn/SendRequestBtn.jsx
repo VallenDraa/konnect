@@ -1,6 +1,6 @@
 import { AiOutlineLoading3Quarters, AiFillHourglass } from 'react-icons/ai';
 import { BiBlock } from 'react-icons/bi';
-import { IoPerson, IoPersonAdd } from 'react-icons/io5';
+import { IoPerson, IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
 
 export default function SendRequestBtn({ Loading, Sent, error, others }) {
   const { isAFriend, isRequesting, isRequested } = others;
@@ -10,8 +10,8 @@ export default function SendRequestBtn({ Loading, Sent, error, others }) {
     if (isAFriend) {
       return (
         <>
-          <IoPerson />
-          <span>Add</span>
+          <IoPersonRemove />
+          <span>Remove</span>
         </>
       );
     } else if (isRequesting) {

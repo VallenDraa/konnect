@@ -67,6 +67,24 @@ export const Home = () => {
     });
   }, []);
 
+  // refresh userState after sending an add contact request
+  useEffect(() => {
+    socket.off('update-client-data');
+
+    socket.on('update-client-data', (newData) => {
+      if (newData.success) {
+        const { user, token } = newData;
+
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
+        sessionStorage.setItem('token', token);
+      } else {
+        console.log(newData.message);
+      }
+    });
+
+    return () => socket.off('update-client-data');
+  }, [location]);
+
   // for checking if the page needs to render the modal
   useEffect(() => {
     const willTurnOn = locationForModal(location.pathname);

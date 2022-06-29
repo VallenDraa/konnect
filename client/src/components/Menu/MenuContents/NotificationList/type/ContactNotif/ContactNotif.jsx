@@ -1,4 +1,3 @@
-import { IoPersonAdd } from 'react-icons/io5';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 import { ImBlocked } from 'react-icons/im';
 import generateRgb from '../../../../../../utils/generateRgb/generateRgb';
@@ -25,7 +24,13 @@ export default function ContactNotif({ info, type }) {
   };
 
   const cancelRequest = () => {
-    socket.emit('cancel-contact-request');
+    const senderToken = sessionStorage.getItem('token');
+    socket.emit(
+      'send-add-contact',
+      userState.user._id,
+      info.by._id,
+      senderToken
+    );
   };
 
   return (
@@ -34,11 +39,7 @@ export default function ContactNotif({ info, type }) {
         {new Date(info.iat).toLocaleDateString()}
       </span>
       {/* notif info*/}
-      <div
-        className={`flex ${
-          info.answer === null ? 'flex-col' : ''
-        } items-center gap-3`}
-      >
+      <div className={`flex items-center gap-3`}>
         <aside>
           <Link
             title={`Go to ${info.by.username}'s profile`}
@@ -53,29 +54,34 @@ export default function ContactNotif({ info, type }) {
             </RenderIf>
           </Link>
         </aside>
-        {/* the layout will be vertical if the request hasn't been answered yet */}
-        <RenderIf conditionIs={info.answer === null}>
-          <main className="flex flex-col items-center gap-y-1">
-            <span className="text-2xl font-bold text-slate-800 max-w-[50%] truncate">
-              {info.by.username}
-            </span>
-            <span className="text-lg md:text-sm text-slate-500 flex items-center">
-              <IoPersonAdd className="mr-1" />
-              {type === 'inbox'
-                ? 'You received a contact request !'
-                : 'A contact request has been sent !'}
-            </span>
-          </main>
-        </RenderIf>
 
         <main className="flex flex-col items-center gap-y-1">
           <span className="text-slate-500 text-sm">
-            <span className="font-bold text-slate-800">{info.by.username}</span>{' '}
-            <RenderIf conditionIs={info.answer === true}>
-              Has been added to your contacts list.
+            <RenderIf conditionIs={info.answer === null}>
+              <RenderIf conditionIs={type === 'inbox'}>
+                <span className="font-bold text-slate-800">
+                  {info.by.username}
+                </span>{' '}
+                has sent you a contact request !
+              </RenderIf>
+              <RenderIf conditionIs={type === 'outbox'}>
+                A contact request has been sent to{' '}
+                <span className="font-bold text-slate-800">
+                  {info.by.username}
+                </span>
+              </RenderIf>
             </RenderIf>
-            <RenderIf conditionIs={info.answer === false}>
-              Rejected your contact request.
+
+            <RenderIf conditionIs={info.answer !== null}>
+              <span className="font-bold text-slate-800">
+                {info.by.username}
+              </span>{' '}
+              <RenderIf conditionIs={info.answer === true}>
+                Has been added to your contacts list.
+              </RenderIf>
+              <RenderIf conditionIs={info.answer === false}>
+                Rejected your contact request.
+              </RenderIf>
             </RenderIf>
           </span>
         </main>
@@ -84,17 +90,17 @@ export default function ContactNotif({ info, type }) {
       {/* response options will only render if request hasn't been answered yet */}
       <RenderIf conditionIs={info.answer === null}>
         <RenderIf conditionIs={type === 'inbox'}>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 self-end">
             <button
               onClick={() => handleResponse(false, type)}
-              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner active:shadow-pink-600 bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
+              className="font-semibold text-xs flex items-center gap-x-1 py-2 px-4 shadow-md hover:shadow-sm active:shadow-inner active:shadow-pink-600 bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
             >
               <FaTimes />
               Reject
             </button>
             <button
               onClick={() => handleResponse(true, type)}
-              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 rounded-md hover:bg-blue-400 active:bg-blue-500 hover:text-white duration-200"
+              className="font-semibold text-xs flex items-center gap-x-1 py-2 px-4 shadow-md hover:shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 rounded-md hover:bg-blue-400 active:bg-blue-500 hover:text-white duration-200"
             >
               <FaCheck />
               Accept
@@ -102,10 +108,10 @@ export default function ContactNotif({ info, type }) {
           </div>
         </RenderIf>
         <RenderIf conditionIs={type === 'outbox'}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end">
             <button
-              onClick={() => cancelRequest()}
-              className="aspect-video font-semibold text-xs flex items-center gap-x-1 py-1 px-2 shadow-md hover:shadow-sm active:shadow-inner bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
+              onClick={cancelRequest}
+              className="font-semibold text-xs flex items-center gap-x-1  py-2 px-4 shadow-md hover:shadow-sm active:shadow-inner bg-gray-200 rounded-md hover:bg-pink-400 active:bg-pink-500 hover:text-white duration-200"
             >
               <ImBlocked />
               Cancel

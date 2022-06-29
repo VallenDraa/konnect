@@ -80,7 +80,7 @@ export default function NotificationList() {
 
               if (!prev[i]) return { type, ...newNotif };
 
-              return prev.senAt <= newNotif.senAt
+              return prev.sentAt <= newNotif.sentAt
                 ? { type, ...newNotif }
                 : { type, ...prev[i] };
             });
@@ -102,7 +102,7 @@ export default function NotificationList() {
         getNotificationDetail(type, value)
       );
     }
-  }, [notifications, userId]);
+  }, [notifications, userState]);
 
   // change the active location if the pathname and search query had changed
   useEffect(() => {
@@ -224,7 +224,7 @@ export default function NotificationList() {
               conditionIs={detailedNotifs.contents[activeBox.name].length !== 0}
             >
               {detailedNotifs.contents[activeBox.name].map((info) => (
-                <Fragment key={info._id}>
+                <Fragment key={`${info._id}_${info.sentAt}`}>
                   {/* if the type is contact */}
                   <RenderIf conditionIs={info.type === 'contacts'}>
                     <NotifListItem>

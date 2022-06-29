@@ -36,6 +36,10 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
 
   // get the contact data from the current logged in user
   useEffect(() => {
+    if (userState.user.contacts.length === 0) {
+      return dispatch({ type: GROUPED_CONTACTS_ACTIONS.isLoaded, payload: [] });
+    }
+
     dispatch({ type: GROUPED_CONTACTS_ACTIONS.isStarting });
 
     const getContacts = async () => {
@@ -122,6 +126,10 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
     // close sidebar for smaller screen
     setIsSidebarOn(false);
   };
+
+  // useEffect(() => {
+  //   console.log(groupedContacts);
+  // }, [groupedContacts]);
 
   return (
     <>

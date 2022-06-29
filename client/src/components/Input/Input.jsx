@@ -10,6 +10,9 @@ export default function Input({
   type,
   value,
   customState,
+  className,
+  style,
+  placeholder,
 }) {
   const labelRef = useRef();
   const inputRef = useRef();
@@ -48,12 +51,14 @@ export default function Input({
   }, [labelRef, content]);
 
   return (
-    <div className="flex flex-col-reverse">
+    <div className="flex flex-col-reverse w-full">
       <RenderIf conditionIs={type === 'text' || type === 'email'}>
         <input
+          style={style}
           required
           ref={inputRef}
-          className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200"
+          placeholder={placeholder}
+          className={`bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 ${className}`}
           type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}
@@ -62,7 +67,7 @@ export default function Input({
         />
       </RenderIf>
       <RenderIf conditionIs={type === 'password'}>
-        <div className="relative flex flex-col-reverse">
+        <div className="relative flex flex-col-reverse w-full">
           <button
             type="button"
             className="absolute right-2 bottom-1 z-10 cursor-pointer text-xl"
@@ -75,9 +80,11 @@ export default function Input({
             )}
           </button>
           <input
+            style={style}
             required
             ref={inputRef}
-            className="bg-transparent outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10"
+            placeholder={placeholder}
+            className={`bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10 ${className}`}
             type="password"
             onChange={(e) => setContent(e.target.value)}
             disabled={disabled}
@@ -99,9 +106,12 @@ export default function Input({
         conditionIs={type !== 'email' && type !== 'password' && type !== 'text'}
       >
         <input
+          style={style}
           required
           ref={inputRef}
+          placeholder={placeholder}
           type={type}
+          className={className}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}
           value={content}

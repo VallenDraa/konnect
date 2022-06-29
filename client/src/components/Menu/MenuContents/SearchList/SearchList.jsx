@@ -121,7 +121,7 @@ export default function SearchList() {
                   alt=""
                   className="max-w-[300px] mx-auto"
                 />
-                <span className="block font-semibold text-xl md:text-lg text-gray-500">
+                <span className="block font-semibold text-xl md:text-lg text-gray-600">
                   Welp nothing here :(
                 </span>
                 <span className="font-light text-gray-400 text-xs">

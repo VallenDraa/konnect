@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createErrorNonExpress } from '../../utils/createError.js';
+import { createErrorNonExpress } from '../../../utils/createError.js';
 
 export default function sendContactRequest(socket) {
   socket.on('send-add-contact', async (senderId, recipientId, senderToken) => {
@@ -32,7 +32,6 @@ export default function sendContactRequest(socket) {
       }
 
       // send notification to the recipient if recipient is online
-
       if (isRecipientOnline && queueResponse.success && sendResponse.success) {
         const { username, _id } = queueResponse.user;
         const senderDetail = { username, _id };
@@ -62,7 +61,6 @@ export default function sendContactRequest(socket) {
         }
       }
     } catch (error) {
-      console.log(error);
       socket.emit('error', createErrorNonExpress(error));
     }
   });
