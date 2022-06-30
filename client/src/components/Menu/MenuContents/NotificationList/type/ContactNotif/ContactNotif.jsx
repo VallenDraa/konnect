@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 
 export default function ContactNotif({ info, type }) {
+  // console.log(info, type);
   const { userState } = useContext(UserContext);
 
   const handleResponse = (answer, type) => {
@@ -29,7 +30,8 @@ export default function ContactNotif({ info, type }) {
       'send-add-contact',
       userState.user._id,
       info.by._id,
-      senderToken
+      senderToken,
+      true
     );
   };
 

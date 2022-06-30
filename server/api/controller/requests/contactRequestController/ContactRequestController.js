@@ -3,14 +3,16 @@ import { renewToken } from '../../auth/tokenController.js';
 
 // for sending contact request response
 export const sendRequestToRecipient = async (req, res, next) => {
-  const { recipientId, senderId } = req.body;
+  const { recipientId, senderId, cancel } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
 
   // sending the request to the recipient
   try {
     const recipient = await User.findById(recipientId);
     const isRequestExists = recipient.requests.contacts.inbox.some(
-      (request) => request.by.toString() === senderId
+      (request) => {
+        return request.by.toString() === senderId && request.answer === null;
+      }
     );
 
     const contactInbox = recipient.requests.contacts.inbox;
@@ -52,15 +54,15 @@ export const sendRequestToRecipient = async (req, res, next) => {
   }
 };
 export const queueRequestToSender = async (req, res, next) => {
-  const { recipientId, senderId } = req.body;
+  const { recipientId, senderId, cancel } = req.body;
   const JWT_SECRET = process.env.JWT_SECRET;
 
   // queueing the request that has been sent to the senders contact requests field
   try {
     const sender = await User.findById(senderId);
-    const isRequestExists = sender.requests.contacts.outbox.some(
-      (request) => request.by.toString() === recipientId
-    );
+    const isRequestExists = sender.requests.contacts.outbox.some((request) => {
+      return request.by.toString() === recipientId;
+    });
     const contactOutbox = sender.requests.contacts.outbox;
 
     // if request exists then cancel/remove the request
@@ -68,6 +70,13 @@ export const queueRequestToSender = async (req, res, next) => {
       sender.requests.contacts.outbox = contactOutbox.filter(
         (request) => request.by.toString() !== recipientId
       );
+
+      if (!cancel) {
+        sender.requests.contacts.outbox.push({
+          by: recipientId,
+          iat: new Date(),
+        });
+      }
     } else {
       sender.requests.contacts.outbox.push({
         by: recipientId,

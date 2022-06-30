@@ -31,9 +31,9 @@ export default function unfriend(socket) {
       );
 
       //   only send back info to the target client if target is online
-
       if (isTargetOnline) {
         if (targetData.data.success) {
+          console.log(targetSocketId);
           socket
             .to(targetSocketId)
             .emit('update-client-data', targetData.data, { unfriend: true });

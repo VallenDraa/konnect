@@ -1,22 +1,25 @@
 import { useContext, useEffect, useId, useState } from 'react';
 import { UserContext } from '../../../../../context/user/userContext';
+
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaCamera } from 'react-icons/fa';
 import { FiSave } from 'react-icons/fi';
-import { ImBlocked, ImPencil } from 'react-icons/im';
+import { ImProfile, ImBlocked, ImPencil } from 'react-icons/im';
 import Pill from '../../../../Buttons/Pill';
 import Input from '../../../../Input/Input';
 import RenderIf from '../../../../../utils/React/RenderIf';
 import ContactsSwiperCard from '../../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
 import api from '../../../../../utils/apiAxios/apiAxios';
+import USER_ACTIONS from '../../../../../context/user/userAction';
 
 const ProfileOpt = () => {
   const imageId = useId();
-  const { userState } = useContext(UserContext);
+  const { userState, userDispatch } = useContext(UserContext);
   const [contactsPreview, setContactsPreview] = useState();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [status, setStatus] = useState(userState.user.status || '');
-  const [username, setUsername] = useState(userState.user.username);
+  const [status, setStatus] = useState(userState.user.status || 'unset');
+  const [firstName, setFirstName] = useState(userState.user.firstName || '');
+  const [lastName, setLastName] = useState(userState.user.lastName || '');
 
   // get contacts preview
   useEffect(() => {
@@ -40,8 +43,46 @@ const ProfileOpt = () => {
     getContactsPreview();
   }, [userState]);
 
+  useEffect(() => {
+    if (isEditMode) {
+      status === 'unset' && setStatus('');
+    } else {
+      setStatus('unset');
+      if (firstName !== '' && userState.user.firstName === '') setFirstName('');
+      if (lastName !== '' && userState.user.lastName === '') setLastName('');
+    }
+  }, [isEditMode]);
+
+  const handleUserEdit = async (e) => {
+    e.preventDefault();
+
+    try {
+      userDispatch({ type: USER_ACTIONS.updateStart });
+      const { data } = await api.put('/user/edit_profile', {
+        firstName,
+        lastName,
+        status,
+        token: sessionStorage.getItem('token'),
+      });
+
+      if (data.success) {
+        sessionStorage.setItem('token', data.token);
+        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
+        setIsEditMode(false);
+      } else {
+        userDispatch({ type: USER_ACTIONS.updateFail, payload: data.message });
+      }
+    } catch (error) {
+      userDispatch({ type: USER_ACTIONS.updateFail, payload: error });
+      console.log(error);
+    }
+  };
+
   return (
-    <form className="w-full overflow-y-hidden space-y-10">
+    <form
+      onSubmit={(e) => handleUserEdit(e)}
+      className="w-full overflow-y-hidden space-y-10"
+    >
       <main className="shadow-inner">
         <div className="w-full bg-white overflow-y-auto flex flex-col">
           {/* profile pic */}
@@ -72,62 +113,17 @@ const ProfileOpt = () => {
               style={{ flexWrap: isEditMode ? 'wrap-reverse' : 'nowrap' }}
               className="flex  justify-between items-center gap-1 px-5"
             >
-              {/* username */}
-              <div className="flex grow flex-col gap-y-3">
-                {/* username and date joined */}
-                <header className="flex gap-x-2 items-center">
-                  <h2 className="text-3xl font-semibold mt-2">
-                    {userState.user.username}
-                  </h2>
-                  {/* date joined */}
-                  <span className="text-xxs text-gray-400 font-medium">
-                    EST.{' '}
-                    {new Date(userState.user.createdAt).toLocaleDateString()}
-                  </span>
-                </header>
-
-                {/* full name */}
-                <footer className="flex flex-col space-y-1">
-                  <RenderIf
-                    conditionIs={
-                      userState.user.firstName !== '' ||
-                      userState.user.lastName !== ''
-                    }
-                  >
-                    <h3 className="text-xs font-semibold text-gray-400">
-                      Full Name :
-                    </h3>
-                    <span className="text-base">
-                      {userState.user.firstName} {userState.user.lastName}
-                    </span>
-                  </RenderIf>
-                  <RenderIf
-                    conditionIs={
-                      userState.user.firstName !== '' ||
-                      userState.user.lastName !== '' ||
-                      isEditMode
-                    }
-                  >
-                    <span className="text-xs font-semibold text-gray-400">
-                      Full Name :
-                    </span>
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-1">
-                      {/* first name */}
-                      <Input
-                        className="basis-1/2 text-sm"
-                        type="text"
-                        placeholder={'Edit First Name'}
-                      />
-                      {/* last name */}
-                      <Input
-                        className="basis-1/2 text-sm"
-                        type="text"
-                        placeholder={'Edit Last Name'}
-                      />
-                    </div>
-                  </RenderIf>
-                </footer>
+              {/* username and date joined */}
+              <div className="flex grow flex-wrap-reverse gap-x-2 items-center">
+                <h2 className="text-3xl font-semibold mt-2 min-w-[70px] max-w-[99%]">
+                  {userState.user.username}
+                </h2>
+                {/* date joined */}
+                <span className="text-xxs text-gray-400 font-medium">
+                  EST. {new Date(userState.user.createdAt).toLocaleDateString()}
+                </span>
               </div>
+
               {/* buttons */}
               <div
                 style={{
@@ -169,24 +165,83 @@ const ProfileOpt = () => {
               </div>
             </header>
             <main className="space-y-5">
+              {/* fullname */}
+              <div className="px-5">
+                {/* for editing */}
+                <RenderIf conditionIs={isEditMode}>
+                  <span className="text-xs font-semibold text-gray-400">
+                    Full Name :
+                  </span>
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-1">
+                    {/* first name */}
+                    <Input
+                      required={false}
+                      customState={[firstName, setFirstName]}
+                      className="basis-1/2 text-sm"
+                      type="text"
+                      placeholder={'Edit First Name'}
+                    />
+                    {/* last name */}
+                    <Input
+                      required={false}
+                      customState={[lastName, setLastName]}
+                      className="basis-1/2 text-sm"
+                      type="text"
+                      placeholder={'Edit Last Name'}
+                    />
+                  </div>
+                </RenderIf>
+
+                {/* for preview */}
+                <RenderIf conditionIs={!isEditMode}>
+                  <RenderIf
+                    conditionIs={
+                      userState.user.firstName !== '' ||
+                      userState.user.lastName !== ''
+                    }
+                  >
+                    <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
+                      <ImProfile className="text-xxs" />
+                      Full Name :
+                    </h3>
+                    <span className="text-base text-gray-600 font-semibold px-2">
+                      {userState.user.firstName} {userState.user.lastName}
+                    </span>
+                  </RenderIf>
+                </RenderIf>
+              </div>
+
               {/* user status */}
               <div className="px-5">
-                <Input
-                  label="Status"
-                  type="text"
-                  disabled={true}
-                  icon={<BiHappyHeartEyes className="text-lg" />}
-                  value={userState.user.status || 'Unset'}
-                />
+                <RenderIf conditionIs={isEditMode}>
+                  <Input
+                    labelActive={true}
+                    placeholder={'Edit Status'}
+                    required={false}
+                    label="Status"
+                    type="text"
+                    customState={[status, setStatus]}
+                    style={{ fontSize: '18px' }}
+                    icon={<BiHappyHeartEyes className="text-lg" />}
+                  />
+                </RenderIf>
+                <RenderIf conditionIs={!isEditMode}>
+                  <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400 relative -left-[2px]">
+                    <BiHappyHeartEyes className="text-sm" />
+                    Status :
+                  </h3>
+                  <span className="text-base text-gray-600 font-semibold px-2">
+                    {status}
+                  </span>
+                </RenderIf>
               </div>
 
               {/* friends with */}
-              <div className="space-y-3">
-                <h2 className="text-lg font-medium text-gray-400 px-5">
+              <div className="space-y-3 border-t-2 pt-3">
+                <h2 className="text-lg font-medium text-gray-400 mx-5">
                   Contacts:
                 </h2>
                 {/* swiper */}
-
                 <RenderIf conditionIs={userState.user.contacts}>
                   <ContactsSwiperCard contacts={contactsPreview} />
                 </RenderIf>

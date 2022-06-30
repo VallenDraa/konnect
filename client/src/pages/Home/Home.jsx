@@ -13,6 +13,8 @@ import { useLocation } from 'react-router-dom';
 import RenderIf from '../../utils/React/RenderIf';
 import locationForModal from '../../components/Modal/utils/locationForModal';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
+import PasswordConfirmation from '../../components/MiniModal/content/AccountOpt/PasswordConfirmation';
+import MiniModal from '../../components/MiniModal/MiniModal';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});

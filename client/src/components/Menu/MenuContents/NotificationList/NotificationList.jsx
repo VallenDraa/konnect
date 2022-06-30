@@ -70,21 +70,41 @@ export default function NotificationList() {
           );
 
           // assign the type of notification to the final result
-
           const result = { inbox: [], outbox: [] };
 
           // prevent the component from rendering old duplicate notifications
           for (const box in result) {
             result[box] = data[box].map((newNotif, i) => {
-              const prev = detailedNotifs.contents.inbox;
+              const prev = detailedNotifs.contents[box];
 
               if (!prev[i]) return { type, ...newNotif };
 
-              return prev.sentAt <= newNotif.sentAt
+              return new Date(prev[i].sentAt) <= new Date(newNotif.sentAt)
                 ? { type, ...newNotif }
                 : { type, ...prev[i] };
             });
           }
+
+          // check if the two boxes contains the same type of notification
+          result.inbox.forEach((inboxNotif, i) => {
+            if (!result.outbox[i]) return;
+
+            const outboxNotif = result.outbox[i];
+
+            // only render the newest notification
+            if (inboxNotif.type !== outboxNotif.type) return;
+            if (inboxNotif.by._id !== outboxNotif.by._id) return;
+
+            if (inboxNotif.type === 'contacts') {
+              if (new Date(inboxNotif.iat) > new Date(outboxNotif.iat)) {
+                const outbox = result.outbox;
+                result.outbox = outbox.filter((x) => x._id !== outboxNotif._id);
+              } else {
+                const inbox = result.inbox;
+                result.inbox = inbox.filter((x) => x._id !== inboxNotif._id);
+              }
+            }
+          });
 
           detailedNotifsDispatch({
             type: NOTIFICATIONS_ACTIONS.isLoaded,

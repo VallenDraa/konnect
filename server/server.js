@@ -87,6 +87,8 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === 'production';
 
+  isProduction && console.log(err);
+
   return res
     .status(status || 500)
     .json(isProduction ? TEMPLATE : { stack, ...TEMPLATE });

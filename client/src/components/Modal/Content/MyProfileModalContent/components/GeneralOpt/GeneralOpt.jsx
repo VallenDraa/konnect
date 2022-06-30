@@ -10,9 +10,9 @@ import Language from './components/Languange/Language';
 
 const GeneralOpt = () => {
   return (
-    <section aria-label="General options list" className="space-y-10 p-3">
+    <ul className="space-y-10 p-3">
       {/* appearance options */}
-      <section className="border-b-2" aria-label="Appearance options">
+      <li className="border-b-2">
         <h2 className="font-semibold flex items-center gap-2 text-gray-500 text-xs mb-2">
           <IoSparklesSharp />
           Appearance
@@ -31,10 +31,10 @@ const GeneralOpt = () => {
             />
           </li>
         </ul>
-      </section>
+      </li>
 
       {/* accessibility options*/}
-      <section className="border-b-2" aria-label="Accessibility options">
+      <li className="border-b-2">
         <h2 className="font-semibold flex items-center gap-2 text-gray-500 text-xs mb-2">
           <IoAccessibilitySharp />
           Accessibility
@@ -49,8 +49,8 @@ const GeneralOpt = () => {
             <Language />
           </li>
         </ul>
-      </section>
-    </section>
+      </li>
+    </ul>
   );
 };
 

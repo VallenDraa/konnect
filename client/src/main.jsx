@@ -8,6 +8,7 @@ import IsAuthorizedContextProvider from './context/isAuthorized/isAuthorized';
 import IsLoginViaRefreshContextProvider from './context/isLoginViaRefresh/isLoginViaRefresh';
 import './index.css';
 import NotificationsContextProvider from './context/notifications/notificationsContext';
+import MiniModalContextProvider from './context/miniModal/miniModalContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <IsLoginViaRefreshContextProvider>
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <IsAuthorizedContextProvider>
           <IsLoadingContextProvider>
             <ModalContextProvider>
-              <App />
+              <MiniModalContextProvider>
+                <App />
+              </MiniModalContextProvider>
             </ModalContextProvider>
           </IsLoadingContextProvider>
         </IsAuthorizedContextProvider>

@@ -4,13 +4,14 @@ import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
 
 export default function Input({
   labelActive,
+  required = true,
   label,
   icon,
   disabled,
   type,
   value,
   customState,
-  className,
+  className = '',
   style,
   placeholder,
 }) {
@@ -35,7 +36,6 @@ export default function Input({
   // for moving label to the top left corner when user is typing
   useEffect(() => {
     if (!labelRef.current) return;
-
     const cl = labelRef.current;
     const currentClasses = [...cl.classList].join(' ');
 
@@ -54,11 +54,12 @@ export default function Input({
     <div className="flex flex-col-reverse w-full">
       <RenderIf conditionIs={type === 'text' || type === 'email'}>
         <input
+          autoComplete="new-password"
           style={style}
-          required
+          required={required}
           ref={inputRef}
           placeholder={placeholder}
-          className={`bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 ${className}`}
+          className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 ${className}`}
           type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}
@@ -73,22 +74,23 @@ export default function Input({
             className="absolute right-2 bottom-1 z-10 cursor-pointer text-xl"
             onClick={() => setIsPwPeeked(!isPwPeeked)}
           >
-            {isPwPeeked ? (
+            <RenderIf conditionIs={isPwPeeked}>
               <AiOutlineEye className="text-blue-400" />
-            ) : (
+            </RenderIf>
+            <RenderIf conditionIs={!isPwPeeked}>
               <AiOutlineEyeInvisible />
-            )}
+            </RenderIf>
           </button>
           <input
+            autoComplete="new-password"
             style={style}
-            required
+            required={true}
             ref={inputRef}
             placeholder={placeholder}
-            className={`bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10 ${className}`}
+            className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10 ${className}`}
             type="password"
             onChange={(e) => setContent(e.target.value)}
             disabled={disabled}
-            value={content}
             id={inputId}
           />
           <label
@@ -106,8 +108,9 @@ export default function Input({
         conditionIs={type !== 'email' && type !== 'password' && type !== 'text'}
       >
         <input
+          autoComplete="new-password"
           style={style}
-          required
+          required={required}
           ref={inputRef}
           placeholder={placeholder}
           type={type}

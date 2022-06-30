@@ -69,6 +69,7 @@ export const Login = ({ user }) => {
             </span>
           </header>
           <form
+            autoComplete="new-password"
             onSubmit={(e) => handleSubmit(e)}
             className="space-y-12 md:space-y-16"
           >

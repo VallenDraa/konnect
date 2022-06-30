@@ -15,7 +15,8 @@ export default function ContactsSwiperCard({ contacts }) {
         spaceBetween={8}
         slidesPerView="auto"
         navigation
-        className="relative cursor-grab"
+        className="relative"
+        style={{ cursor: contacts.length >= 4 ? 'grab' : 'default' }}
       >
         {contacts.map(({ user }, i) => {
           const rgb = charToRGB(user.initials.split(''));
@@ -49,7 +50,9 @@ export default function ContactsSwiperCard({ contacts }) {
             </SwiperSlide>
           );
         })}
-        <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
+        <RenderIf conditionIs={contacts.length >= 4}>
+          <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
+        </RenderIf>
       </Swiper>
     );
 
