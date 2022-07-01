@@ -3,7 +3,7 @@ import miniModalReducer from './miniModalReducer';
 
 const miniModalInitialValue = {
   isActive: false,
-  tiedToUrl: null,
+  isClosing: false,
   content: null,
 };
 export const MiniModalContext = createContext(miniModalInitialValue);

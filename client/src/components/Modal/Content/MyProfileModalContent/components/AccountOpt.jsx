@@ -7,25 +7,41 @@ import { MdSecurity } from 'react-icons/md';
 import { UserContext } from '../../../../../context/user/userContext';
 import Pill from '../../../../Buttons/Pill';
 import Input from '../../../../Input/Input';
-import MiniModal from '../../../../MiniModal/MiniModal';
+import { MiniModalContext } from '../../../../../context/miniModal/miniModalContext';
+import { useEffect } from 'react';
+import MINI_MODAL_ACTIONS from '../../../../../context/miniModal/miniModalActions';
 import PasswordConfirmation from '../../../../MiniModal/content/AccountOpt/PasswordConfirmation';
-import RenderIf from '../../../../../utils/React/RenderIf';
 
 const AccountOpt = () => {
   const { userState } = useContext(UserContext);
   const [email, setEmail] = useState(userState.user.email);
   const [username, setUsername] = useState(userState.user.username);
-  const [isPasswordConfirm, setIsPasswordConfirm] = useState(false);
+  const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
+
+  const submitChanges = (password, payload) => {
+    console.log(payload, password);
+  };
+
+  const handleMiniModalPwConfirm = () => {
+    if (username === userState.user.username) return;
+    const payload = { username };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: (
+          <PasswordConfirmation
+            cb={submitChanges}
+            title="Enter Password To Edit Account"
+            payload={payload}
+          />
+        ),
+      });
+    }
+  };
 
   return (
     <div>
-      <RenderIf conditionIs={isPasswordConfirm}>
-        <MiniModal
-          children={
-            <PasswordConfirmation setIsPasswordConfirm={setIsPasswordConfirm} />
-          }
-        />
-      </RenderIf>
       <ul className="space-y-10 p-3">
         {/* security */}
         <li className="border-b-2 w-full">
@@ -77,7 +93,7 @@ const AccountOpt = () => {
         {/* submit */}
         <li>
           <Pill
-            onClick={() => setIsPasswordConfirm(true)}
+            onClick={handleMiniModalPwConfirm}
             type="submit"
             className="pointer py-1 px-4 border-2 text-sm font-bold bg-gray-400 hover:bg-blue-400 active:bg-blue-500 text-white flex items-center gap-x-2"
           >
