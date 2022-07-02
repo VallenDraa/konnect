@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 /**
  * @returns onClick function returns a true or false on the first argument
@@ -7,40 +7,40 @@ export default function SwitchBtn({
   icon1,
   icon2,
   onClick,
-  className = '',
-  startPos,
+  className = "",
+  on = false,
 }) {
   const thumbRef = useRef();
   const switchRef = useRef();
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(on);
 
   useEffect(() => {
     if (!thumbRef.current) return;
 
-    switch (startPos) {
-      case 'right':
-        thumbRef.current.classList.add('translate-x-full');
-        thumbRef.current.classList.add('bg-pink-300');
+    switch (on) {
+      case true:
+        thumbRef.current.classList.add("translate-x-full");
+        thumbRef.current.classList.add("bg-pink-300");
         break;
-      case 'left':
-        thumbRef.current.classList.add('bg-blue-300');
+      case false:
+        thumbRef.current.classList.add("bg-blue-300");
         break;
       default:
-        thumbRef.current.classList.add('bg-blue-300');
+        thumbRef.current.classList.add("bg-blue-300");
         break;
     }
   }, [thumbRef]);
 
   const handleThumb = () => {
     const classList = thumbRef.current.classList;
-    if (classList.contains('translate-x-full')) {
-      classList.remove('translate-x-full');
-      classList.remove('bg-pink-300');
-      classList.add('bg-blue-300');
+    if (classList.contains("translate-x-full")) {
+      classList.remove("translate-x-full");
+      classList.remove("bg-pink-300");
+      classList.add("bg-blue-300");
     } else {
-      classList.add('translate-x-full');
-      classList.remove('bg-blue-300');
-      classList.add('bg-pink-300');
+      classList.add("translate-x-full");
+      classList.remove("bg-blue-300");
+      classList.add("bg-pink-300");
     }
   };
 

@@ -1,25 +1,22 @@
-import { useState } from 'react';
-import Dropdown from '../../../../../../../Dropdown/Dropdown';
-import DropdownItem from '../../../../../../../Dropdown/DropdownItem/DropdownItem';
+import Dropdown from "../../../../../../../Dropdown/Dropdown";
+import DropdownItem from "../../../../../../../Dropdown/DropdownItem/DropdownItem";
 
-export default function Language() {
-  const LANGUAGES = ['English', 'Indonesian'];
-  const [activeLanguage, setActiveLanguage] = useState(LANGUAGES[0]);
-
+export const LANGUAGES = ["English", "Indonesian"];
+export default function Language({ handleOptChange, language }) {
   return (
     <>
       <Dropdown
-        text={activeLanguage}
+        text={language}
         fontSize={14}
-        className="absolute right-7"
-        position={'origin-top-right right-0'}
+        className="absolute right-6"
+        position={"origin-top-right right-0"}
       >
         {LANGUAGES.map((l) => {
           return (
             <DropdownItem
               key={l}
-              isActive={l === activeLanguage}
-              onClick={() => setActiveLanguage(l)}
+              isActive={l === language}
+              onClick={() => handleOptChange("language", l)}
             >
               <span>{l}</span>
             </DropdownItem>

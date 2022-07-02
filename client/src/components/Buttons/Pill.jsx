@@ -3,10 +3,12 @@ export default function Pill({
   children,
   onClick,
   style,
-  type = 'button',
+  type = "button",
+  disabled = false,
 }) {
   return (
     <button
+      disabled={disabled}
       type={type}
       style={style}
       onClick={onClick}
