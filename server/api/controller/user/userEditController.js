@@ -81,8 +81,11 @@ export const editSettings = async (req, res, next) => {
     const user = await User.findById(_id);
 
     for (const key in settings) {
+      console.log(user.settings[type][key], settings[key]);
       user.settings[type][key] = settings[key];
     }
+
+    console.log(user.settings[type]);
 
     user.markModified("settings.general");
     await user.save();
