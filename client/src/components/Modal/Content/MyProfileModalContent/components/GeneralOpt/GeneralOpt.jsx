@@ -15,17 +15,19 @@ import USER_ACTIONS from "../../../../../../context/User/userAction";
 
 const GeneralOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
-  const [opts, setOpts] = useState({
-    language: userState.user.settings.general.language || LANGUAGES[0],
-    theme: userState.user.settings.general.theme || "light",
-  });
+  const { general } = userState.user.settings;
+  const [language, setLanguage] = useState(general.language || LANGUAGES[0]);
+  const [theme, setTheme] = useState(general.theme || "light");
 
   // for updating user settings in the database
   useEffect(() => {
     return async () => {
+      // assemble the settings object
+      const opts = { language, theme };
+
       // check if the new user settings are the same with the old one, if so don't execute the code below
       const isAllOptsSame = Object.keys(opts).every(
-        (key) => userState.user.settings.general[key] === opts[key]
+        (key) => general[key] === opts[key]
       );
       if (isAllOptsSame) return;
 
@@ -54,14 +56,14 @@ const GeneralOpt = () => {
         console.log(error);
       }
     };
-  }, []);
+  }, [language, theme]);
 
-  const handleOptChange = (opt, value) => {
-    setOpts((prev) => {
-      prev[opt] = value;
-      return { ...prev };
-    });
-  };
+  // const handleOptChange = (opt, value) => {
+  //   setOpts((prev) => {
+  //     prev[opt] = value;
+  //     return { ...prev };
+  //   });
+  // };
 
   return (
     <ul className="space-y-10 p-3">
@@ -79,10 +81,8 @@ const GeneralOpt = () => {
               Theme
             </span>
             <SwitchBtn
-              on={opts.theme === "dark" && true}
-              onClick={(isLight) =>
-                handleOptChange("theme", isLight ? "light" : "dark")
-              }
+              on={theme === "dark" && true}
+              onClick={(isLight) => setTheme(isLight ? "light" : "dark")}
               icon1={<BsFillSunFill className="text-sm" />}
               icon2={<BsFillMoonFill className="text-sm" />}
             />
@@ -103,10 +103,7 @@ const GeneralOpt = () => {
               <IoLanguageSharp />
               Language
             </span>
-            <Language
-              handleOptChange={handleOptChange}
-              language={opts.language}
-            />
+            <Language languageState={{ language, setLanguage }} />
           </li>
         </ul>
       </li>

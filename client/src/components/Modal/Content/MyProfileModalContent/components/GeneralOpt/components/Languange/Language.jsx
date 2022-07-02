@@ -2,7 +2,9 @@ import Dropdown from "../../../../../../../Dropdown/Dropdown";
 import DropdownItem from "../../../../../../../Dropdown/DropdownItem/DropdownItem";
 
 export const LANGUAGES = ["English", "Indonesian"];
-export default function Language({ handleOptChange, language }) {
+export default function Language({ languageState }) {
+  const { language, setLanguage } = languageState;
+
   return (
     <>
       <Dropdown
@@ -16,7 +18,7 @@ export default function Language({ handleOptChange, language }) {
             <DropdownItem
               key={l}
               isActive={l === language}
-              onClick={() => handleOptChange("language", l)}
+              onClick={() => setLanguage(l)}
             >
               <span>{l}</span>
             </DropdownItem>

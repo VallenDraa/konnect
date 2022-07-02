@@ -20,9 +20,9 @@ const ProfileOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
   const [contactsPreview, setContactsPreview] = useState();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [status, setStatus] = useState(userState.user.status || "unset");
   const [firstName, setFirstName] = useState(userState.user.firstName || "");
   const [lastName, setLastName] = useState(userState.user.lastName || "");
+  const [status, setStatus] = useState(userState.user.status || "unset");
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
 
   // get contacts preview
@@ -51,7 +51,7 @@ const ProfileOpt = () => {
     if (isEditMode) {
       status === "unset" && setStatus("");
     } else {
-      setStatus("unset");
+      userState.user.status === "" && setStatus("unset");
       if (firstName !== "" && userState.user.firstName === "") setFirstName("");
       if (lastName !== "" && userState.user.lastName === "") setLastName("");
     }
