@@ -20,7 +20,6 @@ export default function SearchList() {
   );
   const [SVPreview, setSVPreview] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const searchRef = useRef();
 
   useEffect(() => {
     const searchDebounce = setTimeout(async () => {
@@ -70,7 +69,6 @@ export default function SearchList() {
           type="text"
           label="Search"
           icon={<IoSearch />}
-          innerRef={searchRef}
         />
       </header>
       <main className="px-1 space-y-3">

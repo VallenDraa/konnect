@@ -1,22 +1,22 @@
-import { useState, useEffect, useRef, useContext } from 'react';
-import { BiLogOut } from 'react-icons/bi';
-import { Menu } from '../Menu/Menu';
-import { ModalContext } from '../../context/modal/modalContext';
-import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserContext } from '../../context/user/userContext';
-import ChatList from '../Menu/MenuContents/ChatList/ChatList';
-import ContactList from '../Menu/MenuContents/ContactList/ContactList';
-import SearchList from '../Menu/MenuContents/SearchList/SearchList';
-import MODAL_ACTIONS from '../../context/modal/modalActions';
-import CTA from '../CTA/CTA';
-import Pill from '../Buttons/Pill';
-import USER_ACTIONS from '../../context/user/userAction';
-import socket from '../../utils/socketClient/socketClient';
-import RenderIf from '../../utils/React/RenderIf';
-import MENUS from '../Menu/MENUS';
-import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
-import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
+import { useState, useEffect, useRef, useContext } from "react";
+import { BiLogOut } from "react-icons/bi";
+import { Menu } from "../Menu/Menu";
+import { ModalContext } from "../../context/modal/modalContext";
+import { MyProfileModalContent } from "../Modal/Content/MyProfileModalContent/MyProfileModalContent";
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../../context/user/userContext";
+import ChatList from "../Menu/MenuContents/ChatList/ChatList";
+import ContactList from "../Menu/MenuContents/ContactList/ContactList";
+import SearchList from "../Menu/MenuContents/SearchList/SearchList";
+import MODAL_ACTIONS from "../../context/modal/modalActions";
+import CTA from "../CTA/CTA";
+import Pill from "../Buttons/Pill";
+import USER_ACTIONS from "../../context/user/userAction";
+import socket from "../../utils/socketClient/socketClient";
+import RenderIf from "../../utils/React/RenderIf";
+import MENUS from "../Menu/MENUS";
+import SIDEBAR_APPEARANCE from "./SidebarAppearance/SidebarAppearance";
+import NotificationList from "../Menu/MenuContents/NotificationList/NotificationList";
 
 export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const Navigate = useNavigate();
@@ -28,15 +28,15 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
   const { userState, userDispatch } = useContext(UserContext);
 
   const handleLogout = () => {
-    socket.emit('logout', userState.user._id, (success, message) => {
+    socket.emit("logout", userState.user._id, (success, message) => {
       if (success) {
         userDispatch({ type: USER_ACTIONS.logout });
-        sessionStorage.removeItem('token');
-        Navigate('/login');
+        sessionStorage.removeItem("token");
+        Navigate("/login");
       } else {
         userDispatch({ type: USER_ACTIONS.logout });
-        sessionStorage.removeItem('token');
-        Navigate('/login');
+        sessionStorage.removeItem("token");
+        Navigate("/login");
       }
     });
   };
@@ -50,15 +50,15 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
 
       // disable body scrolling if window size is less than 1024
       if (window.innerWidth <= 1024) {
-        document.body.style.overflowY = 'hidden';
+        document.body.style.overflowY = "hidden";
       }
     } else {
       sidebar.current.className = SIDEBAR_APPEARANCE.CLOSED;
-      document.body.style.overflowY = 'auto';
+      document.body.style.overflowY = "auto";
 
       // remove slide out animation if window size is larger than 1024
       if (window.innerWidth >= 1024) {
-        sidebar.current.classList.remove('animate-sidebar-out');
+        sidebar.current.classList.remove("animate-sidebar-out");
       }
     }
   }, [isSidebarOn]);
@@ -71,9 +71,9 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
       }
     };
 
-    window.addEventListener('resize', () => closeSidebar());
+    window.addEventListener("resize", () => closeSidebar());
 
-    return () => window.removeEventListener('resize', () => closeSidebar());
+    return () => window.removeEventListener("resize", () => closeSidebar());
   }, [setIsSidebarOn, isSidebarOn]);
 
   return (
@@ -88,29 +88,28 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
               modalDispatch({
                 type: MODAL_ACTIONS.show,
                 onExitReturnToHome: true,
-                pathname: `/user/${userState.user.username}`,
                 content: <MyProfileModalContent />,
               })
             }
-            className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 w-full p-2 duration-200 rounded-full"
+            className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-full grow w-3/4"
           >
             <img
               src="https://picsum.photos/200/200"
               alt=""
               className="rounded-full h-8 w-8"
             />
-            <div className="flex flex-col items-start">
-              <span className="text-xs max-w-[200px] truncate">
+            <div className="flex flex-col items-start overflow-hidden">
+              <span className="text-xs truncate">
                 {userState.user.username}
               </span>
-              <span className="text-xxs text-gray-500 relative z-10 max-w-[200px] truncate">
-                {userState.user.status || 'Status Unset'}
+              <span className="text-xxs text-gray-500 relative z-10 truncate">
+                {userState.user.status || "Status Unset"}
               </span>
             </div>
           </Link>
           <Pill
             onClick={handleLogout}
-            className="max-w-[100px] border-red-500 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white"
+            className="w-24 md:w-20 border-red-500 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white"
           >
             <BiLogOut />
             <span>Log Out</span>
@@ -123,22 +122,22 @@ export const Sidebar = ({ setActiveChat, sidebarState }) => {
       </header>
       {/* menu contents */}
       <main className="px-1 basis-5/6 overflow-y-auto overflow-x-auto">
-        <RenderIf conditionIs={activeMenu === 'chats'}>
+        <RenderIf conditionIs={activeMenu === "chats"}>
           <ChatList
             setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'contacts'}>
+        <RenderIf conditionIs={activeMenu === "contacts"}>
           <ContactList
             setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'search'}>
+        <RenderIf conditionIs={activeMenu === "search"}>
           <SearchList />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'notifications'}>
+        <RenderIf conditionIs={activeMenu === "notifications"}>
           <NotificationList />
         </RenderIf>
       </main>
