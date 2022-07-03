@@ -1,24 +1,24 @@
-import { useContext, useEffect, useReducer } from "react";
-import { useState } from "react";
-import { BiHappyHeartEyes } from "react-icons/bi";
-import { FaPaperPlane } from "react-icons/fa";
-import "swiper/css";
-import api from "../../../../utils/apiAxios/apiAxios";
-import RenderIf from "../../../../utils/React/RenderIf";
-import PicturelessProfile from "../../../PicturelessProfile/PicturelessProfile";
-import Pill from "../../../Buttons/Pill";
+import { useContext, useEffect, useReducer } from 'react';
+import { useState } from 'react';
+import { BiHappyHeartEyes } from 'react-icons/bi';
+import { FaPaperPlane } from 'react-icons/fa';
+import 'swiper/css';
+import api from '../../../../utils/apiAxios/apiAxios';
+import RenderIf from '../../../../utils/React/RenderIf';
+import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
+import Pill from '../../../Buttons/Pill';
 import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
   ADD_REQUEST_SENT_ACTIONS,
-} from "../../../../reducer/contactRequestSent/contactRequestSentReducer";
-import socket from "../../../../utils/socketClient/socketClient";
-import { UserContext } from "../../../../context/user/userContext";
-import generateRgb from "../../../../utils/generateRgb/generateRgb";
-import USER_ACTIONS from "../../../../context/user/userAction";
-import SendRequestBtn from "./SendRequestBtn/SendRequestBtn";
-import ContactsSwiperCard from "../../../../utils/ContactsSwiperCard/ContactsSwiperCard";
-import { useNavigate } from "react-router-dom";
-import { ImProfile } from "react-icons/im";
+} from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
+import socket from '../../../../utils/socketClient/socketClient';
+import { UserContext } from '../../../../context/user/userContext';
+import generateRgb from '../../../../utils/generateRgb/generateRgb';
+import USER_ACTIONS from '../../../../context/user/userAction';
+import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
+import ContactsSwiperCard from '../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
+import { useNavigate } from 'react-router-dom';
+import { ImProfile } from 'react-icons/im';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -28,7 +28,7 @@ export const OthersProfileModalContent = ({ username }) => {
     ADD_REQUEST_SENT_DEFAULT
   );
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
-  const [rgb, setRgb] = useState("");
+  const [rgb, setRgb] = useState('');
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
@@ -37,13 +37,13 @@ export const OthersProfileModalContent = ({ username }) => {
   //for both sending and cancelling a contact request
   const handleContactRequest = () => {
     requestDispatch({ type: Start });
-    const senderToken = sessionStorage.getItem("token");
+    const senderToken = sessionStorage.getItem('token');
     requestDispatch({ type: Loading });
 
     const cancel = isRequesting ? true : false;
 
     socket.emit(
-      "send-add-contact",
+      'send-add-contact',
       userState.user._id,
       otherUserData?._id,
       senderToken,
@@ -55,10 +55,10 @@ export const OthersProfileModalContent = ({ username }) => {
   const handleRemoveContact = () => {
     // console.log('remove');
     requestDispatch({ type: Start });
-    const senderToken = sessionStorage.getItem("token");
+    const senderToken = sessionStorage.getItem('token');
     requestDispatch({ type: Loading });
     socket.emit(
-      "remove-contact",
+      'remove-contact',
       userState.user._id,
       otherUserData?._id,
       senderToken
@@ -69,7 +69,7 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // for handling incoming contact request
   const handleIncomingContactRequest = () => {
-    navigate("/notifications?box=inbox");
+    navigate('/notifications?box=inbox');
   };
 
   // to determine which contact function to be executed
@@ -91,7 +91,7 @@ export const OthersProfileModalContent = ({ username }) => {
         const { data } = await api.get(
           `/query/user/get_user_detail?username=${username}`
         );
-        console.log(data);
+        // console.log(data);
         setOtherUserData(data);
       } catch (error) {
         console.log(error);
@@ -99,7 +99,7 @@ export const OthersProfileModalContent = ({ username }) => {
     };
 
     setTimeout(getOtherUserDetail, 500);
-    console.log("fetching other user detail from the server");
+    // console.log('fetching other user detail from the server');
   }, [userState]);
 
   // turn initials to rgb
@@ -112,21 +112,21 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // refresh userState after sending an add contact request
   useEffect(() => {
-    socket.off("update-client-data");
+    socket.off('update-client-data');
 
-    socket.on("update-client-data", (response, ...args) => {
-      console.log(args, response);
+    socket.on('update-client-data', (response, ...args) => {
+      // console.log(args, response);
       if (response.success) {
         const { user, token } = response;
 
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-        sessionStorage.setItem("token", token);
+        sessionStorage.setItem('token', token);
         requestDispatch({ type: Sent });
         setIsRequesting(false);
         setIsRequested(false);
 
         for (const arg of args) {
-          console.log(arg);
+          // console.log(arg);
           arg.unfriend && setIsAFriend(false);
         }
       } else {
@@ -135,7 +135,7 @@ export const OthersProfileModalContent = ({ username }) => {
       }
     });
 
-    return () => socket.off("update-client-data");
+    return () => socket.off('update-client-data');
   }, []);
 
   // gets the other user data and determine the state of the action button next to the msg button
@@ -148,7 +148,7 @@ export const OthersProfileModalContent = ({ username }) => {
     if (contacts.length > 0) {
       for (const { user } of contacts) {
         if (otherUserId === user) {
-          console.log(otherUserId === user, otherUserId, user, "friend");
+          // console.log(otherUserId === user, otherUserId, user, 'friend');
           setIsAFriend(true);
         }
       }
@@ -160,18 +160,18 @@ export const OthersProfileModalContent = ({ username }) => {
     if (outbox.length > 0) {
       for (const { by, answer } of outbox) {
         if (by === otherUserId && answer === null) {
-          console.log(
-            by === otherUserId && answer === null,
-            by,
-            otherUserId,
-            answer,
-            "requesting"
-          );
+          // console.log(
+          //   by === otherUserId && answer === null,
+          //   by,
+          //   otherUserId,
+          //   answer,
+          //   'requesting'
+          // );
           setIsRequesting(true);
         }
       }
     } else {
-      console.log("is not requesting");
+      // console.log('is not requesting');
       setIsRequesting(false);
     }
 
@@ -179,18 +179,18 @@ export const OthersProfileModalContent = ({ username }) => {
     if (inbox.length > 0) {
       for (const { by, answer } of inbox) {
         if (by === otherUserId && answer === null) {
-          console.log(
-            by === otherUserId && answer === null,
-            by,
-            otherUserId,
-            answer,
-            "requested"
-          );
+          // console.log(
+          //   by === otherUserId && answer === null,
+          //   by,
+          //   otherUserId,
+          //   answer,
+          //   'requested'
+          // );
           setIsRequested(true);
         }
       }
     } else {
-      console.log("is not requested");
+      // console.log('is not requested');
       setIsRequested(false);
     }
   }, [userState, otherUserData]);
@@ -202,7 +202,7 @@ export const OthersProfileModalContent = ({ username }) => {
     >
       <header className="text-center">
         <h1 className="font-semibold pb-3">
-          {username.replace("%20", " ")}'s Profile
+          {username.replace('%20', ' ')}'s Profile
         </h1>
       </header>
       <main className="grow shadow-inner">
@@ -258,8 +258,8 @@ export const OthersProfileModalContent = ({ username }) => {
               <div
                 className="px-5"
                 conditionIs={
-                  otherUserData?.firstName !== "" ||
-                  otherUserData?.lastName !== ""
+                  otherUserData?.firstName !== '' ||
+                  otherUserData?.lastName !== ''
                 }
               >
                 <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
@@ -278,7 +278,7 @@ export const OthersProfileModalContent = ({ username }) => {
                   Status :
                 </h3>
                 <span className="text-base text-gray-600 font-semibold px-2">
-                  {otherUserData?.status || "unset"}
+                  {otherUserData?.status || 'unset'}
                 </span>
               </div>
 

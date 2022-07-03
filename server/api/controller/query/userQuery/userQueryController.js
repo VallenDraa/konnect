@@ -4,9 +4,11 @@ export const findUser = async (req, res, next) => {
   const { query } = req.query;
 
   try {
-    const result = await User.where({ username: { $regex: query } }).select(
-      'username'
-    );
+    const result = await User.where({ username: { $regex: query } }).select([
+      'username',
+      'initials',
+      'profilePicture',
+    ]);
     res.json(result);
   } catch (error) {
     next(error);

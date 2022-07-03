@@ -5,14 +5,23 @@ import charToRGB from '../charToRGB/charToRGB';
 import welcome from '../../svg/othersProfile/welcome.svg';
 import RenderIf from '../React/RenderIf';
 
-export default function ContactsSwiperCard({ contacts }) {
+export default function ContactsSwiperCard({
+  onItemClicked = null,
+  itemWidth = 80,
+  contacts,
+  linkable = true,
+  mini = false,
+}) {
+  // the object structure
+  // [{user: { initials, username, profilePicture }}]
+
   if (!contacts) return;
 
   // render the swiper slides if the user has contacts
   if (contacts.length !== 0) {
     return (
       <Swiper
-        spaceBetween={8}
+        spaceBetween={1}
         slidesPerView="auto"
         navigation
         className="relative"
@@ -30,28 +39,53 @@ export default function ContactsSwiperCard({ contacts }) {
           return (
             <SwiperSlide
               key={i}
-              className="max-w-[125px] hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5"
+              className="w-[125px] overflow-hidden hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5 flex justify-center"
             >
-              <Link
-                to={`/user/${user.username}`}
-                className="flex flex-col items-center gap-y-1.5"
-              >
-                <RenderIf conditionIs={!user.profilePicture}>
-                  <PicturelessProfile
-                    width={80}
-                    initials={user.initials}
-                    bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
-                  />
-                </RenderIf>
-                <span className="font-semibold text-sm max-w-full truncate">
-                  {user.username}
-                </span>
-              </Link>
+              <RenderIf conditionIs={linkable}>
+                <Link
+                  to={`/user/${user.username}`}
+                  className="flex flex-col items-center gap-y-1.5"
+                >
+                  <RenderIf conditionIs={!user.profilePicture}>
+                    <PicturelessProfile
+                      width={itemWidth}
+                      initials={user.initials}
+                      bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
+                    />
+                  </RenderIf>
+                  <span
+                    style={{ fontSize: `${itemWidth / 4.5}px` }}
+                    className="font-semibold text-sm truncate max-w-[125px]"
+                  >
+                    {user.username}
+                  </span>
+                </Link>
+              </RenderIf>
+              <RenderIf conditionIs={!linkable}>
+                <button
+                  onClick={() => onItemClicked && onItemClicked(user)}
+                  className="flex flex-col items-center gap-y-1.5"
+                >
+                  <RenderIf conditionIs={!user.profilePicture}>
+                    <PicturelessProfile
+                      width={itemWidth}
+                      initials={user.initials}
+                      bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
+                    />
+                  </RenderIf>
+                  <span
+                    style={{ fontSize: `${itemWidth / 4.5}px` }}
+                    className="font-semibold text-sm max-w-full truncate"
+                  >
+                    {user.username}
+                  </span>
+                </button>
+              </RenderIf>
             </SwiperSlide>
           );
         })}
         <RenderIf conditionIs={contacts.length >= 4}>
-          <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20"></div>
+          <div className="absolute right-0 inset-y-0 bg-gradient-to-r from-transparent to-gray-800/10 w-8 z-20" />
         </RenderIf>
       </Swiper>
     );
@@ -59,17 +93,19 @@ export default function ContactsSwiperCard({ contacts }) {
     // render an svg otherwise
   } else {
     return (
-      <div className="text-center space-y-3">
-        <img src={welcome} alt="" className="w-1/5 max-w-[160px] mx-auto" />
-        <div className="flex flex-col gap-y-1">
-          <span className="font-semibold text-gray-500">
-            Oops No One Here....
-          </span>
-          <span className="font-light text-gray-400 text-xs">
-            Be the first one here by adding this person to your contact !
-          </span>
+      <RenderIf conditionIs={!mini}>
+        <div className="text-center space-y-3">
+          <img src={welcome} alt="" className="w-1/5 max-w-[160px] mx-auto" />
+          <div className="flex flex-col gap-y-1">
+            <span className="font-semibold text-gray-500">
+              Oops No One Here....
+            </span>
+            <span className="font-light text-gray-400 text-xs">
+              Be the first one here by adding this person to your contact !
+            </span>
+          </div>
         </div>
-      </div>
+      </RenderIf>
     );
   }
 }

@@ -1,24 +1,24 @@
-import { useEffect, useReducer, useState } from "react";
-import { useRef } from "react";
-import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
-import emptySearchResults from "../../../../svg/searchList/emptySearchResults.svg";
-import initialSvg from "../../../../svg/searchList/contactList/InitialSvg.svg";
-import api from "../../../../utils/apiAxios/apiAxios";
-import RenderIf from "../../../../utils/React/RenderIf";
-import Input from "../../../Input/Input";
+import { useEffect, useReducer, useState } from 'react';
+import { useRef } from 'react';
+import { IoSearch } from 'react-icons/io5';
+import { Link } from 'react-router-dom';
+import emptySearchResults from '../../../../svg/searchList/emptySearchResults.svg';
+import initialSvg from '../../../../svg/searchList/contactList/InitialSvg.svg';
+import api from '../../../../utils/apiAxios/apiAxios';
+import RenderIf from '../../../../utils/React/RenderIf';
+import Input from '../../../Input/Input';
 import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
-} from "../../../../reducer/searchResultsReducer/searchResultsReducer";
+} from '../../../../reducer/searchResultsReducer/searchResultsReducer';
 
 export default function SearchList() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [searchResults, searchResultsDispatch] = useReducer(
     searchResultsReducer,
     SEARCH_RESULTS_DEFAULT
   );
-  const [SVPreview, setSVPreview] = useState("");
+  const [SVPreview, setSVPreview] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function SearchList() {
       setIsTyping(false);
       searchResultsDispatch({ type: SEARCH_RESULTS_ACTIONS.start });
 
-      if (query === "")
+      if (query === '')
         return searchResultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload: [],
@@ -56,9 +56,9 @@ export default function SearchList() {
     };
   }, [query]);
 
-  useEffect(() => {
-    console.log(searchResults);
-  }, [searchResults]);
+  // useEffect(() => {
+  //   console.log(searchResults);
+  // }, [searchResults]);
 
   return (
     <section aria-label="searchList" className="py-1.5 space-y-5">
@@ -82,7 +82,7 @@ export default function SearchList() {
             {/* search results info */}
 
             {/* this will appear when the user is done typing and the search value is not empty */}
-            <RenderIf conditionIs={SVPreview !== ""}>
+            <RenderIf conditionIs={SVPreview !== ''}>
               <div className="flex flex-col gap-1">
                 <span className="font-semibold text-gray-700 max-w-full truncate">
                   Results for <span className="italic ">{SVPreview}</span>
@@ -94,7 +94,7 @@ export default function SearchList() {
             </RenderIf>
 
             {/* this svg will appear when the query is empty */}
-            <RenderIf conditionIs={query === ""}>
+            <RenderIf conditionIs={query === ''}>
               <div className="text-center space-y-10 mt-10">
                 <img
                   src={initialSvg}
@@ -133,7 +133,7 @@ export default function SearchList() {
                         className="rounded-full h-8 w-8"
                       />
 
-                      <span className="text-sm">{username}</span>
+                      <span className="text-sm truncate">{username}</span>
                     </Link>
                   </li>
                 );
@@ -145,7 +145,7 @@ export default function SearchList() {
               conditionIs={
                 !searchResults.loading &&
                 searchResults.content?.length === 0 &&
-                query !== ""
+                query !== ''
               }
             >
               <li className="text-center space-y-10 mt-10">

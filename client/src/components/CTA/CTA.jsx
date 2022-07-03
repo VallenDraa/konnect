@@ -1,15 +1,43 @@
-import { useContext } from "react";
-import { IoPeopleSharp, IoCall, IoChatbubbles } from "react-icons/io5";
-import MODAL_ACTIONS from "../../context/modal/modalActions";
-import { ModalContext } from "../../context/modal/modalContext";
-import Pill from "../Buttons/Pill";
-import NewChat from "./contents/NewChat/NewChat";
-import NewGroup from "./contents/NewGroup/NewGroup";
-import StartCall from "./contents/StartCall/StartCall";
-import { Link } from "react-router-dom";
+import { useContext, useEffect } from 'react';
+import { IoPeopleSharp, IoCall, IoChatbubbles } from 'react-icons/io5';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
+import { ModalContext } from '../../context/modal/modalContext';
+import Pill from '../Buttons/Pill';
+import NewChat from './contents/NewChat/NewChat';
+import NewGroup from './contents/NewGroup/NewGroup';
+import StartCall from './contents/StartCall/StartCall';
+import { Link, useLocation } from 'react-router-dom';
 
-export default function CTA({ className = "flex justify-evenly gap-2" }) {
+export default function CTA({ className = 'flex justify-evenly gap-2' }) {
   const { modalDispatch } = useContext(ModalContext);
+  const location = useLocation();
+
+  useEffect(() => {
+    const [route, subroute] = location.pathname.split('/').slice(1, 3);
+    if (route !== 'new') return;
+
+    const switchContent = (subroute) => {
+      switch (subroute) {
+        case 'chat':
+          return <NewChat />;
+
+        case 'call':
+          return <StartCall />;
+
+        case 'group':
+          return <NewGroup />;
+
+        default:
+          break;
+      }
+    };
+    modalDispatch({
+      type: MODAL_ACTIONS.show,
+      onExitReturnToHome: true,
+      content: switchContent(subroute),
+    });
+  }, [location]);
+
   return (
     <div className={className}>
       <Pill

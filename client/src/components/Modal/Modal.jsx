@@ -35,7 +35,7 @@ export const Modal = () => {
     }
 
     // go back to '/' path if the onExitReturnToHome in the modal context is true
-    modalState.onExitReturnToHome && navigate('/');
+    modalState.onExitReturnToHome && navigate('/chats');
   };
 
   return (
