@@ -36,7 +36,7 @@ export default function SearchList() {
       try {
         searchResultsDispatch({ type: SEARCH_RESULTS_ACTIONS.loading });
 
-        const { data } = await api.get(`/query/user/find_user?query=${query}`);
+        const { data } = await api.get(`/query/user/find_users?query=${query}`);
         searchResultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload: data,
@@ -73,11 +73,11 @@ export default function SearchList() {
       </header>
       <main className="px-1 space-y-3">
         {/*  placeholder for when user is still typing */}
-        <RenderIf conditionIs={isTyping}>
-          <span>User Is Typing</span>
+        <RenderIf conditionIs={isTyping || searchResults.loading}>
+          <span>Loading</span>
         </RenderIf>
 
-        <RenderIf conditionIs={!isTyping}>
+        <RenderIf conditionIs={!isTyping && !searchResults.loading}>
           <div>
             {/* search results info */}
 

@@ -13,9 +13,9 @@ export const Modal = () => {
 
   // hides scrollbar when modal is active
   useEffect(() => {
-    if (modalState.isActive) {
-      document.body.style.overflowY = 'hidden';
-    }
+    // console.log(modalState.prevUrl);
+
+    if (modalState.isActive) document.body.style.overflowY = 'hidden';
   }, [modalState]);
 
   const handleModalClose = () => {
@@ -26,16 +26,16 @@ export const Modal = () => {
 
     modalClasses.replace('animate-pop-in', 'animate-pop-out');
     modalWrapperClasses.replace('animate-fade-in', 'animate-fade-out');
-
     setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
 
     // only re-show screen scrollbar when the screen width is >=1024px
-    if (window.innerWidth >= 1024) {
-      document.body.style.overflowY = 'auto';
-    }
+    if (window.innerWidth >= 1024) document.body.style.overflowY = 'auto';
 
-    // go back to '/' path if the onExitReturnToHome in the modal context is true
+    // go back to '/chats' path if the onExitReturnToHome in the modal context is true
     modalState.onExitReturnToHome && navigate('/chats');
+
+    // go back to previous url path if the `prevUrl is provided
+    modalState.prevUrl && navigate(modalState.prevUrl);
   };
 
   return (

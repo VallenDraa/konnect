@@ -8,8 +8,11 @@ import NewGroup from './contents/NewGroup/NewGroup';
 import StartCall from './contents/StartCall/StartCall';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function CTA({ className = 'flex justify-evenly gap-2' }) {
-  const { modalDispatch } = useContext(ModalContext);
+export default function CTA({
+  className = 'flex justify-evenly gap-2',
+  urlHistory,
+}) {
+  const { modalState, modalDispatch } = useContext(ModalContext);
   const location = useLocation();
 
   useEffect(() => {
@@ -31,36 +34,32 @@ export default function CTA({ className = 'flex justify-evenly gap-2' }) {
           break;
       }
     };
+
+    // check if the useEffect is trying to render the same content twice
+    if (
+      JSON.stringify(modalState.content) ===
+      JSON.stringify(switchContent(subroute))
+    )
+      return;
+
     modalDispatch({
       type: MODAL_ACTIONS.show,
-      onExitReturnToHome: true,
+      prevUrl: urlHistory?.current,
+      onExitReturnToHome: false,
       content: switchContent(subroute),
     });
   }, [location]);
 
   return (
     <div className={className}>
+      {/* message */}
       <Pill
         className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
             type: MODAL_ACTIONS.show,
-            onExitReturnToHome: true,
-            content: <StartCall />,
-          })
-        }
-      >
-        <Link className="flex items-center gap-1" to="/new/call">
-          <IoCall />
-          Start Call
-        </Link>
-      </Pill>
-      <Pill
-        className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
-        onClick={() =>
-          modalDispatch({
-            type: MODAL_ACTIONS.show,
-            onExitReturnToHome: true,
+            prevUrl: urlHistory?.current,
+            onExitReturnToHome: false,
             content: <NewChat />,
           })
         }
@@ -70,12 +69,33 @@ export default function CTA({ className = 'flex justify-evenly gap-2' }) {
           New Chat
         </Link>
       </Pill>
+
+      {/* call */}
       <Pill
         className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
             type: MODAL_ACTIONS.show,
-            onExitReturnToHome: true,
+            prevUrl: urlHistory?.current,
+            onExitReturnToHome: false,
+            content: <StartCall />,
+          })
+        }
+      >
+        <Link className="flex items-center gap-1" to="/new/call">
+          <IoCall />
+          Start Call
+        </Link>
+      </Pill>
+
+      {/* group */}
+      <Pill
+        className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
+        onClick={() =>
+          modalDispatch({
+            type: MODAL_ACTIONS.show,
+            prevUrl: urlHistory?.current,
+            onExitReturnToHome: false,
             content: <NewGroup />,
           })
         }

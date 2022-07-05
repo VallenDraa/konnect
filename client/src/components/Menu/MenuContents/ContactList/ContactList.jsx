@@ -1,10 +1,5 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useReducer,
-} from 'react';
+import { useState, useEffect, useContext, useReducer } from 'react';
+import { Link } from 'react-router-dom';
 import { UserContext } from '../../../../context/user/userContext';
 import groupedContactsReducer, {
   GROUPED_CONTACTS_DEFAULT,
@@ -56,20 +51,15 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
         // parse the incoming contacts data
         for (const contact of data.contacts) {
           const { username, initials, profilePicture, _id } = contact.user;
-          const { messageLog } = contact;
-
+          const { chat } = contact;
           // assemble the parsed data into a contact object
-          const ifThereAreNoMsg = {
-            type: 'text',
-            content: null,
-            by: null,
-          };
+
           const parsedContact = {
             _id,
             username,
             initials,
             profilePicture,
-            lastMessage: messageLog[0] || ifThereAreNoMsg,
+            lastMessage: chat[0] || null,
             activeChat: false,
           };
           result.push(parsedContact);
@@ -116,8 +106,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
       if (contact !== target) {
         return { ...contact, activeChat: false }; //innactive chat
       } else {
-        const { username, lastMessage } = contact;
-        setActiveChat({ username, lastMessage }); //active chat
+        setActiveChat(contact); //active chat
         return { ...contact, activeChat: true };
       }
     });
@@ -178,7 +167,8 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
                 {letter}
               </span>
               {nameList.map((contact) => (
-                <div
+                <Link
+                  to={`/chats?id=${contact._id}&type=user`}
                   key={contact}
                   onClick={() => handleActiveContact(contact)}
                   className={`pl-3 cursor-pointer flex items-center gap-2 ${
@@ -194,7 +184,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
                   />
 
                   <span className="text-sm">{contact.username}</span>
-                </div>
+                </Link>
               ))}
             </div>
           );

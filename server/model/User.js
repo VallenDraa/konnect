@@ -13,12 +13,12 @@ const UserSchema = new mongoose.Schema(
     contacts: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-        messageLog: [
+        chat: [
           {
-            by: String,
+            by: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
             type: String,
             content: String,
-            default: null,
+            default: [],
           },
         ],
       },

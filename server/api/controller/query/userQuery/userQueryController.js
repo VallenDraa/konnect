@@ -1,6 +1,7 @@
 import User from '../../../../model/User.js';
+import jwt from 'jsonwebtoken';
 
-export const findUser = async (req, res, next) => {
+export const findUsers = async (req, res, next) => {
   const { query } = req.query;
 
   try {
@@ -10,6 +11,32 @@ export const findUser = async (req, res, next) => {
       'profilePicture',
     ]);
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const findUsersFromContact = async (req, res, next) => {
+  const { query, token } = req.body;
+
+  try {
+    const { _id } = jwt.decode(token);
+    const results = [];
+
+    // get all the users from the contact that match the query
+    const { contacts } = await User.findById(_id)
+      .select('contacts.user')
+      .populate({
+        select: ['username', 'initials', 'profilePicture'],
+        path: 'contacts.user',
+        match: { username: { $regex: query } },
+      });
+
+    for (const item of contacts) {
+      if (item.user !== null) results.push(item);
+    }
+
+    res.json(results);
   } catch (error) {
     next(error);
   }

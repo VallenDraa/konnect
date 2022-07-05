@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom';
 import locationForModal from '../../components/Modal/utils/locationForModal';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import MiniModal from '../../components/MiniModal/MiniModal';
+import useUrlHistory from '../../utils/useUrlHistory/useUrlHistory';
 
 export const Home = () => {
   const [activeChat, setActiveChat] = useState({});
@@ -21,6 +22,11 @@ export const Home = () => {
   const { userState, userDispatch } = useContext(UserContext);
   const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
   const location = useLocation();
+  const [urlHistory, urlHistoryError] = useUrlHistory();
+
+  useEffect(() => {
+    urlHistoryError && console.log(urlHistoryError, 'history error');
+  }, [urlHistoryError]);
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
@@ -87,6 +93,7 @@ export const Home = () => {
   // for checking if the page needs to render the modal
   useEffect(() => {
     const willTurnOn = locationForModal(location.pathname);
+
     if (!willTurnOn) {
       // time for the modal closing animation to play
       setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 200);
@@ -103,6 +110,7 @@ export const Home = () => {
           className={`flex ${modalState.isActive && 'blur-sm'} duration-200`}
         >
           <Sidebar
+            urlHistory={urlHistory}
             setActiveChat={setActiveChat}
             sidebarState={{ isSidebarOn, setIsSidebarOn }}
           />

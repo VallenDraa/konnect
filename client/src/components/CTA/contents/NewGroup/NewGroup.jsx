@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IoPeopleSharp } from 'react-icons/io5';
-import findUsers from '../../../../utils/apis/findUsers';
+import findUsersFromContact from '../../../../utils/apis/findUsersFromContact';
 import SearchBox from '../../../template/SearchBox/SearchBox';
 
 export default function NewGroup() {
@@ -15,7 +15,7 @@ export default function NewGroup() {
           Start Group
         </>
       }
-      searchCb={findUsers}
+      searchCb={findUsersFromContact}
       queryState={{ query, setQuery }}
       selectedState={{ selected, setSelected }}
       multipleSelect={true}

@@ -91,7 +91,9 @@ export const OthersProfileModalContent = ({ username }) => {
         const { data } = await api.get(
           `/query/user/get_user_detail?username=${username}`
         );
-        // console.log(data);
+
+        data === null && navigate('/chats');
+
         setOtherUserData(data);
       } catch (error) {
         console.log(error);

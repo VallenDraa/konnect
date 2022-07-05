@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { IoChatbubbles } from 'react-icons/io5';
-import findUsers from '../../../../utils/apis/findUsers';
+import findUsersFromContact from '../../../../utils/apis/findUsersFromContact';
 import SearchBox from '../../../template/SearchBox/SearchBox';
+import { useNavigate } from 'react-router-dom';
 
 export default function NewChat() {
-  const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState([]);
+  const navigate = useNavigate();
 
   return (
     <SearchBox
@@ -15,9 +14,12 @@ export default function NewChat() {
           Start Chat
         </>
       }
-      searchCb={findUsers}
-      queryState={{ query, setQuery }}
-      selectedState={{ selected, setSelected }}
+      submitCb={(results, query, selected) => {
+        if (selected.length > 0) {
+          navigate(`/chats?id=${selected[0].user._id}&type=user`);
+        }
+      }}
+      searchCb={findUsersFromContact}
       multipleSelect={false}
     />
   );

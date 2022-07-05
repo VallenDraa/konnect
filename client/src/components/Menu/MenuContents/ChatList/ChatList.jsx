@@ -1,48 +1,19 @@
 import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useState } from 'react';
+import RenderIf from '../../../../utils/React/RenderIf';
 
 const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
   const [chats, setChats] = useState([
-    {
-      username: 'john',
-      id: '1',
-      lastMessage: {
-        type: 'text',
-        content: 'Lorem ipsum dolor sit',
-        by: 'me',
-      },
-      activeChat: false,
-    },
-    {
-      username: 'steve',
-      id: '2',
-      lastMessage: {
-        type: 'call',
-        content: 'Call Lasted For 4:20:00',
-        by: 'steve',
-      },
-      activeChat: false,
-    },
-    {
-      username: 'jake',
-      id: '3',
-      lastMessage: {
-        type: 'image',
-        content: 'Image',
-        by: 'me',
-      },
-      activeChat: false,
-    },
-    {
-      username: 'david',
-      id: '4',
-      lastMessage: {
-        type: 'video',
-        content: 'Video',
-        by: 'david',
-      },
-      activeChat: false,
-    },
+    // {
+    //   username: 'john',
+    //   id: '1',
+    //   lastMessage: {
+    //     type: 'text',
+    //     content: 'Lorem ipsum dolor sit',
+    //     by: 'me',
+    //   },
+    //   activeChat: false,
+    // },
   ]);
 
   const handleActiveChat = (target) => {
@@ -50,8 +21,7 @@ const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
       if (chat !== target) {
         return { ...chat, activeChat: false }; //innactive chat
       } else {
-        const { username, lastMessage } = chat;
-        setActiveChat({ username, lastMessage }); //active chat
+        setActiveChat(chat); //active chat
         return { ...chat, activeChat: true };
       }
     });
@@ -62,13 +32,19 @@ const ChatList = ({ setActiveChat, setIsSidebarOn }) => {
   };
   return (
     <ul className="space-y-3 py-3">
-      {chats.map((chat) => (
-        <ChatPreview
-          key={chat.id}
-          chat={chat}
-          handleActiveChat={handleActiveChat}
-        />
-      ))}
+      {/* if chat history doesn't exist'*/}
+      <RenderIf conditionIs={chats.length === 0}>Empty</RenderIf>
+
+      {/* if chat history exists */}
+      <RenderIf conditionIs={chats.length !== 0}>
+        {chats.map((chat) => (
+          <ChatPreview
+            key={chat.id}
+            chat={chat}
+            handleActiveChat={handleActiveChat}
+          />
+        ))}
+      </RenderIf>
     </ul>
   );
 };

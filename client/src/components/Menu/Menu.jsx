@@ -8,7 +8,7 @@ import NotifBadge from '../NotifBadge/NotifBadge';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import { NotificationsContext } from '../../context/notifications/notificationsContext';
 
-export const Menu = ({ menus, activeMenuState }) => {
+export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   const { activeMenu, setActiveMenu } = activeMenuState;
   const location = useLocation();
   const { modalDispatch } = useContext(ModalContext);
@@ -17,7 +17,7 @@ export const Menu = ({ menus, activeMenuState }) => {
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
-    const { pathname } = location;
+    const { pathname, search } = location;
     if (pathname.includes('/user')) {
       const usernamePath = pathname.split('/')[2];
 
@@ -26,13 +26,15 @@ export const Menu = ({ menus, activeMenuState }) => {
         setActiveMenu('search');
         modalDispatch({
           type: MODAL_ACTIONS.show,
-          onExitReturnToHome: true,
+          prevUrl: urlHistory?.current,
+          onExitReturnToHome: false,
           content: <OthersProfileModalContent username={usernamePath} />,
         });
       } else {
         modalDispatch({
           type: MODAL_ACTIONS.show,
-          onExitReturnToHome: true,
+          prevUrl: urlHistory?.current,
+          onExitReturnToHome: false,
           content: <MyProfileModalContent />,
         });
       }

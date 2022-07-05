@@ -1,6 +1,7 @@
 import { useReducer } from 'react';
 import { useEffect, useState } from 'react';
-import { IoChatbubbles, IoSearch } from 'react-icons/io5';
+import { IoSearch } from 'react-icons/io5';
+import emptySearchResults from '../../../svg/searchList/emptySearchResults.svg';
 import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
@@ -28,8 +29,8 @@ export default function SearchBox({
     searchResultsReducer,
     SEARCH_RESULTS_DEFAULT
   );
-  const { query, setQuery } = queryState;
-  const { selected, setSelected } = selectedState;
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 
   // will perform search callback
@@ -39,7 +40,7 @@ export default function SearchBox({
 
       resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.start });
 
-      if (query === '' || !searchCb) {
+      if (!searchCb) {
         return resultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload: [],
@@ -50,6 +51,7 @@ export default function SearchBox({
         resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.loading });
 
         const payload = await searchCb(query);
+        // console.log(payload);
         resultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload,
@@ -86,6 +88,7 @@ export default function SearchBox({
   };
 
   const handleSubmit = (results, query, selected) => {
+    console.log(selected);
     submitCb && submitCb(results, query, selected);
   };
 
@@ -96,14 +99,14 @@ export default function SearchBox({
           <h2 className="font-semibold text-xl">Search For People</h2>
           <Pill
             onClick={() => handleSubmit(results, query, selected)}
-            className="w-[120px] text-sm font-medium shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 hover:bg-blue-400 active:bg-blue-500 hover:text-white"
+            className="w-[150px] text-sm font-medium shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 hover:bg-blue-400 active:bg-blue-500 hover:text-white"
           >
             {submitBtn}
           </Pill>
         </div>
         <div>
           <Input
-            className="focus:bg-gray-100 px-1 pt-1"
+            className="px-1 pt-1"
             labelActive={true}
             customState={[query, setQuery]}
             type="text"
@@ -115,12 +118,11 @@ export default function SearchBox({
       {/* where the results will show up */}
       <main className="overflow-y-auto h-[300px] grow w-full">
         {/* if user is typing */}
-        <RenderIf conditionIs={isTyping}>user is typing</RenderIf>
+        <RenderIf conditionIs={isTyping || results.loading}>loading</RenderIf>
         {/* if user is not typing */}
         <RenderIf conditionIs={!isTyping}>
           <ul className="max-h-full">
             {/* if it is still loading */}
-            <RenderIf conditionIs={results.loading}>loading</RenderIf>
 
             {/* if the result is not empty*/}
             <RenderIf
@@ -147,10 +149,23 @@ export default function SearchBox({
               })}
             </RenderIf>
 
+            {/* if results are empty */}
             <RenderIf
               conditionIs={!results.loading && results.content?.length === 0}
             >
-              Empty
+              <li className="text-center space-y-10 mt-10">
+                <img
+                  src={emptySearchResults}
+                  alt=""
+                  className="max-w-[300px] mx-auto"
+                />
+                <span className="block font-semibold text-xl md:text-lg text-gray-600">
+                  Welp nothing here :(
+                </span>
+                <span className="font-light text-gray-400 text-xs">
+                  Try other keywords and maybe we can find something for you
+                </span>
+              </li>
             </RenderIf>
           </ul>
         </RenderIf>

@@ -39,7 +39,7 @@ const ProfileOpt = () => {
           user: { initials, username, profilePicture },
         }));
 
-        console.log(result);
+        // console.log(result);
         setContactsPreview(result);
       } catch (error) {
         console.log(error);
