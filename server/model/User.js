@@ -16,9 +16,9 @@ const UserSchema = new mongoose.Schema(
         chat: [
           {
             by: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-            type: String,
+            msgType: String,
             content: String,
-            default: [],
+            time: { type: Date, default: new Date() },
           },
         ],
       },
@@ -27,14 +27,14 @@ const UserSchema = new mongoose.Schema(
     notifications: {
       inbox: [
         {
-          iat: { type: Date, default: Date.now() },
+          iat: { type: Date, default: new Date() },
           seen: { type: Boolean, default: false },
           contents: { type: mongoose.Schema.Types.Mixed },
         },
       ],
       outbox: [
         {
-          iat: { type: Date, default: Date.now() },
+          iat: { type: Date, default: new Date() },
           seen: { type: Boolean, default: false },
           contents: { type: mongoose.Schema.Types.Mixed },
         },
@@ -48,7 +48,7 @@ const UserSchema = new mongoose.Schema(
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
-            iat: { type: Date, default: Date.now() },
+            iat: { type: Date, default: new Date() },
           },
         ],
         outbox: [
@@ -56,7 +56,7 @@ const UserSchema = new mongoose.Schema(
             by: { type: mongoose.Schema.ObjectId, ref: 'user' },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
-            iat: { type: Date, default: Date.now() },
+            iat: { type: Date, default: new Date() },
           },
         ],
       },

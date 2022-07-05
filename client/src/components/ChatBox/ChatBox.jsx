@@ -7,24 +7,44 @@ import { MyMessage } from '../Message/MyMessage';
 import { OtherMessage } from '../Message/OtherMessage';
 import { StartScreen } from '../StartScreen/StartScreen';
 import socket from '../../utils/socketClient/socketClient';
+import { useContext } from 'react';
+import { UserContext } from '../../context/user/userContext';
+import api from '../../utils/apiAxios/apiAxios';
 
-export const ChatBox = ({ activeChat, sidebarState }) => {
+export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
   const chatBoxRef = useRef();
+  const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [messageLog, setMessageLog] = useState([]);
   const [newMessage, setnewMessage] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [target, setTarget] = useState({ targetId: null, chatType: null }); //target id
 
   useEffect(() => {
     socket.on('receive-message', (incomingMessage) => {
       const newMessageLog = [...messageLog, incomingMessage];
       setMessageLog(newMessageLog);
-      window.scrollTo({ top: window.scrollMaxY });
+      console.log('msg received');
     });
+
+    if (messageLog[messageLog.length - 1]?.by === userState.user._id) {
+      window.scrollTo({ top: window.scrollMaxY });
+    }
+
+    return () => socket.off('receive-message');
   }, [messageLog]);
 
+  // to check if the url is directed to a certain chat
   useEffect(() => {
+    const getUsersPreview = async (token, userIds) => {
+      const { data } = await api.post('/query/user/get_users_preview', {
+        token,
+        userIds,
+      });
+      return data;
+    };
+
     if (location.pathname === '/chats') {
       const search = Object.fromEntries(
         location.search
@@ -33,28 +53,80 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
           .map((q) => q.split('='))
       );
 
+      // set the target recipient data
+      setTarget({ targetId: search.id, chatType: search.type });
+
+      // check if the url provided id and type of chat
       if (search.id && search.type) {
-        if (Object.keys(activeChat) !== 0) {
-          console.log('empty chat');
+        if (Object.keys(activeChat).length === 0) {
+          // assemble the new active chat state
+          const newActiveChat = {
+            _id: search.id,
+            activeChat: true,
+            initials: null,
+            lastMessage: null,
+            profilePicture: null,
+            username: null,
+          };
+
+          // execute different code according to the search type
+          switch (search.type) {
+            case 'user':
+              // get the last message for the active chat and set the message log to show chat history
+              for (const { chat, user } of userState.user.contacts) {
+                if (user === search.id) {
+                  newActiveChat.lastMessage = chat[0] || null;
+
+                  console.log(chat);
+                  chat.length > 0 && setMessageLog(chat);
+                }
+              }
+              // fetch the initials, profile picture, and username from the server
+              getUsersPreview(sessionStorage.getItem('token'), [search.id])
+                .then((userPrev) => {
+                  Object.assign(newActiveChat, userPrev[0]);
+                  setActiveChat(newActiveChat);
+                  setIsSidebarOn(false);
+                })
+                .catch((err) => console.log(err));
+
+              break;
+
+            case 'group':
+              break;
+
+            default:
+              break;
+          }
+        } else {
+          //set the message log to show chat history
+          for (const { chat, user } of userState.user.contacts) {
+            if (user === search.id) chat.length > 0 && setMessageLog(chat);
+          }
         }
       }
     }
-  }, [location]);
+  }, [location, userState]);
 
   const handleNewMessage = (e) => {
     e.preventDefault();
+    if (newMessage === '') return;
+    // window.scrollTo({ top: window.scrollMaxY });
+
     if (messageLog !== '') {
       setnewMessage('');
+
       const newMessageInput = {
-        by: socket.id,
-        message: newMessage,
+        by: userState.user._id,
+        to: target.targetId,
+        content: newMessage,
+        msgType: 'text',
         time: new Date(),
       };
       const newMessageLog = [...messageLog, newMessageInput];
 
       setMessageLog(newMessageLog);
       socket.emit('new-message', newMessageInput);
-      window.scrollTo({ top: window.scrollMaxY });
     }
   };
 
@@ -103,7 +175,7 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
               </div>
             </div>
           </header>
-          <main className="max-w-screen-xl w-full mx-auto relative flex flex-col grow">
+          <main className="max-w-screen-lg w-full mx-auto relative flex flex-col grow">
             {/* message */}
             <div
               ref={chatBoxRef}
@@ -112,15 +184,15 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
               {messageLog.map((log, i) => {
                 return (
                   <Fragment key={i}>
-                    <RenderIf conditionIs={log.by === socket.id}>
+                    <RenderIf conditionIs={log.by === userState.user._id}>
                       <MyMessage
-                        msg={log.message}
+                        msg={log.content}
                         time={new Date(log.time).toLocaleTimeString()}
                       />
                     </RenderIf>
-                    <RenderIf conditionIs={log.by !== socket.id}>
+                    <RenderIf conditionIs={log.by !== userState.user._id}>
                       <OtherMessage
-                        msg={log.message}
+                        msg={log.content}
                         time={new Date(log.time).toLocaleTimeString()}
                       />
                     </RenderIf>
@@ -128,24 +200,25 @@ export const ChatBox = ({ activeChat, sidebarState }) => {
                 );
               })}
             </div>
-
-            {/* input */}
-            <form
-              onSubmit={(e) => handleNewMessage(e)}
-              className="bg-gray-100 sticky bottom-0 inset-x-0 min-h-[1rem] flex items-center justify-center gap-3 p-2"
-            >
-              <input
-                type="text"
-                onFocus={changeLocation}
-                onChange={(e) => setnewMessage(e.target.value)}
-                value={newMessage}
-                className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8"
-              />
-              <button className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner duration-200 flex items-center justify-center shadow aspect-square text-xs">
+          </main>
+          {/* input */}
+          <form
+            onSubmit={(e) => handleNewMessage(e)}
+            className="bg-gray-100 sticky bottom-0 min-h-[1rem] flex items-center justify-center gap-3 py-2 px-5"
+          >
+            <input
+              type="text"
+              onFocus={changeLocation}
+              onChange={(e) => setnewMessage(e.target.value)}
+              value={newMessage}
+              className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8 transition"
+            />
+            <RenderIf conditionIs={newMessage !== ''}>
+              <button className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition flex items-center justify-center shadow aspect-square text-xs animate-pop-in">
                 <FaPaperPlane className="relative right-[1px]" />
               </button>
-            </form>
-          </main>
+            </RenderIf>
+          </form>
         </main>
       </RenderIf>
     </>

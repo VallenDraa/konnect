@@ -133,7 +133,7 @@ export default function SearchBox({
                   <li
                     key={i}
                     onClick={() => handleSelect(user)}
-                    className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 mx-4 duration-200 rounded-sm`}
+                    className={`animate-fade-in cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 mx-4 duration-200 rounded-sm`}
                   >
                     <img
                       src="https://picsum.photos/200/200"

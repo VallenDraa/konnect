@@ -27,8 +27,8 @@ export const findUsersFromContact = async (req, res, next) => {
     const { contacts } = await User.findById(_id)
       .select('contacts.user')
       .populate({
-        select: ['username', 'initials', 'profilePicture'],
         path: 'contacts.user',
+        select: ['username', 'initials', 'profilePicture'],
         match: { username: { $regex: query } },
       });
 

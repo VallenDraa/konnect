@@ -16,7 +16,14 @@ import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/useUrlHistory/useUrlHistory';
 
 export const Home = () => {
-  const [activeChat, setActiveChat] = useState({});
+  const [activeChat, setActiveChat] = useState({
+    // _id: "62c2c9f5a476941abcd9e4f2"​,
+    // activeChat: false,
+    // initials: "3",
+    // lastMessage: null,
+    // profilePicture: "",
+    // username: "321",
+  });
   const { modalState, modalDispatch } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
@@ -102,7 +109,7 @@ export const Home = () => {
 
   return (
     <>
-      <div className="min-h-screen">
+      <div className="min-h-screen max-w-screen-2xl shadow-md mx-auto">
         <MiniModal />
         <Modal />
         <InitialLoadingScreen />
@@ -116,6 +123,7 @@ export const Home = () => {
           />
           <ChatBox
             activeChat={activeChat}
+            setActiveChat={setActiveChat}
             sidebarState={{ isSidebarOn, setIsSidebarOn }}
           />
         </div>

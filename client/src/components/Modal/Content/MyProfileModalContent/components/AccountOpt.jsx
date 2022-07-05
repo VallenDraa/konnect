@@ -1,17 +1,17 @@
-import { useContext, useState } from "react";
-import { FiSave } from "react-icons/fi";
-import { HiOutlineMail } from "react-icons/hi";
-import { BiRename } from "react-icons/bi";
-import { RiPassportLine } from "react-icons/ri";
-import { MdSecurity } from "react-icons/md";
-import { UserContext } from "../../../../../context/user/userContext";
-import Pill from "../../../../Buttons/Pill";
-import Input from "../../../../Input/Input";
-import { MiniModalContext } from "../../../../../context/miniModal/miniModalContext";
-import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalActions";
-import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
-import api from "../../../../../utils/apiAxios/apiAxios";
-import USER_ACTIONS from "../../../../../context/user/userAction";
+import { useContext, useState } from 'react';
+import { FiSave } from 'react-icons/fi';
+import { HiOutlineMail } from 'react-icons/hi';
+import { BiRename } from 'react-icons/bi';
+import { RiPassportLine } from 'react-icons/ri';
+import { MdSecurity } from 'react-icons/md';
+import { UserContext } from '../../../../../context/user/userContext';
+import Pill from '../../../../Buttons/Pill';
+import Input from '../../../../Input/Input';
+import { MiniModalContext } from '../../../../../context/miniModal/miniModalContext';
+import MINI_MODAL_ACTIONS from '../../../../../context/miniModal/miniModalActions';
+import PasswordConfirmation from '../../../../MiniModal/content/AccountOpt/PasswordConfirmation';
+import api from '../../../../../utils/apiAxios/apiAxios';
+import USER_ACTIONS from '../../../../../context/user/userAction';
 
 const AccountOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -22,13 +22,13 @@ const AccountOpt = () => {
   const submitChanges = async (password, payload) => {
     try {
       userDispatch({ type: USER_ACTIONS.updateStart });
-      const { data } = await api.put("/user/edit_account", {
+      const { data } = await api.put('/user/edit_account', {
         password,
         ...payload,
       });
 
       if (data.success) {
-        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem('token', data.token);
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
         miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
       } else {
@@ -42,7 +42,7 @@ const AccountOpt = () => {
 
   const handleMiniModalPwConfirm = () => {
     if (username === userState.user.username) return;
-    const payload = { username, token: sessionStorage.getItem("token") };
+    const payload = { username, token: sessionStorage.getItem('token') };
 
     if (!miniModalState.isActive) {
       miniModalDispatch({
@@ -75,7 +75,7 @@ const AccountOpt = () => {
                 Email
               </span>
               <Input
-                style={{ cursor: "not-allowed" }}
+                style={{ cursor: 'not-allowed' }}
                 type="email"
                 disabled={true}
                 labelActive={true}
@@ -111,7 +111,7 @@ const AccountOpt = () => {
         {/* submit */}
         <li>
           <Pill
-            disabled={username === userState.user.username}
+            disabled={username === userState.user.username || username === ''}
             onClick={handleMiniModalPwConfirm}
             type="submit"
             className="cursor-pointer disabled:cursor-not-allowed py-1 px-4 border-2 text-sm font-bold bg-gray-400 disabled:bg-gray-300 hover:bg-blue-400 active:bg-blue-500 text-white flex items-center gap-x-2"

@@ -12,6 +12,6 @@ const router = express.Router();
 router.get('/find_users', findUsers);
 router.post('/find_users_from_contact', verifyToken, findUsersFromContact);
 router.get('/get_user_detail', getUserDetail);
-router.post('/get_users_preview', getUsersPreview);
+router.post('/get_users_preview', verifyToken, getUsersPreview);
 
 export default router;

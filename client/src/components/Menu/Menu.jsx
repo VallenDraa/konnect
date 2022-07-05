@@ -101,7 +101,7 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   };
 
   return (
-    <ul className="flex flex-wrap justify-evenly gap-y-2">
+    <ul className="flex justify-evenly gap-2">
       {menus.map((menu, i) => (
         <Fragment key={i}>
           <li
@@ -111,7 +111,7 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
                 activeMenu === menu.name
                   ? 'text-blue-500'
                   : 'text-gray-500 hover:text-blue-300'
-              } p-1 rounded-lg duration-200`}
+              } p-1 rounded-lg duration-200 cursor-pointer`}
           >
             <Link
               to={`${linkSwitcher(menu.name)}`}

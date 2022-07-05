@@ -33,6 +33,7 @@ const ProfileOpt = () => {
 
       try {
         const { data } = await api.post('/query/user/get_users_preview', {
+          token: sessionStorage.getItem('token'),
           userIds: contactIds,
         });
         const result = data.map(({ profilePicture, initials, username }) => ({
