@@ -79,7 +79,7 @@ export const Home = () => {
     });
   }, []);
 
-  // refresh userState after sending an add contact request
+  // refresh userState
   useEffect(() => {
     socket.off('update-client-data');
 
@@ -109,12 +109,14 @@ export const Home = () => {
 
   return (
     <>
-      <div className="min-h-screen max-w-screen-2xl shadow-md mx-auto">
+      <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
         <MiniModal />
         <Modal />
         <InitialLoadingScreen />
         <div
-          className={`flex ${modalState.isActive && 'blur-sm'} duration-200`}
+          className={`flex ${
+            modalState.isActive ? 'blur-sm' : ''
+          } duration-200`}
         >
           <Sidebar
             urlHistory={urlHistory}

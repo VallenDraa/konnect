@@ -29,6 +29,7 @@ const io = new Server(httpServer, {
 global.onlineUsers = {};
 global.exemptedUserInfos = [
   // '-contacts.chat'
+  '-__v',
 ];
 
 if (process.env.NODE_ENV !== 'production') {

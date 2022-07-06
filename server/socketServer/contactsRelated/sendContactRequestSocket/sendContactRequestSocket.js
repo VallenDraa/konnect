@@ -47,23 +47,27 @@ export default function sendContactRequest(socket) {
             .emit('receive-add-contact', sendResponse, senderDetail);
         } else {
           if (!queueResponse.success) {
-            socket.emit(
-              'error',
-              createErrorNonExpress(
-                null,
-                queueResponse.status,
-                queueResponse.message
-              )
-            );
+            socket
+              .to(recipientSocketId)
+              .emit(
+                'error',
+                createErrorNonExpress(
+                  null,
+                  queueResponse.status,
+                  queueResponse.message
+                )
+              );
           } else if (!sendResponse.success) {
-            socket.emit(
-              'error',
-              createErrorNonExpress(
-                null,
-                sendResponse.status,
-                sendResponse.message
-              )
-            );
+            socket
+              .to(recipientSocketId)
+              .emit(
+                'error',
+                createErrorNonExpress(
+                  null,
+                  sendResponse.status,
+                  sendResponse.message
+                )
+              );
           }
         }
       } catch (error) {

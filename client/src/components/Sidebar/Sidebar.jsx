@@ -126,6 +126,7 @@ export const Sidebar = ({ setActiveChat, sidebarState, urlHistory }) => {
       <main className="px-1 basis-5/6 overflow-y-auto overflow-x-auto">
         <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
+            contacts={userState.user.contacts}
             setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />

@@ -1,5 +1,6 @@
 import User from '../../../../model/User.js';
 import createError from '../../../../utils/createError.js';
+import { renewToken } from '../../auth/tokenController.js';
 
 export const saveMessage = async (req, res, next) => {
   const { mode } = req.body;
@@ -13,24 +14,22 @@ export const saveMessage = async (req, res, next) => {
     );
   }
 
-  //   save message to sender
+  //   save message
   try {
-    const target = await User.findById(mode === 'sender' ? msgToPush.by : to);
+    const target = await User.findById(
+      mode === 'sender' ? msgToPush.by : to
+    ).select('-password');
 
     target.contacts.forEach(({ user }, i) => {
       if ((user.toString() === mode) === 'sender' ? to : msgToPush.by) {
         target.contacts[i].chat.push(msgToPush);
       }
     });
-
     await target.save();
-    return res.json(target);
-  } catch (error) {
-    next(error);
-  }
 
-  //   save message to receiver
-  try {
+    const token = renewToken(target._doc, process.env.JWT_SECRET);
+
+    return res.json({ user: target, token, success: true });
   } catch (error) {
     next(error);
   }

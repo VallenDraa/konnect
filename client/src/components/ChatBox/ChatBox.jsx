@@ -9,7 +9,7 @@ import { StartScreen } from '../StartScreen/StartScreen';
 import socket from '../../utils/socketClient/socketClient';
 import { useContext } from 'react';
 import { UserContext } from '../../context/user/userContext';
-import api from '../../utils/apiAxios/apiAxios';
+import getUsersPreview from '../../utils/apis/getusersPreview';
 
 export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
   const chatBoxRef = useRef();
@@ -21,6 +21,10 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
   const location = useLocation();
   const [target, setTarget] = useState({ targetId: null, chatType: null }); //target id
 
+  // scroll down to the bottom of the page when first loaded
+  useEffect(() => window.scrollTo({ top: window.scrollMaxY }), []);
+
+  // receiving message code
   useEffect(() => {
     socket.on('receive-message', (incomingMessage) => {
       const newMessageLog = [...messageLog, incomingMessage];
@@ -37,14 +41,6 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
 
   // to check if the url is directed to a certain chat
   useEffect(() => {
-    const getUsersPreview = async (token, userIds) => {
-      const { data } = await api.post('/query/user/get_users_preview', {
-        token,
-        userIds,
-      });
-      return data;
-    };
-
     if (location.pathname === '/chats') {
       const search = Object.fromEntries(
         location.search
@@ -111,25 +107,26 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
   const handleNewMessage = (e) => {
     e.preventDefault();
     if (newMessage === '') return;
-    // window.scrollTo({ top: window.scrollMaxY });
 
-    if (messageLog !== '') {
-      setnewMessage('');
+    const newMessageInput = {
+      by: userState.user._id,
+      to: target.targetId,
+      content: newMessage,
+      msgType: 'text',
+      time: new Date(),
+    };
+    const newMessageLog = [...messageLog, newMessageInput];
 
-      const newMessageInput = {
-        by: userState.user._id,
-        to: target.targetId,
-        content: newMessage,
-        msgType: 'text',
-        time: new Date(),
-      };
-      const newMessageLog = [...messageLog, newMessageInput];
-
-      setMessageLog(newMessageLog);
-      socket.emit('new-message', newMessageInput);
-    }
+    setnewMessage('');
+    setMessageLog(newMessageLog);
+    socket.emit(
+      'new-message',
+      newMessageInput,
+      sessionStorage.getItem('token')
+    );
   };
 
+  // will trigger when the input bar is clicked
   const changeLocation = () => {
     const currentPath = location.pathname + location.search;
     const targetPath = `/chats?id=${activeChat._id}&type=user`;

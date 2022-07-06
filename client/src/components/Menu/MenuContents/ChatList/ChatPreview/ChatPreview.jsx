@@ -2,12 +2,37 @@ import { ImFileVideo } from 'react-icons/im';
 import { BsFileEarmarkImage } from 'react-icons/bs';
 import { IoCall } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export const ChatPreview = ({ chat, handleActiveChat }) => {
+  const { timeSent, setTimeSent } = useState();
+
+  // will run to determine the time the message was sent
+  useEffect(() => {
+    let sentAt;
+
+    // check if it is sent today
+    if (
+      new Date().toLocaleDateString() ===
+      new Date(chat.lastMessage.time).toLocaleDateString()
+    ) {
+      sentAt = 'today';
+    } else {
+    }
+  }, []);
+  const LAST_INDEX_OF_COLON = 4;
+  const time = new Date(chat.lastMessage.time)
+    .toLocaleTimeString()
+    .slice(0, LAST_INDEX_OF_COLON);
+
+  console.log(
+    new Date().toLocaleDateString() ===
+      new Date(chat.lastMessage.time).toLocaleDateString()
+  );
   return (
     <li onClick={() => handleActiveChat(chat)}>
       <Link
-        to={`/chats?id=${chat.id}&type=user`}
+        to={`/chats?id=${chat._id}&type=user`}
         className={`flex items-center p-2 cursor-pointer ${
           chat.activeChat ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-100'
         } duration-200 rounded-md`}
@@ -23,20 +48,20 @@ export const ChatPreview = ({ chat, handleActiveChat }) => {
               {chat.username}
             </span>
             <span className="text-xxs max-w-[200px] truncate text-gray-500 relative z-10 flex items-center gap-1">
-              {chat.lastMessage.type === 'image' && (
+              {chat.lastMessage.msgType === 'image' && (
                 <>
                   <BsFileEarmarkImage />
                   {chat.lastMessage.content}
                 </>
               )}
-              {chat.lastMessage.type === 'video' && (
+              {chat.lastMessage.msgType === 'video' && (
                 <>
                   <ImFileVideo />
                   {chat.lastMessage.content}
                 </>
               )}
-              {chat.lastMessage.type === 'text' && chat.lastMessage.content}
-              {chat.lastMessage.type === 'call' && (
+              {chat.lastMessage.msgType === 'text' && chat.lastMessage.content}
+              {chat.lastMessage.msgType === 'call' && (
                 <>
                   <IoCall />
                   {chat.lastMessage.content}
@@ -46,7 +71,7 @@ export const ChatPreview = ({ chat, handleActiveChat }) => {
           </div>
         </div>
 
-        <time className="text-xxs self-start basis-1/12">10:00</time>
+        <time className="text-xxs self-start basis-1/12">{time}</time>
       </Link>
     </li>
   );

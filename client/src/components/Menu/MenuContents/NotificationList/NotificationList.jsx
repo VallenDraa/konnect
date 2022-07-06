@@ -39,14 +39,12 @@ export default function NotificationList() {
     let isSeen = false;
 
     for (const type in notifications) {
-      // if one of the notifications has been seen break
+      // if one of the notifications has been seen the stop the loop
       if (isSeen) break;
 
       // if the notifs inbox/outbox array is empty
       if (notifications[type][activeBox.name].length === 0) return;
-
       const notifBoxContent = notifications[type][activeBox.name];
-
       isSeen = notifBoxContent.every((notif) => notif.seen === true);
     }
 
@@ -227,7 +225,9 @@ export default function NotificationList() {
           <ul className="border-y-2 divide-y-2">
             {/* if there are no notifications */}
             <RenderIf
-              conditionIs={detailedNotifs.contents[activeBox.name].length === 0}
+              conditionIs={
+                detailedNotifs?.contents[activeBox.name].length === 0
+              }
             >
               <li className="text-center space-y-10 mt-10 py-4">
                 <img src={nothing} alt="" className="max-w-[300px] mx-auto" />
@@ -241,18 +241,21 @@ export default function NotificationList() {
             </RenderIf>
             {/* if there are notifications */}
             <RenderIf
-              conditionIs={detailedNotifs.contents[activeBox.name].length !== 0}
+              conditionIs={
+                detailedNotifs?.contents[activeBox.name].length !== 0
+              }
             >
-              {detailedNotifs.contents[activeBox.name].map((info) => (
-                <Fragment key={`${info._id}_${info.sentAt}`}>
-                  {/* if the type is contact */}
-                  <RenderIf conditionIs={info.type === 'contacts'}>
-                    <NotifListItem>
-                      <ContactNotif info={info} type={activeBox.name} />
-                    </NotifListItem>
-                  </RenderIf>
-                </Fragment>
-              ))}
+              {detailedNotifs?.contents[activeBox.name]?.map((info) => {
+                return (
+                  <Fragment key={`${info._id}_${info.sentAt}`}>
+                    <RenderIf conditionIs={info.type === 'contacts'}>
+                      <NotifListItem>
+                        <ContactNotif info={info} type={activeBox.name} />
+                      </NotifListItem>
+                    </RenderIf>
+                  </Fragment>
+                );
+              })}
             </RenderIf>
           </ul>
         </RenderIf>
