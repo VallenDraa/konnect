@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, createContext } from 'react';
 import { Sidebar } from '../../components/Sidebar/Sidebar';
 import { ChatBox } from '../../components/ChatBox/ChatBox';
 import { Modal } from '../../components/modal/Modal';
@@ -15,15 +15,19 @@ import MODAL_ACTIONS from '../../context/modal/modalActions';
 import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/useUrlHistory/useUrlHistory';
 
-export const Home = () => {
-  const [activeChat, setActiveChat] = useState({
-    // _id: "62c2c9f5a476941abcd9e4f2"​,
-    // activeChat: false,
-    // initials: "3",
-    // lastMessage: null,
-    // profilePicture: "",
-    // username: "321",
-  });
+const ACTIVE_CHAT_DEFAULT = {
+  _id: null,
+  activeChat: false,
+  initials: null,
+  lastMessage: null,
+  profilePicture: null,
+  username: null,
+};
+
+export const ActiveChatContext = createContext(ACTIVE_CHAT_DEFAULT);
+
+export default function Home() {
+  const [activeChat, setActiveChat] = useState(ACTIVE_CHAT_DEFAULT);
   const { modalState, modalDispatch } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
@@ -114,22 +118,21 @@ export const Home = () => {
         <Modal />
         <InitialLoadingScreen />
         <div
-          className={`flex ${
-            modalState.isActive ? 'blur-sm' : ''
-          } duration-200`}
+          className={`flex duration-200
+                     ${modalState.isActive ? 'blur-sm' : ''}`}
         >
-          <Sidebar
-            urlHistory={urlHistory}
-            setActiveChat={setActiveChat}
-            sidebarState={{ isSidebarOn, setIsSidebarOn }}
-          />
-          <ChatBox
-            activeChat={activeChat}
-            setActiveChat={setActiveChat}
-            sidebarState={{ isSidebarOn, setIsSidebarOn }}
-          />
+          <ActiveChatContext.Provider value={{ activeChat, setActiveChat }}>
+            <Sidebar
+              urlHistory={urlHistory}
+              sidebarState={{ isSidebarOn, setIsSidebarOn }}
+            />
+            <ChatBox
+              activeChat={activeChat}
+              sidebarState={{ isSidebarOn, setIsSidebarOn }}
+            />
+          </ActiveChatContext.Provider>
         </div>
       </div>
     </>
   );
-};
+}

@@ -20,10 +20,9 @@ export const saveMessage = async (req, res, next) => {
       mode === 'sender' ? msgToPush.by : to
     ).select('-password');
 
+    const saveMsgTo = mode === 'sender' ? to : msgToPush.by;
     target.contacts.forEach(({ user }, i) => {
-      if ((user.toString() === mode) === 'sender' ? to : msgToPush.by) {
-        target.contacts[i].chat.push(msgToPush);
-      }
+      user.toString() === saveMsgTo && target.contacts[i].chat.push(msgToPush);
     });
     await target.save();
 

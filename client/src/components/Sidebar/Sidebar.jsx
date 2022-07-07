@@ -17,8 +17,10 @@ import RenderIf from '../../utils/React/RenderIf';
 import MENUS from '../Menu/MENUS';
 import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
+import { ActiveChatContext } from '../../pages/Home/Home';
 
-export const Sidebar = ({ setActiveChat, sidebarState, urlHistory }) => {
+export const Sidebar = ({ sidebarState, urlHistory }) => {
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const Navigate = useNavigate();
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
@@ -101,7 +103,7 @@ export const Sidebar = ({ setActiveChat, sidebarState, urlHistory }) => {
                 {userState.user.username}
               </span>
               <span className="text-xxs text-gray-500 relative z-10 truncate">
-                {userState.user.status || 'Status Unset'}
+                {userState.user.status || 'unset'}
               </span>
             </div>
           </Link>
@@ -127,15 +129,11 @@ export const Sidebar = ({ setActiveChat, sidebarState, urlHistory }) => {
         <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
             contacts={userState.user.contacts}
-            setActiveChat={setActiveChat}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
         <RenderIf conditionIs={activeMenu === 'contacts'}>
-          <ContactList
-            setActiveChat={setActiveChat}
-            setIsSidebarOn={setIsSidebarOn}
-          />
+          <ContactList setIsSidebarOn={setIsSidebarOn} />
         </RenderIf>
         <RenderIf conditionIs={activeMenu === 'search'}>
           <SearchList />

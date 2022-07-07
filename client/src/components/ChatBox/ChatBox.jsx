@@ -3,15 +3,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaPaperPlane } from 'react-icons/fa';
 import { HiOutlineMenu } from 'react-icons/hi';
 import RenderIf from '../../utils/React/RenderIf';
-import { MyMessage } from '../Message/MyMessage';
-import { OtherMessage } from '../Message/OtherMessage';
 import { StartScreen } from '../StartScreen/StartScreen';
 import socket from '../../utils/socketClient/socketClient';
 import { useContext } from 'react';
 import { UserContext } from '../../context/user/userContext';
 import getUsersPreview from '../../utils/apis/getusersPreview';
+import { Message } from '../Message/Message';
+import { ActiveChatContext } from '../../pages/Home/Home';
 
-export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
+export const ChatBox = ({ sidebarState }) => {
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const chatBoxRef = useRef();
   const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
@@ -85,7 +86,6 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
                   setIsSidebarOn(false);
                 })
                 .catch((err) => console.log(err));
-
               break;
 
             case 'group':
@@ -103,6 +103,17 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
       }
     }
   }, [location, userState]);
+
+  // change the message log according to the active chat
+  useEffect(() => {
+    if (!activeChat._id) return;
+
+    const { chat } = userState.user.contacts.find(
+      ({ user }) => user === activeChat._id
+    );
+
+    if (chat || chat.length > 0) setMessageLog(chat);
+  }, [activeChat, userState]);
 
   const handleNewMessage = (e) => {
     e.preventDefault();
@@ -136,7 +147,7 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
   return (
     <>
       <RenderIf conditionIs={!activeChat.username}>
-        <StartScreen sidebarState={sidebarState} />;
+        <StartScreen sidebarState={sidebarState} />
       </RenderIf>
       <RenderIf conditionIs={activeChat.username}>
         <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen relative flex flex-col">
@@ -181,18 +192,11 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
               {messageLog.map((log, i) => {
                 return (
                   <Fragment key={i}>
-                    <RenderIf conditionIs={log.by === userState.user._id}>
-                      <MyMessage
-                        msg={log.content}
-                        time={new Date(log.time).toLocaleTimeString()}
-                      />
-                    </RenderIf>
-                    <RenderIf conditionIs={log.by !== userState.user._id}>
-                      <OtherMessage
-                        msg={log.content}
-                        time={new Date(log.time).toLocaleTimeString()}
-                      />
-                    </RenderIf>
+                    <Message
+                      isSentByMe={log.by === userState.user._id}
+                      msg={log.content}
+                      time={new Date(log.time)}
+                    />
                   </Fragment>
                 );
               })}
@@ -201,17 +205,23 @@ export const ChatBox = ({ activeChat, setActiveChat, sidebarState }) => {
           {/* input */}
           <form
             onSubmit={(e) => handleNewMessage(e)}
-            className="bg-gray-100 sticky bottom-0 min-h-[1rem] flex items-center justify-center gap-3 py-2 px-5"
+            className="bg-gray-100 sticky bottom-0 min-h-[1rem] flex items-center justify-center gap-3 
+                        py-2 px-5"
           >
             <input
               type="text"
               onFocus={changeLocation}
               onChange={(e) => setnewMessage(e.target.value)}
               value={newMessage}
-              className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8 transition"
+              className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
+                         rounded-full px-6 resize-none flex items-center justify-center h-8 transition"
             />
             <RenderIf conditionIs={newMessage !== ''}>
-              <button className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition flex items-center justify-center shadow aspect-square text-xs animate-pop-in">
+              <button
+                className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 
+                          hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
+                          flex items-center justify-center shadow aspect-square text-xs animate-pop-in"
+              >
                 <FaPaperPlane className="relative right-[1px]" />
               </button>
             </RenderIf>

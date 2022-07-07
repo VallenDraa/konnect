@@ -1,10 +1,14 @@
-import createError from "../../../utils/createError.js";
-import { renewToken } from "../auth/tokenController.js";
-import User from "../../../model/User.js";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import createError from '../../../utils/createError.js';
+import { renewToken } from '../auth/tokenController.js';
+import User from '../../../model/User.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import emojiTest from '../../../utils/emojiTest.js';
 
 export const editProfile = async (req, res, next) => {
+  const isUsingEmoji = emojiTest(Object.values(req.body));
+  if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
+
   const { firstName, lastName, status, token, password } = req.body;
 
   try {
@@ -15,7 +19,7 @@ export const editProfile = async (req, res, next) => {
 
     // if password is incorrect send error to client
     const isPwCorrect = await bcrypt.compare(password, user.password);
-    !isPwCorrect && createError(next, 401, "Invalid username or password");
+    !isPwCorrect && createError(next, 401, 'Invalid username or password');
 
     user.firstName = firstName;
     user.lastName = lastName;
@@ -32,13 +36,16 @@ export const editProfile = async (req, res, next) => {
 };
 
 export const editAccount = async (req, res, next) => {
+  const isUsingEmoji = emojiTest(Object.values(req.body));
+  if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
+
   const { password, username, token } = req.body;
 
   try {
     // check if the username is already taken
     try {
       const isUsernameTaken = await User.exists({ username });
-      isUsernameTaken && createError(next, 401, "Invalid username or password");
+      isUsernameTaken && createError(next, 401, 'Invalid username or password');
     } catch (error) {
       next(error);
     }
@@ -51,7 +58,7 @@ export const editAccount = async (req, res, next) => {
 
       // if password is incorrect send error to client
       const isPwCorrect = await bcrypt.compare(password, user.password);
-      !isPwCorrect && createError(next, 401, "Invalid username or password");
+      !isPwCorrect && createError(next, 401, 'Invalid username or password');
 
       // change username
       user.username = username;
@@ -87,7 +94,7 @@ export const editSettings = async (req, res, next) => {
 
     console.log(user.settings[type]);
 
-    user.markModified("settings.general");
+    user.markModified('settings.general');
     await user.save();
 
     const newToken = renewToken(user._doc, process.env.JWT_SECRET);
@@ -110,7 +117,7 @@ export const unfriend = async (req, res, next) => {
       (contact) => contact.user.toString() === targetId
     );
     if (!isStillInContact) {
-      return createError(next, 404, "Invalid target id !");
+      return createError(next, 404, 'Invalid target id !');
     }
 
     me.contacts = me.contacts.filter(

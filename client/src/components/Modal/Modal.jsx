@@ -13,8 +13,6 @@ export const Modal = () => {
 
   // hides scrollbar when modal is active
   useEffect(() => {
-    // console.log(modalState.prevUrl);
-
     if (modalState.isActive) document.body.style.overflowY = 'hidden';
   }, [modalState]);
 

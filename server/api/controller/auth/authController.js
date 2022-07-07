@@ -2,9 +2,14 @@ import UserModel from '../../../model/User.js';
 import createError from '../../../utils/createError.js';
 import bcrypt from 'bcrypt';
 import { renewToken } from './tokenController.js';
+import emojiTest from '../../../utils/emojiTest.js';
 
 export const register = async (req, res, next) => {
+  const isUsingEmoji = emojiTest(Object.values(req.body));
+  if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
+
   const { username, password, email } = req.body;
+
   const initials = username
     .split(' ')
     .map((word, i) => i < 3 && word.substring(0, 1))
@@ -54,13 +59,12 @@ export const login = async (req, res, next) => {
       global.exemptedUserInfos
     );
 
-    console.log(user.contacts);
     if (user === null) {
       return createError(next, 401, 'Username or password is invalid !');
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (isPasswordCorrect) {
+    if (!isPasswordCorrect) {
       const { password, ...otherData } = user._doc;
 
       // send user data back as a JWT token
@@ -71,6 +75,7 @@ export const login = async (req, res, next) => {
       return createError(next, 401, 'Username or password is invalid !');
     }
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

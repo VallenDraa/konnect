@@ -5,30 +5,50 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 export const ChatPreview = ({ chat, handleActiveChat }) => {
-  const { timeSent, setTimeSent } = useState();
+  const [timeSent, setTimeSent] = useState(null);
 
   // will run to determine the time the message was sent
   useEffect(() => {
     let sentAt;
+    const now = new Date();
+    const timeMessageSent = new Date(chat.lastMessage.time);
+    const todaysDate = now.getDate();
+    const messageSentDate = timeMessageSent.getDate();
+    const todaysMonthAndYear = `${now.getMonth()}/${now.getFullYear()}`;
+    const messageSentDateMonthAndYear = `${timeMessageSent.getMonth()}/${timeMessageSent.getFullYear()}`;
 
-    // check if it is sent today
-    if (
-      new Date().toLocaleDateString() ===
-      new Date(chat.lastMessage.time).toLocaleDateString()
-    ) {
+    // determine the time at which the message was sent
+    if (todaysDate === messageSentDate) {
       sentAt = 'today';
+    } else if (
+      todaysDate > messageSentDate &&
+      todaysDate - messageSentDate === 1 &&
+      todaysMonthAndYear === messageSentDateMonthAndYear
+    ) {
+      sentAt = 'yesterday';
     } else {
+      sentAt = 'long ago';
     }
-  }, []);
-  const LAST_INDEX_OF_COLON = 4;
-  const time = new Date(chat.lastMessage.time)
-    .toLocaleTimeString()
-    .slice(0, LAST_INDEX_OF_COLON);
 
-  console.log(
-    new Date().toLocaleDateString() ===
-      new Date(chat.lastMessage.time).toLocaleDateString()
-  );
+    // determine the time indicator that'll be displayed
+    switch (sentAt) {
+      case 'today':
+        const formattedTime = timeMessageSent
+          .toTimeString()
+          .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));
+
+        return setTimeSent(formattedTime);
+
+      case 'yesterday':
+        return setTimeSent('Yesterday');
+
+      case 'long ago':
+        return setTimeSent(timeMessageSent.toLocaleDateString());
+      default:
+        break;
+    }
+  }, [chat]);
+
   return (
     <li onClick={() => handleActiveChat(chat)}>
       <Link
@@ -71,7 +91,7 @@ export const ChatPreview = ({ chat, handleActiveChat }) => {
           </div>
         </div>
 
-        <time className="text-xxs self-start basis-1/12">{time}</time>
+        <time className="text-xxs self-start basis-1/12">{timeSent}</time>
       </Link>
     </li>
   );

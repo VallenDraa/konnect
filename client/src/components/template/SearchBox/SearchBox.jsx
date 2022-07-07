@@ -88,8 +88,10 @@ export default function SearchBox({
   };
 
   const handleSubmit = (results, query, selected) => {
-    console.log(selected);
     submitCb && submitCb(results, query, selected);
+
+    // re-enable Y axis scrolling because clicking the button that runs this function will close the modal
+    document.body.style.overflowY = 'auto';
   };
 
   return (
@@ -157,7 +159,7 @@ export default function SearchBox({
                 <img
                   src={emptySearchResults}
                   alt=""
-                  className="max-w-[300px] mx-auto"
+                  className="w-[200px] mx-auto"
                 />
                 <span className="block font-semibold text-xl md:text-lg text-gray-600">
                   Welp nothing here :(

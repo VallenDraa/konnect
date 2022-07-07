@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from '../../../../context/user/userContext';
+import { ActiveChatContext } from '../../../../pages/Home/Home';
 import groupedContactsReducer, {
   GROUPED_CONTACTS_DEFAULT,
   GROUPED_CONTACTS_ACTIONS,
@@ -9,7 +10,8 @@ import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.
 import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
 
-const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
+const ContactList = ({ setIsSidebarOn }) => {
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { userState } = useContext(UserContext);
   const [contacts, setContacts] = useState([
     // {
@@ -60,7 +62,6 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
             initials,
             profilePicture,
             lastMessage: chat[0] || null,
-            activeChat: false,
           };
           result.push(parsedContact);
         }
@@ -171,11 +172,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
                   to={`/chats?id=${contact._id}&type=user`}
                   key={contact}
                   onClick={() => handleActiveContact(contact)}
-                  className={`pl-3 cursor-pointer flex items-center gap-2 ${
-                    contact.activeChat
-                      ? 'bg-pink-100 font-semibold'
-                      : 'hover:bg-pink-100'
-                  } p-2 duration-200 rounded-md`}
+                  className={`pl-3 cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 duration-200 rounded-md`}
                 >
                   <img
                     src="https://picsum.photos/200/200"

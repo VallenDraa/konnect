@@ -1,9 +1,10 @@
-import { useContext } from "react";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { UserContext } from "./context/user/userContext";
-import { Home } from "./pages/Home/Home";
-import { Login } from "./pages/Login/Login";
-import { Register } from "./pages/Register/Register";
+import { useContext } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { UserContext } from './context/user/userContext';
+import { Login } from './pages/Login/Login';
+import { Register } from './pages/Register/Register';
+import Home from './pages/Home/Home';
+import RenderIf from './utils/React/RenderIf';
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -45,11 +46,14 @@ export const App = () => {
           <Route
             path="/login"
             element={
-              userState.user ? (
-                <Navigate to="/" />
-              ) : (
-                <Login user={{ userState, userDispatch }} />
-              )
+              <>
+                <RenderIf conditionIs={userState.user}>
+                  <Navigate to="/" />
+                </RenderIf>
+                <RenderIf conditionIs={!userState.user}>
+                  <Login user={{ userState, userDispatch }} />
+                </RenderIf>
+              </>
             }
           />
           <Route

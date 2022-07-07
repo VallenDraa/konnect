@@ -2,8 +2,10 @@ import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useContext, useEffect, useState } from 'react';
 import RenderIf from '../../../../utils/React/RenderIf';
 import getUsersPreview from '../../../../utils/apis/getusersPreview';
+import { ActiveChatContext } from '../../../../pages/Home/Home';
 
-const ChatList = ({ contacts, setActiveChat, setIsSidebarOn }) => {
+const ChatList = ({ contacts, setIsSidebarOn }) => {
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const [chats, setChats] = useState([
     // {
     //   username: 'john',
@@ -27,7 +29,7 @@ const ChatList = ({ contacts, setActiveChat, setIsSidebarOn }) => {
       if (user.chat.length === 0) continue;
 
       // add the last message to the last messages object
-      lastMessages[user.user] = user.chat[0];
+      lastMessages[user.user] = user.chat[user.chat.length - 1];
       usersPreviewToBeFetched.push(user.user);
     }
 
@@ -39,6 +41,7 @@ const ChatList = ({ contacts, setActiveChat, setIsSidebarOn }) => {
         for (const preview of result) {
           finalResults.push({
             ...preview,
+            activeChat: activeChat._id === preview._id,
             lastMessage: lastMessages[preview._id],
           });
         }

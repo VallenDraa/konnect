@@ -6,6 +6,7 @@ export const findUsers = async (req, res, next) => {
 
   try {
     const result = await User.where({ username: { $regex: query } }).select([
+      'status',
       'username',
       'initials',
       'profilePicture',
@@ -47,6 +48,7 @@ export const getUsersPreview = async (req, res, next) => {
 
   try {
     const users = await User.find({ _id: { $in: userIds } }).select([
+      'status',
       'username',
       'initials',
       'profilePicture',
