@@ -27,9 +27,7 @@ export const Login = ({ user }) => {
 
     try {
       const { data } = await api.post('/auth/login', formValue);
-
-      // callback for handling error
-      socket.emit('login', data.user._id, (success, message) => {
+      const loginCb = (success, message) => {
         if (success) {
           sessionStorage.setItem('token', data.token);
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
@@ -39,7 +37,14 @@ export const Login = ({ user }) => {
         } else {
           alert(message);
         }
-      });
+      };
+
+      // callback for handling error
+      socket.emit(
+        'login',
+        { userId: data.user._id, token: data.token },
+        loginCb
+      );
     } catch (error) {}
   };
   return (

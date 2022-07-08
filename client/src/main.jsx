@@ -9,6 +9,8 @@ import IsLoginViaRefreshContextProvider from './context/isLoginViaRefresh/isLogi
 import './index.css';
 import NotificationsContextProvider from './context/notifications/notificationsContext';
 import MiniModalContextProvider from './context/miniModal/miniModalContext';
+import ActiveChatContextProvider from './context/activeChat/ActiveChatContext';
+import MessageLogsContextProvider from './context/messageLogs/MessageLogsContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <IsLoginViaRefreshContextProvider>
@@ -18,7 +20,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <IsLoadingContextProvider>
             <ModalContextProvider>
               <MiniModalContextProvider>
-                <App />
+                <MessageLogsContextProvider>
+                  <ActiveChatContextProvider>
+                    <App />
+                  </ActiveChatContextProvider>
+                </MessageLogsContextProvider>
               </MiniModalContextProvider>
             </ModalContextProvider>
           </IsLoadingContextProvider>

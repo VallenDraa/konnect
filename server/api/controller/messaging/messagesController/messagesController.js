@@ -26,9 +26,7 @@ export const saveMessage = async (req, res, next) => {
     });
     await target.save();
 
-    const token = renewToken(target._doc, process.env.JWT_SECRET);
-
-    return res.json({ user: target, token, success: true });
+    return res.json({ message: req.body.message, success: true });
   } catch (error) {
     next(error);
   }

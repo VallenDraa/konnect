@@ -1,7 +1,8 @@
 import Authenticate from './authenticateClass.js';
+import axios from 'axios';
 
 export default function authentication(socket) {
-  socket.on('login', (userId, cb) => {
+  socket.on('login', async ({ userId, token }, cb) => {
     const userTarget = new Authenticate(userId, socket.id);
 
     const { success, user, message } = userTarget.addUserToOnline(
@@ -12,6 +13,22 @@ export default function authentication(socket) {
       Object.assign(global.onlineUsers, user);
       cb(success, null);
       socket.emit('is-authorized', { authorized: true });
+
+      // get all chat history if the user is authenticated
+      try {
+        const { data } = await axios.post(
+          `${process.env.API_URL}/chat/get_all_chat_history`,
+          { token }
+        );
+
+        if (data.success) {
+          socket.emit('download-all-chats', data);
+        } else {
+          socket.emit('error', message);
+        }
+      } catch (error) {
+        socket.emit('error', error);
+      }
     } else {
       cb(success, message);
       socket.emit('is-authorized', { authorized: false });

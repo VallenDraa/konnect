@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from '../../../../context/user/userContext';
-import { ActiveChatContext } from '../../../../pages/Home/Home';
+import { ActiveChatContext } from '../../../../context/activeChat/ActiveChatContext';
 import groupedContactsReducer, {
   GROUPED_CONTACTS_DEFAULT,
   GROUPED_CONTACTS_ACTIONS,
@@ -9,9 +9,12 @@ import groupedContactsReducer, {
 import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
+import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
+import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
 
 const ContactList = ({ setIsSidebarOn }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
+  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const [contacts, setContacts] = useState([
     // {
@@ -103,16 +106,23 @@ const ContactList = ({ setIsSidebarOn }) => {
   }, [contacts]);
 
   const handleActiveContact = (target) => {
-    const updatedChat = contacts.map((contact) => {
-      if (contact !== target) {
-        return { ...contact, activeChat: false }; //innactive chat
-      } else {
-        setActiveChat(contact); //active chat
-        return { ...contact, activeChat: true };
-      }
+    // initiate the update
+    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+    const updatedLogs = msgLogs;
+
+    // deactive all chat
+    for (const id in updatedLogs.content) {
+      updatedLogs.content[id].activeChat = false;
+    }
+
+    updatedLogs.content[target._id].activeChat = true;
+
+    msgLogsDispatch({
+      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+      payload: updatedLogs.content,
     });
 
-    setContacts(updatedChat);
+    setActiveChat(target);
     // close sidebar for smaller screen
     setIsSidebarOn(false);
   };

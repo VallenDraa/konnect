@@ -11,7 +11,7 @@ export const App = () => {
   console.log(userState);
 
   return (
-    <div className="text-gray-800">
+    <div className="text-gray-800 antialiased">
       <BrowserRouter>
         <Routes>
           <Route

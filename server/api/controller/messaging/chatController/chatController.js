@@ -1,17 +1,26 @@
 import jwt from 'jsonwebtoken';
-import User from '../../../../model/User';
+import User from '../../../../model/User.js';
 
-export const getChatHistoryPreviews = async (req, res, next) => {
+export const getAllChatHistory = async (req, res, next) => {
   const { token } = req.body;
 
   try {
     const { _id } = jwt.decode(token);
-    const chats = await User.findById(_id)
-      .select('contacts.user')
+    const { contacts } = await User.findById(_id)
+      .select(['contacts.user', 'contacts.chat', 'contacts.-_id'])
       .populate({
-        select: ['username', 'initials', 'profilePicture'],
         path: 'contacts.user',
+        select: ['username', 'status', 'initials', 'profilePicture'],
       });
+
+    // assemble object to send back to the client
+    const response = {
+      currentUser: _id,
+      messageLogs: [...contacts],
+      success: true,
+    };
+
+    res.json(response);
   } catch (error) {
     next(error);
   }

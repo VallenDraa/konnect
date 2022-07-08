@@ -64,7 +64,7 @@ export const login = async (req, res, next) => {
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
+    if (isPasswordCorrect) {
       const { password, ...otherData } = user._doc;
 
       // send user data back as a JWT token

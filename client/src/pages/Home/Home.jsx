@@ -1,4 +1,4 @@
-import { useContext, useState, createContext } from 'react';
+import { useContext, useState } from 'react';
 import { Sidebar } from '../../components/Sidebar/Sidebar';
 import { ChatBox } from '../../components/ChatBox/ChatBox';
 import { Modal } from '../../components/modal/Modal';
@@ -14,20 +14,10 @@ import locationForModal from '../../components/Modal/utils/locationForModal';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/useUrlHistory/useUrlHistory';
-
-const ACTIVE_CHAT_DEFAULT = {
-  _id: null,
-  activeChat: false,
-  initials: null,
-  lastMessage: null,
-  profilePicture: null,
-  username: null,
-};
-
-export const ActiveChatContext = createContext(ACTIVE_CHAT_DEFAULT);
+import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
 
 export default function Home() {
-  const [activeChat, setActiveChat] = useState(ACTIVE_CHAT_DEFAULT);
+  const { activeChat } = useContext(ActiveChatContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
@@ -42,9 +32,11 @@ export default function Home() {
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
     if (Object.keys(userState.user).length !== 0 && isLoginViaRefresh) {
-      socket.emit('login', userState.user._id, (success, message) => {
-        !success && alert(message);
-      });
+      socket.emit(
+        'login',
+        { userId: userState.user._id, token: sessionStorage.getItem('token') },
+        (success, message) => !success && alert(message)
+      );
     }
 
     return () => socket.off('login');
@@ -111,6 +103,11 @@ export default function Home() {
     }
   }, [location]);
 
+  // if there is any socket error
+  useEffect(() => {
+    socket.on('error', (err) => console.log(err));
+  }, []);
+
   return (
     <>
       <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
@@ -121,16 +118,14 @@ export default function Home() {
           className={`flex duration-200
                      ${modalState.isActive ? 'blur-sm' : ''}`}
         >
-          <ActiveChatContext.Provider value={{ activeChat, setActiveChat }}>
-            <Sidebar
-              urlHistory={urlHistory}
-              sidebarState={{ isSidebarOn, setIsSidebarOn }}
-            />
-            <ChatBox
-              activeChat={activeChat}
-              sidebarState={{ isSidebarOn, setIsSidebarOn }}
-            />
-          </ActiveChatContext.Provider>
+          <Sidebar
+            urlHistory={urlHistory}
+            sidebarState={{ isSidebarOn, setIsSidebarOn }}
+          />
+          <ChatBox
+            activeChat={activeChat}
+            sidebarState={{ isSidebarOn, setIsSidebarOn }}
+          />
         </div>
       </div>
     </>
