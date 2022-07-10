@@ -257,21 +257,22 @@ export const OthersProfileModalContent = ({ username }) => {
             </header>
             <main className="space-y-5">
               {/* fullname */}
-              <div
-                className="px-5"
+              <RenderIf
                 conditionIs={
                   otherUserData?.firstName !== '' ||
                   otherUserData?.lastName !== ''
                 }
               >
-                <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
-                  <ImProfile className="text-xxs" />
-                  Full Name :
-                </h3>
-                <span className="text-base text-gray-600 font-semibold px-2">
-                  {otherUserData?.firstName} {otherUserData?.lastName}
-                </span>
-              </div>
+                <div className="px-5">
+                  <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
+                    <ImProfile className="text-xxs" />
+                    Full Name :
+                  </h3>
+                  <span className="text-base text-gray-600 font-semibold px-2">
+                    {otherUserData?.firstName} {otherUserData?.lastName}
+                  </span>
+                </div>
+              </RenderIf>
 
               {/* user status */}
               <div className="px-5">
@@ -291,9 +292,7 @@ export const OthersProfileModalContent = ({ username }) => {
                 </span>
                 {/* swiper */}
 
-                <RenderIf conditionIs={otherUserData?.contacts}>
-                  <ContactsSwiperCard contacts={otherUserData?.contacts} />
-                </RenderIf>
+                <ContactsSwiperCard contacts={otherUserData?.contacts} />
               </div>
             </main>
           </footer>

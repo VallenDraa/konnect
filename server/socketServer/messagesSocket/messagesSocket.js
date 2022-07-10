@@ -1,23 +1,37 @@
 import axios from 'axios';
-import { createErrorNonExpress } from '../../utils/createError.js';
+import jwt from 'jsonwebtoken';
 
 export default function messages(socket) {
-  socket.on('new-message', async (message, token) => {
-    console.log(message);
-
+  socket.on('new-msg', async (message, token) => {
+    // console.log(message);
     const isTargetOnline = message.to in global.onlineUsers;
     const targetSocketId = global.onlineUsers[message.to];
 
     // save message to sender
     try {
-      await axios.put(`${process.env.API_URL}/messages/save_message`, {
-        token,
-        message,
-        mode: 'sender',
-      });
+      const { data } = await axios.put(
+        `${process.env.API_URL}/messages/save_message`,
+        {
+          token,
+          message,
+          mode: 'sender',
+        }
+      );
+
+      if (data.success) {
+        socket.emit('msg-sent', data.success, {
+          timeSent: message.time,
+          to: message.to,
+        });
+      }
     } catch (error) {
+      console.log(error);
+      socket.emit('msg-sent', false, {
+        timeSent: message.time,
+        to: message.to,
+      });
       // console.log(error);
-      socket.emit('error', createErrorNonExpress(error));
+      socket.emit('error', error);
     }
 
     // save message to reciever and send the message if target is online
@@ -32,7 +46,29 @@ export default function messages(socket) {
       }
     } catch (error) {
       // console.log(error);
-      socket.to(targetSocketId).emit('error', createErrorNonExpress(error));
+      socket.to(targetSocketId).emit('error', error);
+    }
+  });
+
+  socket.on('read-msg', async (time, token, senderId, cb) => {
+    try {
+      // set all passed in messages isRead field to true
+      const { data } = await axios.put(
+        `${process.env.API_URL}/messages/read_message`,
+        { time, token, senderId }
+      );
+
+      // check if sender is online
+      const isSenderOnline = senderId in global.onlineUsers;
+
+      if (isSenderOnline) {
+        const senderSocketId = global.onlineUsers[senderId];
+        const { _id } = jwt.decode(token); //this'll be the recipient id
+
+        socket.to(senderSocketId).emit('msg-on-read', data.success, _id);
+      }
+    } catch (e) {
+      socket.emit('error', e);
     }
   });
 }

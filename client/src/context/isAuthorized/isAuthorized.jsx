@@ -1,12 +1,17 @@
-import { createContext, useState } from 'react';
+import { useEffect, createContext, useState } from 'react';
 import socket from '../../utils/socketClient/socketClient';
 
 export const IsAuthorizedContext = createContext(false);
 
 export default function IsAuthorizedContextProvider({ children }) {
   const [isAuthorized, setisAuthorized] = useState(false);
-  socket.on('is-authorized', ({ authorized }) => {
-    setisAuthorized(authorized);
+
+  useEffect(() => {
+    socket.on('is-authorized', ({ authorized }) => {
+      setisAuthorized(authorized);
+    });
+
+    return () => socket.off('is-authorized');
   });
 
   return (

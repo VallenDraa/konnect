@@ -62,7 +62,7 @@ export default function SearchList() {
 
   return (
     <section aria-label="searchList" className="py-1.5 space-y-5">
-      <header className="sticky top-0 space-y-3  ">
+      <header className="sticky top-0 space-y-3 bg-gray-50 pt-2">
         <Input
           labelActive={true}
           customState={[query, setQuery]}

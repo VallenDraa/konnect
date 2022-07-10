@@ -111,18 +111,24 @@ const ContactList = ({ setIsSidebarOn }) => {
     const updatedLogs = msgLogs;
 
     // deactive all chat
-    for (const id in updatedLogs.content) {
-      updatedLogs.content[id].activeChat = false;
+    if (Object.keys(updatedLogs.content).length > 0) {
+      for (const id in updatedLogs.content) {
+        updatedLogs.content[id].activeChat = false;
+      }
+
+      if (!updatedLogs.content[target._id]) return;
+      updatedLogs.content[target._id].activeChat = true;
+
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: updatedLogs.content,
+      });
+
+      setActiveChat(target);
+    } else {
+      console.log('test');
     }
 
-    updatedLogs.content[target._id].activeChat = true;
-
-    msgLogsDispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedLogs.content,
-    });
-
-    setActiveChat(target);
     // close sidebar for smaller screen
     setIsSidebarOn(false);
   };

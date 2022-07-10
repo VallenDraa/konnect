@@ -1,7 +1,16 @@
-import { createContext, useReducer, useEffect } from 'react';
+import {
+  createContext,
+  useReducer,
+  useEffect,
+  useContext,
+  useState,
+} from 'react';
 import messageLogsReducer from './messageLogsReducer';
 import socket from '../../utils/socketClient/socketClient';
 import MESSAGE_LOGS_ACTIONS from './messageLogsActions';
+import { UserContext } from '../user/userContext';
+import { ActiveChatContext } from '../activeChat/ActiveChatContext';
+import getUsersPreview from '../../utils/apis/getusersPreview';
 
 const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
@@ -25,6 +34,48 @@ export default function MessageLogsContextProvider({ children }) {
     messageLogsReducer,
     MESSAGE_LOGS_DEFAULT
   );
+  const { userState } = useContext(UserContext);
+  const { activeChat } = useContext(ActiveChatContext);
+  const [contactLength, setContactLength] = useState(0);
+  const refreshMsgLogs = () => {
+    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+    const updatedMsgLogs = msgLogs;
+
+    const newUserId =
+      userState.user.contacts[userState.user.contacts.length - 1].user;
+
+    // assemble the final result object
+
+    getUsersPreview(sessionStorage.getItem('token'), [newUserId])
+      .then(([user]) => {
+        const newMessageLogContent = {
+          user, //this'll get the last user (new user) in the contact array
+          lastMessageReadAt: null,
+          chat: [],
+          activeChat: false,
+        };
+        updatedMsgLogs.content[newUserId] = newMessageLogContent;
+
+        // save the new message log
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedMsgLogs.content,
+        });
+      })
+      .catch((e) => {
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateError,
+          payload: e,
+        });
+      });
+  };
+
+  useEffect(() => {
+    if (!userState.user) return;
+    const newContactLength = userState.user.contacts.length;
+
+    setContactLength(newContactLength);
+  }, [userState]);
 
   // fetch all the message log from the server
   useEffect(() => {
@@ -59,9 +110,14 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off('download-all-chats');
   }, []);
 
+  // refresh messageLog
   useEffect(() => {
-    console.log(msgLogs);
-  }, [msgLogs]);
+    socket.on('refresh-msg-log', refreshMsgLogs);
+
+    return () => socket.off('refresh-msg-log');
+  }, []);
+
+  useEffect(() => console.log(msgLogs), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider value={{ msgLogs, msgLogsDispatch }}>

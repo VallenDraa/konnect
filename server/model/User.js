@@ -12,12 +12,14 @@ const UserSchema = new mongoose.Schema(
     profilePicture: { type: String, default: '' },
     contacts: [
       {
+        lastMessageReadAt: { type: Date, default: null },
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
         chat: [
           {
             by: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
             msgType: String,
             content: String,
+            isSent: false,
             time: { type: Date, default: new Date() },
           },
         ],

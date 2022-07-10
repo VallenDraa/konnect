@@ -10,11 +10,26 @@ export default function ChatList({ setIsSidebarOn }) {
   const { setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
-    Object.entries(msgLogs.content)
+    msgLogs?.content ? Object.entries(msgLogs?.content) : []
   );
 
   // refresh the entries everytime the msgLogs is updated
-  useEffect(() => setLogsEntries(Object.entries(msgLogs.content)), [msgLogs]);
+  useEffect(() => {
+    if (!msgLogs || !msgLogs.content) return;
+
+    const newEntries = Object.entries(msgLogs.content);
+
+    // check if the new message logs and current one is the same
+    if (
+      JSON.stringify(Object.fromEntries(newEntries)) !==
+      JSON.stringify(Object.fromEntries(logsEntries))
+    ) {
+      setLogsEntries(newEntries);
+    }
+  }, [msgLogs]);
+  // useEffect(() => {
+  //   console.log(logsEntries);
+  // }, [logsEntries]);
 
   const handleActiveChat = (target) => {
     if (!target) return;
@@ -41,28 +56,42 @@ export default function ChatList({ setIsSidebarOn }) {
     // close sidebar for smaller screen
     setIsSidebarOn(false);
   };
+  const EmptyPlaceholder = () => {
+    return <span>No chats Are Available</span>;
+  };
 
-  return (
-    <ul className="space-y-3 py-3">
-      {/* if chat history doesn't exist'*/}
-      <RenderIf conditionIs={logsEntries.length === 0}>Empty</RenderIf>
+  // determine what to return base on logsEntries length
+  if (logsEntries.length === 0) {
+    return <EmptyPlaceholder />;
+  } else {
+    const allChatIsEmpty = logsEntries.every(
+      ([key, value]) => value.chat?.length === 0
+    );
 
-      {/* if chat history exists */}
-      <RenderIf conditionIs={logsEntries.length > 0}>
-        {logsEntries.map(([_id, { user, chat, activeChat }]) => {
-          return (
-            <ChatPreview
-              key={_id}
-              lastMessage={chat[chat.length - 1]}
-              user={user}
-              isActive={activeChat}
-              handleActiveChat={handleActiveChat}
-            />
-          );
-        })}
-      </RenderIf>
-    </ul>
-  );
+    if (allChatIsEmpty) {
+      return <EmptyPlaceholder />;
+    } else {
+      return (
+        <ul className="space-y-3 py-3">
+          {/* if chat history exists */}
+          <RenderIf conditionIs={logsEntries.length > 0}>
+            {logsEntries.map(([_id, { user, chat, activeChat }]) => {
+              // console.log(logsEntries);
+              return (
+                <ChatPreview
+                  key={_id}
+                  lastMessage={chat[chat.length - 1]}
+                  user={user}
+                  isActive={activeChat}
+                  handleActiveChat={handleActiveChat}
+                />
+              );
+            })}
+          </RenderIf>
+        </ul>
+      );
+    }
+  }
 }
 
 // unused code

@@ -73,6 +73,8 @@ export default function Home() {
         userDispatch({ type: USER_ACTIONS.updateFail, payload: data.message });
       }
     });
+
+    return () => socket.off('receive-contact-request-response');
   }, []);
 
   // refresh userState
@@ -106,6 +108,8 @@ export default function Home() {
   // if there is any socket error
   useEffect(() => {
     socket.on('error', (err) => console.log(err));
+
+    return () => socket.off('error');
   }, []);
 
   return (

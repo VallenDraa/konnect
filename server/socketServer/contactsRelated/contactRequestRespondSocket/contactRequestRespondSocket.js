@@ -13,6 +13,7 @@ export default function contactRequestRespond(socket) {
       );
 
       socket.emit('receive-contact-request-response', data);
+      socket.emit('refresh-msg-log');
     } catch (error) {
       console.log(error.response.data);
       socket.emit('receive-contact-request-response', error.response.data);
@@ -30,6 +31,8 @@ export default function contactRequestRespond(socket) {
         socket
           .to(global.onlineUsers[senderId])
           .emit('receive-contact-request-response', data);
+
+        socket.to(global.onlineUsers[senderId]).emit('refresh-msg-log');
       }
     } catch (error) {
       console.log(error.response.data);

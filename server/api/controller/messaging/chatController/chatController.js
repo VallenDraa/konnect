@@ -7,7 +7,12 @@ export const getAllChatHistory = async (req, res, next) => {
   try {
     const { _id } = jwt.decode(token);
     const { contacts } = await User.findById(_id)
-      .select(['contacts.user', 'contacts.chat', 'contacts.-_id'])
+      .select([
+        'contacts.user',
+        'contacts.lastMessageReadAt',
+        'contacts.chat',
+        'contacts.-_id',
+      ])
       .populate({
         path: 'contacts.user',
         select: ['username', 'status', 'initials', 'profilePicture'],

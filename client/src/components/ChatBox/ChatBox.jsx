@@ -12,7 +12,6 @@ import { Message } from '../Message/Message';
 import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../context/messageLogs/messageLogsActions';
-import api from '../../utils/apiAxios/apiAxios';
 
 export const ChatBox = ({ sidebarState }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -30,35 +29,41 @@ export const ChatBox = ({ sidebarState }) => {
     token,
     currentActiveChatId
   ) => {
+    console.log('new');
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-    const [user] = await getUsersPreview(token, targetId);
-    const isActiveChat = currentActiveChatId === targetId;
-    const updatedMsgLogs = msgLogs;
+    try {
+      const [user] = await getUsersPreview(token, targetId);
+      const isActiveChat = currentActiveChatId === targetId;
+      const updatedMsgLogs = msgLogs;
 
-    // deactivate other chats if the current one is active
-    for (const id in updatedMsgLogs.content) {
-      updatedMsgLogs.content[id].activeChat = false;
+      // deactivate other chats if the current one is active
+      for (const id in updatedMsgLogs.content) {
+        updatedMsgLogs.content[id].activeChat = false;
+      }
+
+      // assemble the final result object
+      const newMessageLogContent = {
+        user,
+        lastMessageReadAt: null,
+        chat: [message],
+        activeChat: isActiveChat,
+      };
+      updatedMsgLogs.content[targetId] = newMessageLogContent;
+
+      // save the new message log
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: updatedMsgLogs.content,
+      });
+    } catch (error) {
+      console.log(error);
     }
-
-    // assemble the final result object
-    const newMessageLogContent = {
-      user,
-      chat: [message],
-      activeChat: isActiveChat,
-    };
-    updatedMsgLogs.content[targetId] = newMessageLogContent;
-
-    // save the new message log
-    msgLogsDispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedMsgLogs.content,
-    });
   };
   const pushNewMsgToEntry = (targetId, message) => {
+    console.log('exist');
     const updatedMsgLogs = msgLogs;
+    updatedMsgLogs.content[targetId].lastMessageReadAt = null;
     updatedMsgLogs.content[targetId].chat.push(message);
-
-    console.log(updatedMsgLogs);
 
     msgLogsDispatch({
       type: MESSAGE_LOGS_ACTIONS.updateLoaded,
@@ -69,7 +74,7 @@ export const ChatBox = ({ sidebarState }) => {
   // scroll down to the bottom of the page when first loaded
   window.scrollTo({ top: window.scrollMaxY });
 
-  // receiving message code
+  /* RECIPIENT RELATED CODE */
   useEffect(() => {
     socket.on('receive-message', async ({ message, success }) => {
       // update the message logs
@@ -86,23 +91,56 @@ export const ChatBox = ({ sidebarState }) => {
     });
 
     return () => socket.off('receive-message');
-  }, [msgLogs, userState]);
+  }, [msgLogs, userState]); // receiving message for recipient only code
 
-  // automatically scroll down to bottom
+  useEffect(() => {
+    if (!activeChat._id) return;
+
+    if (msgLogs.content[activeChat._id].chat.length > 0) {
+      const currMsgLog = msgLogs.content[activeChat._id].chat;
+      const finalMesIndex = msgLogs.content[activeChat._id].chat.length - 1;
+
+      if (currMsgLog[finalMesIndex].by !== userState.user._id) {
+        const token = sessionStorage.getItem('token');
+
+        socket.emit(
+          'read-msg',
+          new Date().toISOString(),
+          token,
+          activeChat._id
+        );
+      }
+    }
+  }, [activeChat, msgLogs]); //set the message to read
+  /* END RECIPIENT RELATED CODE */
+
+  /* SENDER RELATED CODE */
+  useEffect(() => {
+    socket.on('msg-on-read', (isRead, recipientId) => {
+      console.log('dsdsd');
+    });
+
+    return () => socket.off('msg-on-read');
+  }, []);
+
+  /* END OF SENDER RELATED CODE */
+
+  /* MISC RELATED CODES */
   useEffect(() => {
     const targetId = activeChat._id;
 
-    const logs = msgLogs.content[targetId];
-    const i = logs?.chat.length - 1; //index of last item in message log
+    if (msgLogs.content[targetId]) {
+      if (msgLogs.content[targetId].chat.length === 0) return;
 
-    if (logs?.chat[i]?.by === targetId) {
-      window.scrollTo({ top: window.scrollMaxY });
+      const logs = msgLogs.content[targetId];
+      const i = logs.chat.length - 1; //index of last item in message log
+
+      if (logs.chat[i].by === targetId) {
+        window.scrollTo({ top: window.scrollMaxY });
+      }
     }
-  }, [msgLogs, userState]);
+  }, [msgLogs, userState]); // automatically scroll down to bottom
 
-  // useEffect(() => console.log(messageLog), [messageLog]);
-
-  // to check if the url is directed to a certain chat
   useEffect(() => {
     if (location.pathname === '/chats') {
       const search = Object.fromEntries(
@@ -166,49 +204,83 @@ export const ChatBox = ({ sidebarState }) => {
         // }
       }
     }
-  }, [location, msgLogs]);
+  }, [location, msgLogs]); // to check if the url is directed to a certain chat
 
-  // change the message log according to the active chat
   useEffect(() => {
     if (!activeChat._id) return;
-  }, [activeChat, userState]);
+  }, [activeChat, userState]); // change the message log according to the active chat
 
+  useEffect(() => {
+    socket.on('msg-sent', (isSent, info) => {
+      if (!isSent) return;
+
+      // start the update sequence
+      msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+      const updatedMsgLogs = msgLogs;
+
+      if (updatedMsgLogs.content[info.to]) {
+        const chatContent = updatedMsgLogs.content[info.to].chat;
+
+        // loop over the array of chats and find the one where the time sent matches, then update the isSent field into true
+        for (const chat of chatContent) {
+          if (chat.time === info.timeSent) {
+            chat.isSent = true;
+            break;
+          }
+        }
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedMsgLogs.content,
+        });
+      }
+    });
+
+    return () => socket.off('msg-sent');
+  }, [msgLogs]); // for changing the message state indicator
+  /* END OF MISC RELATED CODES */
+
+  /* SENDING MESSAGES RELATED CODE */
   const handleNewMessage = (e) => {
     e.preventDefault();
     if (newMessage === '') return;
 
     const newMessageInput = {
       by: userState.user._id,
-      to: target.targetId,
-      content: newMessage,
       msgType: 'text',
-      time: new Date(),
+      content: newMessage,
+      isSent: false,
+      time: new Date().toISOString(),
     };
 
     // update the message logs
-    !msgLogs.content[target.targetId]
-      ? pushNewEntry(
+    console.log(msgLogs.content[target.targetId]);
+
+    msgLogs.content[target.targetId]
+      ? pushNewMsgToEntry(target.targetId, newMessageInput)
+      : pushNewEntry(
           target.targetId,
           newMessageInput,
           sessionStorage.getItem('token'),
           activeChat._id
-        )
-      : pushNewMsgToEntry(target.targetId, newMessageInput);
+        );
 
+    // reset the input bar
     setnewMessage('');
-    socket.emit(
-      'new-message',
-      newMessageInput,
-      sessionStorage.getItem('token')
-    );
+
+    // send the message to the server
+    // add a "to" field to the final object to indicate who the message is for
+    newMessageInput.to = target.targetId;
+
+    socket.emit('new-msg', newMessageInput, sessionStorage.getItem('token'));
   };
 
-  // will trigger when the input bar is clicked
   const changeLocation = () => {
     const currentPath = location.pathname + location.search;
     const targetPath = `/chats?id=${activeChat._id}&type=user`;
     currentPath !== targetPath && navigate(targetPath);
-  };
+  }; // will trigger when the input bar is clicked
+  /* END OF SENDING MESSAGES RELATED CODE */
 
   return (
     <>
@@ -255,10 +327,14 @@ export const ChatBox = ({ sidebarState }) => {
               ref={chatBoxRef}
               className="px-2 py-4 space-y-5 bg-gray-100 grow"
             >
-              {msgLogs.content[activeChat._id]?.chat.map((log, i) => {
+              {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
                 return (
                   <Fragment key={i}>
                     <Message
+                      state={{
+                        isSent: log.isSent,
+                        // isRead: log.isRead
+                      }}
                       isSentByMe={log.by === userState.user._id}
                       msg={log.content}
                       time={new Date(log.time)}
@@ -266,6 +342,16 @@ export const ChatBox = ({ sidebarState }) => {
                   </Fragment>
                 );
               })}
+              <RenderIf
+                conditionIs={
+                  msgLogs?.content[activeChat._id]?.lastMessageReadAt
+                }
+              >
+                <span>
+                  Read at{' '}
+                  {new Date(msgLogs?.content[activeChat._id]?.lastMessageRead)}
+                </span>
+              </RenderIf>
             </div>
           </main>
           {/* input */}
