@@ -30,11 +30,11 @@ export default function createError(next, status, message, additionalInfo) {
  * @returns {} return the error object
  */
 
-export function createErrorNonExpress(error, status, additionalInfo, message) {
+export function createErrorNonExpress(status, message, additionalInfo) {
   const err = new Error();
-  err.message = error.message || message;
+  err.message = message;
   err.status = status || 500;
 
   if (additionalInfo) Object.assign(err, additionalInfo);
-  return error ? error : err;
+  return err;
 }

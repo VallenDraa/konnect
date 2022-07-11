@@ -3,6 +3,7 @@ import { BsFileEarmarkImage } from 'react-icons/bs';
 import { IoCall } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { getSentAtStatus } from '../../../../../utils/dates/dates';
 
 export const ChatPreview = ({
   user,
@@ -15,30 +16,12 @@ export const ChatPreview = ({
 
   // will run to determine the time the message was sent
   useEffect(() => {
-    let sentAt;
-    const now = new Date();
-    const timeMessageSent = new Date(lastMessage.time);
-    const todaysDate = now.getDate();
-    const messageSentDate = timeMessageSent.getDate();
-    const todaysMonthAndYear = `${now.getMonth()}/${now.getFullYear()}`;
-    const messageSentDateMonthAndYear = `${timeMessageSent.getMonth()}/${timeMessageSent.getFullYear()}`;
-
-    // determine the time at which the message was sent
-    if (todaysDate === messageSentDate) {
-      sentAt = 'today';
-    } else if (
-      todaysDate > messageSentDate &&
-      todaysDate - messageSentDate === 1 &&
-      todaysMonthAndYear === messageSentDateMonthAndYear
-    ) {
-      sentAt = 'yesterday';
-    } else {
-      sentAt = 'long ago';
-    }
+    const sentAt = getSentAtStatus(new Date(), new Date(lastMessage.time));
 
     // determine the time indicator that'll be displayed
     switch (sentAt) {
       case 'today':
+        const timeMessageSent = new Date(lastMessage.time);
         const formattedTime = timeMessageSent
           .toTimeString()
           .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));

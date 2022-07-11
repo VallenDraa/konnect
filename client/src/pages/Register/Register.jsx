@@ -28,16 +28,16 @@ export const Register = () => {
   };
   return (
     <main className="flex min-h-screen w-full">
-      <section
+      <div
         className="basis-full md:basis-2/3 min-h-screen shadow-inner blur-2xl md:blur-none"
         style={{
           backgroundImage: `url(${patternBgLight})`,
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center left',
+          backgroundPosition: 'center',
         }}
-      ></section>
-      <section className="md:basis-1/3 md:min-w-[400px] min-h-screen md:bg-slate-50 shadow-xl absolute md:static inset-x-0 flex flex-col">
+      />
+      <section className="md:basis-1/3 md:min-w-[400px] min-h-screen md:bg-gray-50 shadow-xl absolute md:static inset-x-0 flex flex-col">
         <div className="px-5 py-10 space-y-10 h-full flex flex-col grow sticky top-0">
           <header className="space-y-3 md:space-y-5">
             <div className="absolute top-0 h-16 inset-x-0 p-2 z-20">

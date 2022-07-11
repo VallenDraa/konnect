@@ -23,21 +23,15 @@ export const saveMessage = async (req, res, next) => {
       isRead: false,
     };
 
-    const target = await User.findById(
-      mode === 'sender' ? msgToPush.by : to
-    ).select('-password');
+    const targetId = mode === 'sender' ? msgToPush.by : to;
+    const target = await User.findById(targetId).select('-password');
 
-    const saveMsgTo = mode === 'sender' ? to : msgToPush.by;
-    // target.contacts.forEach(({ user }, i) => {
-    //   if (user.toString() === saveMsgTo) {
-    //     // set the lastMessageReadAt to null
-    //     target.contacts[i].lastMessageReadAt = null;
-    //     target.contacts[i].chat.push(msgToPush);
-    //   }
-    // });
+    const contactTargetId = mode === 'sender' ? to : msgToPush.by;
 
     for (let i = 0; i < target.contacts.length; i++) {
-      if (target.contacts[i].user.toString() === saveMsgTo) {
+      const currContactId = target.contacts[i].user.toString();
+
+      if (currContactId === contactTargetId) {
         // set the lastMessageReadAt to null
         target.contacts[i].lastMessageReadAt = null;
         target.contacts[i].chat.push(msgToPush);
@@ -123,26 +117,32 @@ export const saveMessage = async (req, res, next) => {
 export const readMessage = async (req, res, next) => {
   const { time, token, senderId } = req.body;
 
+  // check if the time passed in is of a date format
+
+  if (new Date(time).getMonth().toString() === NaN.toString()) {
+    return createError(next, 400, 'invalid time arguments');
+  }
+
   try {
     // this is the id for the recipient
     const { _id } = jwt.decode(token);
 
-    // find the  recipient data
-    const recipient = await User.findById(_id);
+    // find the sender data
+    const sender = await User.findById(senderId);
 
     // call the setToRead function
-    for (let i = 0; i < recipient.contacts.length; i++) {
+    for (let i = 0; i < sender.contacts.length; i++) {
       // set the current contact id
-      const currContactId = recipient.contacts[i].user.toString();
+      const currContactId = sender.contacts[i].user.toString();
 
-      if (currContactId === senderId) {
-        recipient.contacts[i].lastMessageReadAt = time;
+      if (currContactId === _id) {
+        sender.contacts[i].lastMessageReadAt = time;
         break;
       }
     }
 
     // if all is gucci send success to client
-    await recipient.save();
+    await sender.save();
     res.json({ success: true });
   } catch (error) {
     next(error);

@@ -13,7 +13,7 @@ import { useLocation } from 'react-router-dom';
 import locationForModal from '../../components/Modal/utils/locationForModal';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import MiniModal from '../../components/MiniModal/MiniModal';
-import useUrlHistory from '../../utils/useUrlHistory/useUrlHistory';
+import useUrlHistory from '../../utils/hooks/useUrlHistory/useUrlHistory';
 import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
 
 export default function Home() {

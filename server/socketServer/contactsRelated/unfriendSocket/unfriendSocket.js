@@ -17,10 +17,10 @@ export default function unfriend(socket) {
         socket.emit('update-client-data', senderData.data, { unfriend: true });
       } else {
         const { message, status } = senderData.data;
-        socket.emit('error', createErrorNonExpress(null, status, message));
+        socket.emit('error', createErrorNonExpress(status, message));
       }
     } catch (error) {
-      socket.emit('error', createErrorNonExpress(error));
+      socket.emit('error', error);
     }
 
     // remove the my id from the target's contact
@@ -39,11 +39,11 @@ export default function unfriend(socket) {
             .emit('update-client-data', targetData.data, { unfriend: true });
         } else {
           const { message, status } = senderData.data;
-          socket.emit('error', createErrorNonExpress(null, status, message));
+          socket.emit('error', createErrorNonExpress(status, message));
         }
       }
     } catch (error) {
-      isTargetOnline && socket.emit('error', createErrorNonExpress(error));
+      isTargetOnline && socket.emit('error', error);
     }
   });
 }

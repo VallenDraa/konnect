@@ -1,15 +1,8 @@
-import {
-  createContext,
-  useReducer,
-  useEffect,
-  useContext,
-  useState,
-} from 'react';
+import { createContext, useReducer, useEffect, useContext } from 'react';
 import messageLogsReducer from './messageLogsReducer';
 import socket from '../../utils/socketClient/socketClient';
 import MESSAGE_LOGS_ACTIONS from './messageLogsActions';
 import { UserContext } from '../user/userContext';
-import { ActiveChatContext } from '../activeChat/ActiveChatContext';
 import getUsersPreview from '../../utils/apis/getusersPreview';
 
 const MESSAGE_LOGS_DEFAULT = {
@@ -35,8 +28,15 @@ export default function MessageLogsContextProvider({ children }) {
     MESSAGE_LOGS_DEFAULT
   );
   const { userState } = useContext(UserContext);
-  const { activeChat } = useContext(ActiveChatContext);
-  const [contactLength, setContactLength] = useState(0);
+  // const { activeChat } = useContext(ActiveChatContext);
+  // const [contactLength, setContactLength] = useState(0);
+  // check if the amount of contacts has changed
+  // useEffect(() => {
+  //   if (!userState.user) return;
+  //   const newContactLength = userState.user.contacts.length;
+
+  //   setContactLength(newContactLength);
+  // }, [userState]);
   const refreshMsgLogs = () => {
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
     const updatedMsgLogs = msgLogs;
@@ -70,13 +70,6 @@ export default function MessageLogsContextProvider({ children }) {
       });
   };
 
-  useEffect(() => {
-    if (!userState.user) return;
-    const newContactLength = userState.user.contacts.length;
-
-    setContactLength(newContactLength);
-  }, [userState]);
-
   // fetch all the message log from the server
   useEffect(() => {
     if (msgLogs.length > 0) return;
@@ -90,6 +83,7 @@ export default function MessageLogsContextProvider({ children }) {
         payload[log.user._id] = {
           user: log.user,
           chat: log.chat,
+          lastMessageReadAt: log.lastMessageReadAt,
           activeChat: false,
         };
       }
@@ -117,7 +111,7 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off('refresh-msg-log');
   }, []);
 
-  useEffect(() => console.log(msgLogs), [msgLogs]);
+  // useEffect(() => console.log(msgLogs), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider value={{ msgLogs, msgLogsDispatch }}>

@@ -52,7 +52,6 @@ export default function sendContactRequest(socket) {
               .emit(
                 'error',
                 createErrorNonExpress(
-                  null,
                   queueResponse.status,
                   queueResponse.message
                 )
@@ -62,16 +61,12 @@ export default function sendContactRequest(socket) {
               .to(recipientSocketId)
               .emit(
                 'error',
-                createErrorNonExpress(
-                  null,
-                  sendResponse.status,
-                  sendResponse.message
-                )
+                createErrorNonExpress(sendResponse.status, sendResponse.message)
               );
           }
         }
       } catch (error) {
-        socket.emit('error', createErrorNonExpress(error));
+        socket.emit('error', error);
       }
     }
   );

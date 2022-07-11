@@ -17,26 +17,28 @@ import RenderIf from '../../utils/React/RenderIf';
 import MENUS from '../Menu/MENUS';
 import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
+import {
+  ActiveChatContext,
+  ACTIVE_CHAT_DEFAULT,
+} from '../../context/activeChat/ActiveChatContext';
 
 export const Sidebar = ({ sidebarState, urlHistory }) => {
   const Navigate = useNavigate();
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
+  const { setActiveChat } = useContext(ActiveChatContext);
   const { userState, userDispatch } = useContext(UserContext);
   const { modalDispatch } = useContext(ModalContext);
   const sidebar = useRef();
 
   const handleLogout = () => {
     socket.emit('logout', userState.user._id, (success, message) => {
-      if (success) {
-        userDispatch({ type: USER_ACTIONS.logout });
-        sessionStorage.removeItem('token');
-        Navigate('/login');
-      } else {
-        userDispatch({ type: USER_ACTIONS.logout });
-        sessionStorage.removeItem('token');
-        Navigate('/login');
-      }
+      // deactivate chat
+      setActiveChat(ACTIVE_CHAT_DEFAULT);
+
+      userDispatch({ type: USER_ACTIONS.logout });
+      sessionStorage.removeItem('token');
+      Navigate('/login');
     });
   };
 

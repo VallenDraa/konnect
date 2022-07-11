@@ -1,13 +1,12 @@
 import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useContext, useEffect, useState } from 'react';
 import RenderIf from '../../../../utils/React/RenderIf';
-import getUsersPreview from '../../../../utils/apis/getusersPreview';
 import { ActiveChatContext } from '../../../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
 
 export default function ChatList({ setIsSidebarOn }) {
-  const { setActiveChat } = useContext(ActiveChatContext);
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
@@ -38,14 +37,18 @@ export default function ChatList({ setIsSidebarOn }) {
 
     for (const id in updatedMsgLogs.content) {
       // see if the value is already in the correct state
-      if (updatedMsgLogs.content[id].activeChat === (id === target._id)) {
-        continue;
-      }
+      // if (updatedMsgLogs.content[id].activeChat === (id === target._id)) {
 
+      //   continue;
+      // } else {
+      //   console.log(target, activeChat);
       updatedMsgLogs.content[id].activeChat = id === target._id;
-      if (updatedMsgLogs.content[id].activeChat) {
-        setActiveChat({ ...updatedMsgLogs.content[id].user });
-      }
+      const lastMessageReadAt = updatedMsgLogs.content[id].lastMessageReadAt;
+
+      setActiveChat({
+        ...target,
+        lastMessageReadAt,
+      });
     }
 
     msgLogsDispatch({
@@ -75,14 +78,14 @@ export default function ChatList({ setIsSidebarOn }) {
         <ul className="space-y-3 py-3">
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
-            {logsEntries.map(([_id, { user, chat, activeChat }]) => {
+            {logsEntries.map(([_id, { user, chat }]) => {
               // console.log(logsEntries);
               return (
                 <ChatPreview
                   key={_id}
                   lastMessage={chat[chat.length - 1]}
                   user={user}
-                  isActive={activeChat}
+                  isActive={_id === activeChat._id}
                   handleActiveChat={handleActiveChat}
                 />
               );

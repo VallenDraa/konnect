@@ -1,5 +1,6 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import { createErrorNonExpress } from '../../utils/createError.js';
 
 export default function messages(socket) {
   socket.on('new-msg', async (message, token) => {
@@ -52,6 +53,10 @@ export default function messages(socket) {
 
   socket.on('read-msg', async (time, token, senderId, cb) => {
     try {
+      if (new Date(time).getMonth().toString() === NaN.toString()) {
+        throw createErrorNonExpress(400, 'invalid time arguments');
+      }
+
       // set all passed in messages isRead field to true
       const { data } = await axios.put(
         `${process.env.API_URL}/messages/read_message`,
@@ -65,7 +70,7 @@ export default function messages(socket) {
         const senderSocketId = global.onlineUsers[senderId];
         const { _id } = jwt.decode(token); //this'll be the recipient id
 
-        socket.to(senderSocketId).emit('msg-on-read', data.success, _id);
+        socket.to(senderSocketId).emit('msg-on-read', data.success, _id, time);
       }
     } catch (e) {
       socket.emit('error', e);

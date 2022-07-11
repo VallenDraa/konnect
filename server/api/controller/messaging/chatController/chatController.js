@@ -27,6 +27,7 @@ export const getAllChatHistory = async (req, res, next) => {
 
     res.json(response);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

@@ -9,9 +9,19 @@ import { useContext } from 'react';
 import { UserContext } from '../../context/user/userContext';
 import getUsersPreview from '../../utils/apis/getusersPreview';
 import { Message } from '../Message/Message';
-import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
+import {
+  ActiveChatContext,
+  ACTIVE_CHAT_DEFAULT,
+} from '../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../context/messageLogs/messageLogsActions';
+import { getSentAtStatus } from '../../utils/dates/dates';
+import { BiCheckDouble } from 'react-icons/bi';
+import throttle from '../../utils/throttle';
+import getScrollPercentage, {
+  isWindowScrollable,
+} from '../../utils/getScrollPercentage';
+import { useDetectFirstRender } from '../../utils/hooks/useDetectFirstRender/useDetectFirstRender';
 
 export const ChatBox = ({ sidebarState }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -23,13 +33,17 @@ export const ChatBox = ({ sidebarState }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [target, setTarget] = useState({ targetId: null, chatType: null }); //target id
+  const [isMsgWillBeRead, setIsMsgWillBeRead] = useState(false);
+  const [timeMessageRead, setTimeMessageRead] = useState(null);
+  const [willGoToBottom, setWillGoToBottom] = useState(false);
+  const isFirstRender = useDetectFirstRender();
+
   const pushNewEntry = async (
     targetId,
     message,
     token,
     currentActiveChatId
   ) => {
-    console.log('new');
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
     try {
       const [user] = await getUsersPreview(token, targetId);
@@ -60,7 +74,6 @@ export const ChatBox = ({ sidebarState }) => {
     }
   };
   const pushNewMsgToEntry = (targetId, message) => {
-    console.log('exist');
     const updatedMsgLogs = msgLogs;
     updatedMsgLogs.content[targetId].lastMessageReadAt = null;
     updatedMsgLogs.content[targetId].chat.push(message);
@@ -71,14 +84,41 @@ export const ChatBox = ({ sidebarState }) => {
     });
   };
 
-  // scroll down to the bottom of the page when first loaded
-  window.scrollTo({ top: window.scrollMaxY });
+  useEffect(() => {
+    document.body.style.overflowY = 'hidden';
 
-  /* RECIPIENT RELATED CODE */
+    setTimeout(() => {
+      document.body.style.overflowY = 'auto';
+      window.scrollTo({ top: window.scrollMaxY });
+    }, 300);
+  }, [activeChat]);
+
+  useEffect(() => {
+    setWillGoToBottom(isWindowScrollable());
+  }, [activeChat]); // see if window is scrollable when active user is changed
+
+  useEffect(() => {
+    if (isFirstRender && window.innerWidth <= 768) return;
+
+    willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
+  }, [willGoToBottom]);
+
+  useEffect(() => {
+    // check if the page is atleast scrolled by 70%
+    const scrollCb = throttle(() => {
+      const scrollPercent = getScrollPercentage();
+
+      setWillGoToBottom(scrollPercent > 70 ? true : false);
+    }, 200);
+
+    window.addEventListener('scroll', scrollCb);
+
+    return () => window.removeEventListener('scroll', scrollCb);
+  }, []); //automatically scroll down to the latest message
+
   useEffect(() => {
     socket.on('receive-message', async ({ message, success }) => {
       // update the message logs
-
       // if chat log doesn't exist for this user
       !msgLogs.content[message.by]
         ? pushNewEntry(
@@ -88,58 +128,60 @@ export const ChatBox = ({ sidebarState }) => {
             activeChat._id
           )
         : pushNewMsgToEntry(message.by, message);
+
+      // read msg if current active chat is the same user that sent the message
+      if (activeChat._id === message.by) setIsMsgWillBeRead(true);
+      willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
     });
 
     return () => socket.off('receive-message');
-  }, [msgLogs, userState]); // receiving message for recipient only code
+  }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (!activeChat._id) return;
+    if (isMsgWillBeRead) {
+      if (!activeChat._id) return;
+      if (!msgLogs.content[activeChat._id]) return;
 
-    if (msgLogs.content[activeChat._id].chat.length > 0) {
-      const currMsgLog = msgLogs.content[activeChat._id].chat;
-      const finalMesIndex = msgLogs.content[activeChat._id].chat.length - 1;
+      const activeChatLog = msgLogs.content[activeChat._id];
 
-      if (currMsgLog[finalMesIndex].by !== userState.user._id) {
-        const token = sessionStorage.getItem('token');
+      if (activeChatLog.chat.length > 0) {
+        const currMsgLog = activeChatLog.chat;
+        const finalMesIndex = activeChatLog.chat.length - 1;
 
-        socket.emit(
-          'read-msg',
-          new Date().toISOString(),
-          token,
-          activeChat._id
-        );
+        if (currMsgLog[finalMesIndex].by !== userState.user._id) {
+          const token = sessionStorage.getItem('token');
+
+          socket.emit(
+            'read-msg',
+            new Date().toISOString(),
+            token,
+            activeChat._id
+          );
+          setIsMsgWillBeRead(false);
+          window.scrollTo({ top: window.scrollMaxY });
+        }
       }
     }
-  }, [activeChat, msgLogs]); //set the message to read
-  /* END RECIPIENT RELATED CODE */
+  }, [activeChat, msgLogs, isMsgWillBeRead]); //set the message to read
 
-  /* SENDER RELATED CODE */
   useEffect(() => {
-    socket.on('msg-on-read', (isRead, recipientId) => {
-      console.log('dsdsd');
+    socket.on('msg-on-read', (isRead, recipientId, time) => {
+      if (isRead) {
+        msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+
+        const updatedMsgLogs = msgLogs;
+
+        updatedMsgLogs.content[recipientId].lastMessageReadAt = time;
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedMsgLogs.content,
+        });
+      }
     });
 
     return () => socket.off('msg-on-read');
-  }, []);
-
-  /* END OF SENDER RELATED CODE */
-
-  /* MISC RELATED CODES */
-  useEffect(() => {
-    const targetId = activeChat._id;
-
-    if (msgLogs.content[targetId]) {
-      if (msgLogs.content[targetId].chat.length === 0) return;
-
-      const logs = msgLogs.content[targetId];
-      const i = logs.chat.length - 1; //index of last item in message log
-
-      if (logs.chat[i].by === targetId) {
-        window.scrollTo({ top: window.scrollMaxY });
-      }
-    }
-  }, [msgLogs, userState]); // automatically scroll down to bottom
+  }, [msgLogs]); //msg onread
 
   useEffect(() => {
     if (location.pathname === '/chats') {
@@ -159,6 +201,7 @@ export const ChatBox = ({ sidebarState }) => {
           // assemble the new active chat state
           const newActiveChat = {
             _id: search.id,
+            lastMessageReadAt: null,
             activeChat: true,
             initials: null,
             lastMessage: null,
@@ -207,10 +250,6 @@ export const ChatBox = ({ sidebarState }) => {
   }, [location, msgLogs]); // to check if the url is directed to a certain chat
 
   useEffect(() => {
-    if (!activeChat._id) return;
-  }, [activeChat, userState]); // change the message log according to the active chat
-
-  useEffect(() => {
     socket.on('msg-sent', (isSent, info) => {
       if (!isSent) return;
 
@@ -233,14 +272,42 @@ export const ChatBox = ({ sidebarState }) => {
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedMsgLogs.content,
         });
+
+        // when finish sending message go straight to the bottom
+        setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 250);
       }
     });
 
     return () => socket.off('msg-sent');
   }, [msgLogs]); // for changing the message state indicator
-  /* END OF MISC RELATED CODES */
 
-  /* SENDING MESSAGES RELATED CODE */
+  useEffect(() => {
+    if (!msgLogs?.content[activeChat._id]?.lastMessageReadAt) return;
+
+    const timeMessageSent = new Date(
+      msgLogs?.content[activeChat._id].lastMessageReadAt
+    );
+
+    const sentAt = getSentAtStatus(new Date(), timeMessageSent);
+
+    switch (sentAt) {
+      case 'today':
+        const formattedTime = timeMessageSent
+          .toTimeString()
+          .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));
+
+        return setTimeMessageRead(formattedTime);
+
+      case 'yesterday':
+        return setTimeMessageRead('a day ago');
+
+      case 'long ago':
+        return setTimeMessageRead(timeMessageSent.toLocaleDateString());
+      default:
+        break;
+    }
+  }, [msgLogs, activeChat]); //for determining the time sent
+
   const handleNewMessage = (e) => {
     e.preventDefault();
     if (newMessage === '') return;
@@ -254,8 +321,6 @@ export const ChatBox = ({ sidebarState }) => {
     };
 
     // update the message logs
-    console.log(msgLogs.content[target.targetId]);
-
     msgLogs.content[target.targetId]
       ? pushNewMsgToEntry(target.targetId, newMessageInput)
       : pushNewEntry(
@@ -264,6 +329,7 @@ export const ChatBox = ({ sidebarState }) => {
           sessionStorage.getItem('token'),
           activeChat._id
         );
+    setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 150);
 
     // reset the input bar
     setnewMessage('');
@@ -280,12 +346,19 @@ export const ChatBox = ({ sidebarState }) => {
     const targetPath = `/chats?id=${activeChat._id}&type=user`;
     currentPath !== targetPath && navigate(targetPath);
   }; // will trigger when the input bar is clicked
-  /* END OF SENDING MESSAGES RELATED CODE */
+
+  const handleGoToMenu = () => {
+    setIsSidebarOn(!isSidebarOn);
+    setActiveChat(ACTIVE_CHAT_DEFAULT);
+  };
 
   return (
     <>
       <RenderIf conditionIs={!activeChat.username}>
-        <StartScreen sidebarState={sidebarState} />
+        <StartScreen
+          sidebarState={sidebarState}
+          handleGoToMenu={handleGoToMenu}
+        />
       </RenderIf>
       <RenderIf conditionIs={activeChat.username}>
         <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen relative flex flex-col">
@@ -294,8 +367,8 @@ export const ChatBox = ({ sidebarState }) => {
               <div className="flex items-center gap-3">
                 {/* sidebar btn (will show up when screen is <lg) */}
                 <button
-                  onClick={() => setIsSidebarOn(!isSidebarOn)}
-                  className="block lg:hidden hover:text-pink-400 duration-200 text-xl"
+                  onClick={handleGoToMenu}
+                  className="block lg:hidden hover:text-pink-400 duration-200 text-xl pl-1"
                 >
                   <HiOutlineMenu />
                 </button>
@@ -323,10 +396,7 @@ export const ChatBox = ({ sidebarState }) => {
           </header>
           <main className="max-w-screen-lg w-full mx-auto relative flex flex-col grow">
             {/* message */}
-            <div
-              ref={chatBoxRef}
-              className="px-2 py-4 space-y-5 bg-gray-100 grow"
-            >
+            <div ref={chatBoxRef} className="px-2 py-4 bg-gray-100 grow">
               {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
                 return (
                   <Fragment key={i}>
@@ -347,10 +417,10 @@ export const ChatBox = ({ sidebarState }) => {
                   msgLogs?.content[activeChat._id]?.lastMessageReadAt
                 }
               >
-                <span>
-                  Read at{' '}
-                  {new Date(msgLogs?.content[activeChat._id]?.lastMessageRead)}
-                </span>
+                <div className="flex items-center justify-end mt-2 gap-x-1 font-bold text-xxs text-pink-400 animate-pop-in">
+                  <BiCheckDouble className="text-lg" />
+                  <span>Read at {timeMessageRead}</span>
+                </div>
               </RenderIf>
             </div>
           </main>

@@ -2,9 +2,7 @@ import noActiveChat from '../../svg/home/noActiveChat.svg';
 import { HiOutlineMenu } from 'react-icons/hi';
 import CTA from '../CTA/CTA';
 
-export const StartScreen = ({ sidebarState }) => {
-  const { isSidebarOn, setIsSidebarOn } = sidebarState;
-
+export const StartScreen = ({ handleGoToMenu }) => {
   return (
     <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 relative h-screen flex flex-col gap-3 items-center justify-center tracking-wide px-5">
       <header className="bg-gray-50 absolute inset-x-0 z-10 shadow-inner p-3 border-b-2 top-0">
@@ -12,7 +10,7 @@ export const StartScreen = ({ sidebarState }) => {
           <div className="flex items-center gap-3">
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
-              onClick={() => setIsSidebarOn(!isSidebarOn)}
+              onClick={handleGoToMenu}
               className="block lg:hidden hover:text-pink-400 duration-200 text-xl"
             >
               <HiOutlineMenu />

@@ -79,8 +79,6 @@ export default function SearchList() {
 
         <RenderIf conditionIs={!isTyping && !searchResults.loading}>
           <div>
-            {/* search results info */}
-
             {/* this will appear when the user is done typing and the search value is not empty */}
             <RenderIf conditionIs={SVPreview !== ''}>
               <div className="flex flex-col gap-1">
@@ -95,7 +93,7 @@ export default function SearchList() {
 
             {/* this svg will appear when the query is empty */}
             <RenderIf conditionIs={query === ''}>
-              <div className="text-center space-y-10 mt-10">
+              <div className="text-center space-y-10 mt-10 overflow-x-hidden">
                 <img
                   src={initialSvg}
                   alt=""

@@ -15,7 +15,7 @@ export const Message = ({
 
   return (
     <div
-      className={`h-max flex items-center 
+      className={`h-max flex items-center mt-5 animate-pop-in
                      ${isSentByMe ? 'justify-end' : ''}`}
     >
       <div
