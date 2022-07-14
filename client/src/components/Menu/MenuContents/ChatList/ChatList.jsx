@@ -1,6 +1,7 @@
 import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useContext, useEffect, useState } from 'react';
 import RenderIf from '../../../../utils/React/RenderIf';
+import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
@@ -56,7 +57,18 @@ export default function ChatList({ setIsSidebarOn }) {
     setIsSidebarOn(false);
   };
   const EmptyPlaceholder = () => {
-    return <span>No chats Are Available</span>;
+    return (
+      <div className="text-center space-y-10 mt-10 p-3">
+        <img src={emptyContactList} alt="" className="max-w-[300px] mx-auto" />
+        <span className="block font-semibold text-xl md:text-lg text-gray-500">
+          Chat List Is Empty
+        </span>
+        <span className="text-gray-400 text-xs">
+          Go start a chat by pressing{' '}
+          <span className="font-semibold text-gray-500">New Chat !</span>
+        </span>
+      </div>
+    );
   };
 
   // determine what to return base on logsEntries length

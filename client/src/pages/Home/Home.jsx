@@ -125,7 +125,7 @@ export default function Home() {
           <InitialLoadingScreen />
           <div
             className={`flex duration-200
-                     ${modalState.isActive ? 'blur-sm' : ''}`}
+                     ${modalState.isActive ? 'md:blur-sm' : ''}`}
           >
             <ChatboxContextProvider>
               <Sidebar

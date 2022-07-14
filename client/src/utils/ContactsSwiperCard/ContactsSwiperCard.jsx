@@ -100,7 +100,7 @@ export default function ContactsSwiperCard({
             <span className="font-semibold text-gray-500">
               Oops No One Here....
             </span>
-            <span className="font-light text-gray-400 text-xs">
+            <span className="text-gray-400 text-xs">
               Be the first one here by adding this person to your contact !
             </span>
           </div>

@@ -162,16 +162,16 @@ const ContactList = ({ setIsSidebarOn }) => {
           !groupedContacts.isStarting
         }
       >
-        <div className="text-center space-y-10 mt-10">
+        <div className="text-center space-y-10 mt-10 p-3">
           <img
             src={emptyContactList}
             alt=""
             className="max-w-[300px] mx-auto"
           />
           <span className="block font-semibold text-xl md:text-lg text-gray-500">
-            Your contacts list is still empty
+            Contact List Is Empty
           </span>
-          <span className="font-light text-gray-400 text-xs">
+          <span className="text-gray-400 text-xs">
             Go find another user and add them to your contact !
           </span>
         </div>

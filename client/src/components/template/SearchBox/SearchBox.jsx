@@ -164,7 +164,7 @@ export default function SearchBox({
                 <span className="block font-semibold text-xl md:text-lg text-gray-600">
                   Welp nothing here :(
                 </span>
-                <span className="font-light text-gray-400 text-xs">
+                <span className="text-gray-400 text-xs">
                   Try other keywords and maybe we can find something for you
                 </span>
               </li>

@@ -181,7 +181,7 @@ export default function NotificationList() {
   }, [activeBox, userId]);
 
   return (
-    <div className="pt-3 space-y-3">
+    <div className="p-3 space-y-3">
       <header>
         <nav className="relative w-fit">
           <Dropdown

@@ -7,6 +7,7 @@ export default function PicturelessProfile({ initials, bgColor, width }) {
           typeof bgColor === 'function' ? bgColor() : bgColor
         }`,
         width,
+        height: width,
         fontSize: `${width / 3}px`,
       }}
     >
