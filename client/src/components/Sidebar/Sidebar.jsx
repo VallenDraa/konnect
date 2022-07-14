@@ -77,7 +77,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
 
   return (
     <aside ref={sidebar}>
-      <header className="border-b-2 pb-2 space-y-5 basis-1/6 ">
+      <header className="border-b-2 space-y-5 basis-1/6 p-3">
         {/* profile and more menu */}
         <div className="flex justify-between items-center gap-2">
           {/* profile  */}
@@ -125,7 +125,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
         <CTA urlHistory={urlHistory} />
       </header>
       {/* menu contents */}
-      <main className="px-1 basis-5/6 overflow-y-auto overflow-x-auto">
+      <main className="basis-5/6 overflow-y-auto overflow-x-auto">
         <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
             contacts={userState.user.contacts}

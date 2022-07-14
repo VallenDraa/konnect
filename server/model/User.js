@@ -10,21 +10,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profilePicture: { type: String, default: '' },
-    contacts: [
-      {
-        lastMessageReadAt: { type: Date, default: null },
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-        chat: [
-          {
-            by: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-            msgType: String,
-            content: String,
-            isSent: false,
-            time: { type: Date, default: new Date() },
-          },
-        ],
-      },
-    ],
+    contacts: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } }],
     // this'll contain any other type of notifications other than requests
     notifications: {
       inbox: [
@@ -64,6 +50,7 @@ const UserSchema = new mongoose.Schema(
       },
     },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
+    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: 'private_chat' }],
     settings: {
       general: { type: Object, default: {} },
       calls: { type: Object, default: {} },

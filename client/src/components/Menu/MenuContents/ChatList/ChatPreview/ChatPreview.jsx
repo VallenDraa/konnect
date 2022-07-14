@@ -17,11 +17,11 @@ export const ChatPreview = ({
   // will run to determine the time the message was sent
   useEffect(() => {
     const sentAt = getSentAtStatus(new Date(), new Date(lastMessage.time));
+    const timeMessageSent = new Date(lastMessage.time);
 
     // determine the time indicator that'll be displayed
     switch (sentAt) {
       case 'today':
-        const timeMessageSent = new Date(lastMessage.time);
         const formattedTime = timeMessageSent
           .toTimeString()
           .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));
@@ -41,9 +41,9 @@ export const ChatPreview = ({
   return (
     <li onClick={() => handleActiveChat(user)}>
       <Link
-        to={`/chats?id=${user._id}&type=user`}
-        className={`flex items-center p-2 cursor-pointer duration-200 rounded-md
-              ${isActive ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-100'} `}
+        to={isActive ? '/chats' : `/chats?id=${user._id}&type=user`}
+        className={`flex items-center p-2 cursor-pointer duration-200 rounded-md 
+              ${isActive ? 'bg-blue-100 font-semibold' : 'hover:bg-pink-100'} `}
       >
         <div className="flex items-center gap-2 basis-11/12">
           <img
@@ -79,7 +79,9 @@ export const ChatPreview = ({
           </div>
         </div>
 
-        <time className="text-xxs self-start basis-1/12">{timeSent}</time>
+        <time className="text-xxs self-start text-right basis-1/12">
+          {timeSent}
+        </time>
       </Link>
     </li>
   );

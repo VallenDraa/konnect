@@ -1,54 +1,91 @@
 import User from '../../../../model/User.js';
+import PrivateChat from '../../../../model/PrivateChat.js';
 import createError from '../../../../utils/createError.js';
 import jwt from 'jsonwebtoken';
 
 export const saveMessage = async (req, res, next) => {
-  const { mode } = req.body;
   const { to, ...messageData } = req.body.message;
 
-  if (mode !== 'sender' && mode !== 'receiver') {
-    return createError(
-      next,
-      400,
-      'invalid arguments, pass in either sender or receiver'
-    );
+  // console.log(req.body.message);
+
+  // save message new test
+  try {
+    // find the chat log according to the ids
+    const [privateChat] = await PrivateChat.where({
+      $or: [
+        { 'users.0.user': to, 'users.1.user': messageData.by },
+        { 'users.0.user': messageData.by, 'users.1.user': to },
+      ],
+    });
+    const msgToPush = { ...messageData, isSent: true };
+
+    // check if chat log exists
+    if (!privateChat) {
+      const newPrivateChat = {
+        'users.0.user': messageData.by,
+        'users.1.user': to,
+        chat: [msgToPush],
+      };
+
+      // get the new chat log id and push it to the chat list of the users that are chatting
+      const { _id } = await PrivateChat.create(newPrivateChat);
+      await User.updateMany(
+        { _id: { $in: [messageData.by, to] } },
+        { $push: { chats: _id } }
+      );
+
+      return res.json({
+        chatId: _id,
+        success: true,
+        message: req.body.message,
+      });
+    } else {
+      privateChat.chat.push(msgToPush);
+      await privateChat.save();
+      return res.json({
+        chatId: privateChat._id,
+        success: true,
+        message: req.body.message,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const readMessage = async (req, res, next) => {
+  const { time, token, senderId, chatLogId } = req.body;
+
+  // check if the time passed in is of a date format
+
+  if (new Date(time).getMonth().toString() === NaN.toString()) {
+    return createError(next, 400, 'invalid time arguments');
   }
 
-  //   save message
+  // new
   try {
-    // assemble the message that'll be pushed to the database
-    const msgToPush = {
-      ...messageData,
-      isSent: true,
-      isRead: false,
-    };
+    // this is the id for the recipient whose lastMessageReadAt will be updated
+    const { _id } = jwt.decode(token);
+    const chatLog = await PrivateChat.findById(chatLogId);
 
-    const targetId = mode === 'sender' ? msgToPush.by : to;
-    const target = await User.findById(targetId).select('-password');
+    for (const i in chatLog.users) {
+      const currUserId = chatLog.users[i].user.toString();
 
-    const contactTargetId = mode === 'sender' ? to : msgToPush.by;
-
-    for (let i = 0; i < target.contacts.length; i++) {
-      const currContactId = target.contacts[i].user.toString();
-
-      if (currContactId === contactTargetId) {
-        // set the lastMessageReadAt to null
-        target.contacts[i].lastMessageReadAt = null;
-        target.contacts[i].chat.push(msgToPush);
-
-        break;
+      if (currUserId === _id) {
+        chatLog.users[i].lastMessageReadAt = time;
+      } else {
+        chatLog.users[i].lastMessageReadAt = null;
       }
     }
-    await target.save();
-
-    return res.json({
-      success: true,
-      message: req.body.message,
-    });
+    await chatLog.save();
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }
 };
+
+export const deleteMessage = async (req, res, next) => {};
 
 // const setToRead = (contacts, contactIndex, toBeRead) => {
 //   let timesTarget = toBeRead;
@@ -113,40 +150,3 @@ export const saveMessage = async (req, res, next) => {
 //     next(error);
 //   }
 // };
-
-export const readMessage = async (req, res, next) => {
-  const { time, token, senderId } = req.body;
-
-  // check if the time passed in is of a date format
-
-  if (new Date(time).getMonth().toString() === NaN.toString()) {
-    return createError(next, 400, 'invalid time arguments');
-  }
-
-  try {
-    // this is the id for the recipient
-    const { _id } = jwt.decode(token);
-
-    // find the sender data
-    const sender = await User.findById(senderId);
-
-    // call the setToRead function
-    for (let i = 0; i < sender.contacts.length; i++) {
-      // set the current contact id
-      const currContactId = sender.contacts[i].user.toString();
-
-      if (currContactId === _id) {
-        sender.contacts[i].lastMessageReadAt = time;
-        break;
-      }
-    }
-
-    // if all is gucci send success to client
-    await sender.save();
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteMessage = async (req, res, next) => {};

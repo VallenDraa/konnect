@@ -20,6 +20,7 @@ export default function unfriend(socket) {
         socket.emit('error', createErrorNonExpress(status, message));
       }
     } catch (error) {
+      console.error(error);
       socket.emit('error', error);
     }
 
@@ -33,7 +34,7 @@ export default function unfriend(socket) {
       //   only send back info to the target client if target is online
       if (isTargetOnline) {
         if (targetData.data.success) {
-          console.log(targetSocketId);
+          // console.log(targetSocketId);
           socket
             .to(targetSocketId)
             .emit('update-client-data', targetData.data, { unfriend: true });
@@ -43,6 +44,7 @@ export default function unfriend(socket) {
         }
       }
     } catch (error) {
+      console.error(error);
       isTargetOnline && socket.emit('error', error);
     }
   });

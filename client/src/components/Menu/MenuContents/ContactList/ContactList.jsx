@@ -11,6 +11,7 @@ import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
+import { pushNewEntry } from '../../../ChatBox/ChatBox';
 
 const ContactList = ({ setIsSidebarOn }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -28,7 +29,6 @@ const ContactList = ({ setIsSidebarOn }) => {
     //   activeChat: false,
     // },
   ]);
-
   const [groupedContacts, dispatch] = useReducer(
     groupedContactsReducer,
     GROUPED_CONTACTS_DEFAULT
@@ -56,7 +56,6 @@ const ContactList = ({ setIsSidebarOn }) => {
         // parse the incoming contacts data
         for (const contact of data.contacts) {
           const { username, initials, profilePicture, _id } = contact.user;
-          const { chat } = contact;
           // assemble the parsed data into a contact object
 
           const parsedContact = {
@@ -64,7 +63,6 @@ const ContactList = ({ setIsSidebarOn }) => {
             username,
             initials,
             profilePicture,
-            lastMessage: chat[0] || null,
           };
           result.push(parsedContact);
         }
@@ -109,16 +107,9 @@ const ContactList = ({ setIsSidebarOn }) => {
     // initiate the update
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
     const updatedLogs = msgLogs;
+    // const { chat, lastMessageReadAt } = updatedLogs.content;
 
-    // deactive all chat
-    if (Object.keys(updatedLogs.content).length > 0) {
-      for (const id in updatedLogs.content) {
-        updatedLogs.content[id].activeChat = false;
-      }
-
-      if (!updatedLogs.content[target._id]) return;
-      updatedLogs.content[target._id].activeChat = true;
-
+    if (updatedLogs.content[target._id]) {
       msgLogsDispatch({
         type: MESSAGE_LOGS_ACTIONS.updateLoaded,
         payload: updatedLogs.content,
@@ -126,7 +117,24 @@ const ContactList = ({ setIsSidebarOn }) => {
 
       setActiveChat(target);
     } else {
-      console.log('test');
+      pushNewEntry({
+        msgLogs,
+        targetId: target._id,
+        token: sessionStorage.getItem('token'),
+        currentActiveChatId: target._id,
+        dispatch: msgLogsDispatch,
+      });
+
+      const newActiveChat = {
+        _id: target._id,
+        lastMessageReadAt: null,
+        initials: target.initials,
+        lastMessage: null,
+        profilePicture: target.profilePicture,
+        username: target.username,
+      };
+
+      setActiveChat(newActiveChat);
     }
 
     // close sidebar for smaller screen
@@ -179,7 +187,7 @@ const ContactList = ({ setIsSidebarOn }) => {
       >
         {groupedContacts.contents.map(([letter, nameList], i) => {
           return (
-            <div key={i} className="space-y-3 mb-3">
+            <div key={i} className="space-y-3 mb-3 px-3">
               <span className="block sticky top-0 bg-gray-200 px-2 font-bold uppercase text-gray-600">
                 {letter}
               </span>

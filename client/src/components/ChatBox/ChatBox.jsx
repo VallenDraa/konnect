@@ -17,16 +17,62 @@ import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext
 import MESSAGE_LOGS_ACTIONS from '../../context/messageLogs/messageLogsActions';
 import { getSentAtStatus } from '../../utils/dates/dates';
 import { BiCheckDouble } from 'react-icons/bi';
-import throttle from '../../utils/throttle';
+import throttle from '../../utils/performance/throttle';
 import getScrollPercentage, {
   isWindowScrollable,
-} from '../../utils/getScrollPercentage';
+} from '../../utils/scroll/getScrollPercentage';
+import { ChatboxContext } from '../../context/chatBoxState/chatBoxContext';
+import { UrlHistoryContext } from '../../pages/Home/Home';
 import { useDetectFirstRender } from '../../utils/hooks/useDetectFirstRender/useDetectFirstRender';
+
+export const pushNewEntry = async ({
+  targetId,
+  token,
+  message = null,
+  currentActiveChatId,
+  msgLogs,
+  dispatch,
+}) => {
+  dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+  try {
+    const [user] = await getUsersPreview(token, targetId);
+    const isActiveChat = currentActiveChatId === targetId;
+    const updatedMsgLogs = msgLogs;
+
+    // assemble the final result object
+    const newMessageLogContent = {
+      user,
+      chatId: message ? message.chatId : null,
+      lastMessageReadAt: null,
+      chat: message ? [message] : [],
+      activeChat: isActiveChat,
+    };
+    updatedMsgLogs.content[targetId] = newMessageLogContent;
+
+    // save the new message log
+    dispatch({
+      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+      payload: updatedMsgLogs.content,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
+  const updatedMsgLogs = msgLogs;
+  updatedMsgLogs.content[targetId].lastMessageReadAt = null;
+  updatedMsgLogs.content[targetId].chat.push(message);
+
+  dispatch({
+    type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+    payload: updatedMsgLogs.content,
+  });
+};
 
 export const ChatBox = ({ sidebarState }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
-  const chatBoxRef = useRef();
   const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [newMessage, setnewMessage] = useState('');
@@ -36,72 +82,92 @@ export const ChatBox = ({ sidebarState }) => {
   const [isMsgWillBeRead, setIsMsgWillBeRead] = useState(false);
   const [timeMessageRead, setTimeMessageRead] = useState(null);
   const [willGoToBottom, setWillGoToBottom] = useState(false);
-  const isFirstRender = useDetectFirstRender();
+  const chatBoxRef = useRef(null);
+  const urlHistory = useContext(UrlHistoryContext);
+  const isFirstTimeRendering = useDetectFirstRender();
 
-  const pushNewEntry = async (
-    targetId,
-    message,
-    token,
-    currentActiveChatId
-  ) => {
-    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-    try {
-      const [user] = await getUsersPreview(token, targetId);
-      const isActiveChat = currentActiveChatId === targetId;
-      const updatedMsgLogs = msgLogs;
+  // INITIAL LOADING USE EFFECT
+  useEffect(() => {
+    if (location.pathname === '/chats') {
+      // if (location.pathname + location.search === urlHistory.prev) return;
 
-      // deactivate other chats if the current one is active
-      for (const id in updatedMsgLogs.content) {
-        updatedMsgLogs.content[id].activeChat = false;
+      const search = Object.fromEntries(
+        location.search
+          .slice(1, location.search.length)
+          .split('&')
+          .map((q) => q.split('='))
+      );
+
+      // set the target recipient data
+      setTarget({ targetId: search.id, chatType: search.type });
+
+      // check if the url provided id and type of chat
+      if (search.id && search.type) {
+        if (activeChat._id === null) {
+          // assemble the new active chat state
+          const newActiveChat = {
+            _id: search.id,
+            lastMessageReadAt: null,
+            activeChat: true,
+            initials: null,
+            lastMessage: null,
+            profilePicture: null,
+            username: null,
+          };
+
+          // execute different code according to the search type
+          switch (search.type) {
+            case 'user':
+              // fetch the initials, profile picture, and username from the server
+              getUsersPreview(sessionStorage.getItem('token'), [search.id])
+                .then((userPrev) => {
+                  Object.assign(newActiveChat, userPrev[0]);
+                  setActiveChat(newActiveChat);
+                  setIsSidebarOn(false);
+                })
+                .catch((err) => console.log(err));
+
+              break;
+
+            case 'group':
+              break;
+
+            default:
+              break;
+          }
+        }
       }
-
-      // assemble the final result object
-      const newMessageLogContent = {
-        user,
-        lastMessageReadAt: null,
-        chat: [message],
-        activeChat: isActiveChat,
-      };
-      updatedMsgLogs.content[targetId] = newMessageLogContent;
-
-      // save the new message log
-      msgLogsDispatch({
-        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-        payload: updatedMsgLogs.content,
-      });
-    } catch (error) {
-      console.log(error);
     }
-  };
-  const pushNewMsgToEntry = (targetId, message) => {
-    const updatedMsgLogs = msgLogs;
-    updatedMsgLogs.content[targetId].lastMessageReadAt = null;
-    updatedMsgLogs.content[targetId].chat.push(message);
-
-    msgLogsDispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedMsgLogs.content,
-    });
-  };
+  }, [location]); // to check if the url is directed to a certain chat
 
   useEffect(() => {
-    document.body.style.overflowY = 'hidden';
+    if (!msgLogs?.content[activeChat._id]) return;
 
-    setTimeout(() => {
-      document.body.style.overflowY = 'auto';
-      window.scrollTo({ top: window.scrollMaxY });
-    }, 300);
-  }, [activeChat]);
+    // check if the active chat has a lastMessage in the message log
+    if (!activeChat.lastMessageReadAt || !activeChat.lastMessage) {
+      const { lastMessageReadAt, chat } = msgLogs.content[activeChat._id];
+
+      if (chat.length > 0) {
+        // const assemble the new active chat
+        const newDatas = {
+          ...activeChat,
+          lastMessageReadAt,
+          lastMessage: chat[chat.length - 1],
+        };
+
+        setActiveChat(newDatas);
+      }
+    }
+  }, [msgLogs]); // refresh the active chat message log if it is still empty
+  // END OF INITIAL LOADING USE EFFECT
+
+  useEffect(() => {
+    window.scrollTo({ top: window.scrollMaxY });
+  }, [activeChat]); // will go to the bottom of the screen when active chat changes
 
   useEffect(() => {
     setWillGoToBottom(isWindowScrollable());
   }, [activeChat]); // see if window is scrollable when active user is changed
-
-  useEffect(() => {
-    if (isFirstRender && window.innerWidth <= 768) return;
-
-    willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
-  }, [willGoToBottom]);
 
   useEffect(() => {
     // check if the page is atleast scrolled by 70%
@@ -117,66 +183,94 @@ export const ChatBox = ({ sidebarState }) => {
   }, []); //automatically scroll down to the latest message
 
   useEffect(() => {
-    socket.on('receive-message', async ({ message, success }) => {
+    if (activeChat._id !== null) setIsMsgWillBeRead(true);
+  }, [activeChat]); //set the isMsgWillBeRead when active chat has been changed
+
+  useEffect(() => {
+    socket.on('receive-msg', async (data) => {
+      const { message, chatId, success } = data;
+      const assembledMsg = { ...message, chatId };
+
       // update the message logs
-      // if chat log doesn't exist for this user
-      !msgLogs.content[message.by]
-        ? pushNewEntry(
-            message.by,
-            message,
-            sessionStorage.getItem('token'),
-            activeChat._id
-          )
-        : pushNewMsgToEntry(message.by, message);
+      msgLogs.content[message.by]
+        ? pushNewMsgToEntry({
+            targetId: message.by,
+            message: assembledMsg,
+            dispatch: msgLogsDispatch,
+            msgLogs,
+          })
+        : // if chat log doesn't exist for this user
+          pushNewEntry({
+            msgLogs,
+            targetId: message.by,
+            message: assembledMsg,
+            token: sessionStorage.getItem('token'),
+            currentActiveChatId: activeChat._id,
+            dispatch: msgLogsDispatch,
+          });
+
+      // update the active chat last message so that when receiver see it, the message can be flag as read
+      setActiveChat({
+        ...activeChat,
+        lastMessageReadAt: null,
+        lastMessage: message,
+      });
 
       // read msg if current active chat is the same user that sent the message
-      if (activeChat._id === message.by) setIsMsgWillBeRead(true);
+      if (activeChat._id === message.by) {
+        if (!isMsgWillBeRead) setIsMsgWillBeRead(true);
+      }
+
       willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
     });
 
-    return () => socket.off('receive-message');
+    return () => socket.off('receive-msg');
   }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (isMsgWillBeRead) {
-      if (!activeChat._id) return;
-      if (!msgLogs.content[activeChat._id]) return;
+    if (!activeChat._id) return;
+    if (!msgLogs) return;
+    if (!msgLogs?.content[activeChat._id]) return;
+    if (!msgLogs?.content[activeChat._id]?.chatId) return;
+    if (activeChat.lastMessage?.by === userState.user._id) return;
 
-      const activeChatLog = msgLogs.content[activeChat._id];
+    const activeChatLog = msgLogs.content[activeChat._id];
 
-      if (activeChatLog.chat.length > 0) {
-        const currMsgLog = activeChatLog.chat;
-        const finalMesIndex = activeChatLog.chat.length - 1;
+    if (activeChatLog.chat.length > 0) {
+      const currMsgLog = activeChatLog.chat;
+      const finalMesIndex = activeChatLog.chat.length - 1;
 
-        if (currMsgLog[finalMesIndex].by !== userState.user._id) {
-          const token = sessionStorage.getItem('token');
+      if (currMsgLog[finalMesIndex].by !== userState.user._id) {
+        const token = sessionStorage.getItem('token');
 
-          socket.emit(
-            'read-msg',
-            new Date().toISOString(),
-            token,
-            activeChat._id
-          );
-          setIsMsgWillBeRead(false);
-          window.scrollTo({ top: window.scrollMaxY });
-        }
+        socket.emit(
+          'read-msg',
+          new Date().toISOString(),
+          token,
+          activeChat._id,
+          activeChatLog.chatId
+        );
+        setIsMsgWillBeRead(false);
+        window.scrollTo({ top: window.scrollMaxY });
       }
     }
-  }, [activeChat, msgLogs, isMsgWillBeRead]); //set the message to read
+  }, [activeChat, msgLogs]); //set the message to read
 
   useEffect(() => {
     socket.on('msg-on-read', (isRead, recipientId, time) => {
       if (isRead) {
+        if (!msgLogs.content[recipientId]) return;
+
         msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-
         const updatedMsgLogs = msgLogs;
-
         updatedMsgLogs.content[recipientId].lastMessageReadAt = time;
 
         msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedMsgLogs.content,
         });
+
+        setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 250);
       }
     });
 
@@ -184,89 +278,27 @@ export const ChatBox = ({ sidebarState }) => {
   }, [msgLogs]); //msg onread
 
   useEffect(() => {
-    if (location.pathname === '/chats') {
-      const search = Object.fromEntries(
-        location.search
-          .slice(1, location.search.length)
-          .split('&')
-          .map((q) => q.split('='))
-      );
-
-      // set the target recipient data
-      setTarget({ targetId: search.id, chatType: search.type });
-
-      // check if the url provided id and type of chat
-      if (search.id && search.type) {
-        if (Object.keys(activeChat).length === 0) {
-          // assemble the new active chat state
-          const newActiveChat = {
-            _id: search.id,
-            lastMessageReadAt: null,
-            activeChat: true,
-            initials: null,
-            lastMessage: null,
-            profilePicture: null,
-            username: null,
-          };
-
-          // execute different code according to the search type
-          switch (search.type) {
-            case 'user':
-              // get the last message for the active chat and set the message log to show chat history
-              const { user, chat } = msgLogs.content[userState.user._id];
-
-              if (user === search.id) {
-                newActiveChat.lastMessage = chat[0] || null;
-
-                chat.length > 0 && setMessageLog(chat);
-              }
-
-              // fetch the initials, profile picture, and username from the server
-              getUsersPreview(sessionStorage.getItem('token'), [search.id])
-                .then((userPrev) => {
-                  Object.assign(newActiveChat, userPrev[0]);
-                  setActiveChat(newActiveChat);
-                  setIsSidebarOn(false);
-                })
-                .catch((err) => console.log(err));
-              break;
-
-            case 'group':
-              break;
-
-            default:
-              break;
-          }
-        }
-        //  else {
-        //   //set the message log to show chat history
-        //   const msgLog = msgLogs.content[search.id];
-        //   if (!msgLog) return;
-
-        //   msgLog.chat.length > 0 && setMessageLog(msgLog.chat);
-        // }
-      }
-    }
-  }, [location, msgLogs]); // to check if the url is directed to a certain chat
-
-  useEffect(() => {
-    socket.on('msg-sent', (isSent, info) => {
-      if (!isSent) return;
+    socket.on('msg-sent', ({ success, message, chatId, timeSent }) => {
+      if (!success) return;
+      // console.log(chatId, success);
 
       // start the update sequence
       msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
       const updatedMsgLogs = msgLogs;
 
-      if (updatedMsgLogs.content[info.to]) {
-        const chatContent = updatedMsgLogs.content[info.to].chat;
+      if (updatedMsgLogs.content[message.to]) {
+        const chatContent = updatedMsgLogs.content[message.to].chat;
 
         // loop over the array of chats and find the one where the time sent matches, then update the isSent field into true
         for (const chat of chatContent) {
-          if (chat.time === info.timeSent) {
+          if (chat.time === timeSent) {
             chat.isSent = true;
             break;
           }
         }
+
+        // fill the chat log id
+        updatedMsgLogs.content[message.to].chatId = chatId;
 
         msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
@@ -314,6 +346,7 @@ export const ChatBox = ({ sidebarState }) => {
 
     const newMessageInput = {
       by: userState.user._id,
+      to: activeChat._id,
       msgType: 'text',
       content: newMessage,
       isSent: false,
@@ -321,14 +354,21 @@ export const ChatBox = ({ sidebarState }) => {
     };
 
     // update the message logs
-    msgLogs.content[target.targetId]
-      ? pushNewMsgToEntry(target.targetId, newMessageInput)
-      : pushNewEntry(
-          target.targetId,
-          newMessageInput,
-          sessionStorage.getItem('token'),
-          activeChat._id
-        );
+    msgLogs.content[activeChat._id]
+      ? pushNewMsgToEntry({
+          msgLogs,
+          targetId: activeChat._id,
+          message: newMessageInput,
+          dispatch: msgLogsDispatch,
+        })
+      : pushNewEntry({
+          msgLogs,
+          targetId: activeChat._id,
+          message: newMessageInput,
+          token: sessionStorage.getItem('token'),
+          currentActiveChatId: activeChat._id,
+          dispatch: msgLogsDispatch,
+        });
     setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 150);
 
     // reset the input bar
@@ -336,16 +376,14 @@ export const ChatBox = ({ sidebarState }) => {
 
     // send the message to the server
     // add a "to" field to the final object to indicate who the message is for
-    newMessageInput.to = target.targetId;
-
     socket.emit('new-msg', newMessageInput, sessionStorage.getItem('token'));
   };
 
-  const changeLocation = () => {
-    const currentPath = location.pathname + location.search;
-    const targetPath = `/chats?id=${activeChat._id}&type=user`;
-    currentPath !== targetPath && navigate(targetPath);
-  }; // will trigger when the input bar is clicked
+  // const changeLocation = () => {
+  //   const currentPath = location.pathname + location.search;
+  //   const targetPath = `/chats?id=${activeChat._id}&type=user`;
+  //   currentPath !== targetPath && navigate(targetPath);
+  // }; // will trigger when the input bar is clicked
 
   const handleGoToMenu = () => {
     setIsSidebarOn(!isSidebarOn);
@@ -355,10 +393,7 @@ export const ChatBox = ({ sidebarState }) => {
   return (
     <>
       <RenderIf conditionIs={!activeChat.username}>
-        <StartScreen
-          sidebarState={sidebarState}
-          handleGoToMenu={handleGoToMenu}
-        />
+        <StartScreen handleGoToMenu={handleGoToMenu} />
       </RenderIf>
       <RenderIf conditionIs={activeChat.username}>
         <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen relative flex flex-col">
@@ -366,12 +401,13 @@ export const ChatBox = ({ sidebarState }) => {
             <div className="flex justify-between">
               <div className="flex items-center gap-3">
                 {/* sidebar btn (will show up when screen is <lg) */}
-                <button
+                <Link
+                  to="/chats"
                   onClick={handleGoToMenu}
                   className="block lg:hidden hover:text-pink-400 duration-200 text-xl pl-1"
                 >
                   <HiOutlineMenu />
-                </button>
+                </Link>
                 {/* profile  */}
                 <Link
                   to={`user/${activeChat.username}`}
@@ -432,7 +468,6 @@ export const ChatBox = ({ sidebarState }) => {
           >
             <input
               type="text"
-              onFocus={changeLocation}
               onChange={(e) => setnewMessage(e.target.value)}
               value={newMessage}
               className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full

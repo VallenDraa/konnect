@@ -208,7 +208,7 @@ export const OthersProfileModalContent = ({ username }) => {
         </h1>
       </header>
       <main className="grow shadow-inner">
-        <div className="w-full max-h-[90vh] min-h-full sm:h-[66vh] bg-white overflow-y-auto flex flex-col">
+        <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col">
           {/* profile pic */}
           <header>
             <RenderIf conditionIs={!otherUserData?.profilePic}>

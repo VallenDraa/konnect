@@ -45,7 +45,7 @@ export const Modal = () => {
         >
           <div
             ref={modal}
-            className="h-full md:h-3/4 bg-white relative flex flex-col animate-pop-in z-100"
+            className="h-full md:h-3/4 md:max-h-[800px] md:aspect-square bg-white relative flex flex-col animate-pop-in z-100"
           >
             <header className="flex justify-end items-center px-4 py-3">
               {/* close button */}

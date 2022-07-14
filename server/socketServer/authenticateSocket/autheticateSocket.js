@@ -24,9 +24,12 @@ export default function authentication(socket) {
         if (data.success) {
           socket.emit('download-all-chats', data);
         } else {
-          socket.emit('error', message);
+          console.error(error);
+          socket.emit('error', data);
         }
       } catch (error) {
+        console.error(error);
+
         socket.emit('error', error);
       }
     } else {

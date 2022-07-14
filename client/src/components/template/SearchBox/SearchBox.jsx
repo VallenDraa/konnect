@@ -91,7 +91,7 @@ export default function SearchBox({
     submitCb && submitCb(results, query, selected);
 
     // re-enable Y axis scrolling because clicking the button that runs this function will close the modal
-    document.body.style.overflowY = 'auto';
+    if (selected.length > 0) document.body.style.overflowY = 'auto';
   };
 
   return (
@@ -118,12 +118,12 @@ export default function SearchBox({
         </div>
       </header>
       {/* where the results will show up */}
-      <main className="overflow-y-auto h-[300px] grow w-full">
+      <main className="overflow-y-auto grow w-full">
         {/* if user is typing */}
         <RenderIf conditionIs={isTyping || results.loading}>loading</RenderIf>
         {/* if user is not typing */}
         <RenderIf conditionIs={!isTyping}>
-          <ul className="max-h-full">
+          <ul className="h-0">
             {/* if it is still loading */}
 
             {/* if the result is not empty*/}

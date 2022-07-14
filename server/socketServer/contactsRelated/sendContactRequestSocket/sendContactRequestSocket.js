@@ -30,6 +30,7 @@ export default function sendContactRequest(socket) {
           socket.emit('update-client-data', queueResponse);
         } else {
           const { message, status } = queueResponse;
+          console.error(createErrorNonExpress(null, status, message));
           socket.emit('error', createErrorNonExpress(null, status, message));
         }
 
@@ -66,6 +67,7 @@ export default function sendContactRequest(socket) {
           }
         }
       } catch (error) {
+        console.error(error);
         socket.emit('error', error);
       }
     }

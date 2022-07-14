@@ -28,16 +28,10 @@ export default function MessageLogsContextProvider({ children }) {
     MESSAGE_LOGS_DEFAULT
   );
   const { userState } = useContext(UserContext);
-  // const { activeChat } = useContext(ActiveChatContext);
-  // const [contactLength, setContactLength] = useState(0);
-  // check if the amount of contacts has changed
-  // useEffect(() => {
-  //   if (!userState.user) return;
-  //   const newContactLength = userState.user.contacts.length;
 
-  //   setContactLength(newContactLength);
-  // }, [userState]);
   const refreshMsgLogs = () => {
+    if (!userState.user || !userState) return;
+
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
     const updatedMsgLogs = msgLogs;
 
@@ -45,12 +39,12 @@ export default function MessageLogsContextProvider({ children }) {
       userState.user.contacts[userState.user.contacts.length - 1].user;
 
     // assemble the final result object
-
     getUsersPreview(sessionStorage.getItem('token'), [newUserId])
       .then(([user]) => {
         const newMessageLogContent = {
           user, //this'll get the last user (new user) in the contact array
           lastMessageReadAt: null,
+          chatId: null,
           chat: [],
           activeChat: false,
         };
@@ -82,14 +76,12 @@ export default function MessageLogsContextProvider({ children }) {
       for (const log of data.messageLogs) {
         payload[log.user._id] = {
           user: log.user,
+          chatId: log.chatId,
           chat: log.chat,
           lastMessageReadAt: log.lastMessageReadAt,
-          activeChat: false,
         };
       }
 
-      try {
-      } catch (error) {}
       if (data.success) {
         msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.loaded, payload });
       } else {
@@ -97,7 +89,8 @@ export default function MessageLogsContextProvider({ children }) {
           type: MESSAGE_LOGS_ACTIONS.loaded,
           payload: data.message,
         });
-        socket.emit('error', data.message);
+        console.error(error);
+        socket.emit('error', data);
       }
     });
 

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { Sidebar } from '../../components/Sidebar/Sidebar';
 import { ChatBox } from '../../components/ChatBox/ChatBox';
 import { Modal } from '../../components/modal/Modal';
@@ -15,6 +15,10 @@ import MODAL_ACTIONS from '../../context/modal/modalActions';
 import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/hooks/useUrlHistory/useUrlHistory';
 import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
+import ChatboxContextProvider from '../../context/chatBoxState/chatBoxContext';
+
+// url history context
+export const UrlHistoryContext = createContext(null);
 
 export default function Home() {
   const { activeChat } = useContext(ActiveChatContext);
@@ -114,24 +118,28 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
-        <MiniModal />
-        <Modal />
-        <InitialLoadingScreen />
-        <div
-          className={`flex duration-200
+      <UrlHistoryContext.Provider value={urlHistory}>
+        <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
+          <MiniModal />
+          <Modal />
+          <InitialLoadingScreen />
+          <div
+            className={`flex duration-200
                      ${modalState.isActive ? 'blur-sm' : ''}`}
-        >
-          <Sidebar
-            urlHistory={urlHistory}
-            sidebarState={{ isSidebarOn, setIsSidebarOn }}
-          />
-          <ChatBox
-            activeChat={activeChat}
-            sidebarState={{ isSidebarOn, setIsSidebarOn }}
-          />
+          >
+            <ChatboxContextProvider>
+              <Sidebar
+                urlHistory={urlHistory}
+                sidebarState={{ isSidebarOn, setIsSidebarOn }}
+              />
+              <ChatBox
+                activeChat={activeChat}
+                sidebarState={{ isSidebarOn, setIsSidebarOn }}
+              />
+            </ChatboxContextProvider>
+          </div>
         </div>
-      </div>
+      </UrlHistoryContext.Provider>
     </>
   );
 }

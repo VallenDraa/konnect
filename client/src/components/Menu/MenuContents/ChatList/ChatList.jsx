@@ -1,9 +1,13 @@
 import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useContext, useEffect, useState } from 'react';
 import RenderIf from '../../../../utils/React/RenderIf';
-import { ActiveChatContext } from '../../../../context/activeChat/ActiveChatContext';
+import {
+  ActiveChatContext,
+  ACTIVE_CHAT_DEFAULT,
+} from '../../../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
+import { useNavigate } from 'react-router-dom';
 
 export default function ChatList({ setIsSidebarOn }) {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -11,6 +15,7 @@ export default function ChatList({ setIsSidebarOn }) {
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
   );
+  const navigate = useNavigate();
 
   // refresh the entries everytime the msgLogs is updated
   useEffect(() => {
@@ -31,30 +36,21 @@ export default function ChatList({ setIsSidebarOn }) {
   // }, [logsEntries]);
 
   const handleActiveChat = (target) => {
+    // changing the active chat
     if (!target) return;
 
-    const updatedMsgLogs = msgLogs;
-
-    for (const id in updatedMsgLogs.content) {
-      // see if the value is already in the correct state
-      // if (updatedMsgLogs.content[id].activeChat === (id === target._id)) {
-
-      //   continue;
-      // } else {
-      //   console.log(target, activeChat);
-      updatedMsgLogs.content[id].activeChat = id === target._id;
-      const lastMessageReadAt = updatedMsgLogs.content[id].lastMessageReadAt;
+    // check if target id is the same as the current one, if so deactivate it
+    if (target._id !== activeChat._id) {
+      const { lastMessageReadAt, chat } = msgLogs.content[target._id];
 
       setActiveChat({
         ...target,
         lastMessageReadAt,
+        lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
       });
+    } else {
+      setActiveChat(ACTIVE_CHAT_DEFAULT);
     }
-
-    msgLogsDispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedMsgLogs.content,
-    });
 
     // close sidebar for smaller screen
     setIsSidebarOn(false);
@@ -75,11 +71,11 @@ export default function ChatList({ setIsSidebarOn }) {
       return <EmptyPlaceholder />;
     } else {
       return (
-        <ul className="space-y-3 py-3">
+        <ul className="p-3 space-y-2">
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, { user, chat }]) => {
-              // console.log(logsEntries);
+              if (!user) return;
               return (
                 <ChatPreview
                   key={_id}

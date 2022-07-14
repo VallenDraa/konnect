@@ -61,7 +61,7 @@ export default function SearchList() {
   // }, [searchResults]);
 
   return (
-    <section aria-label="searchList" className="py-1.5 space-y-5">
+    <section aria-label="searchList" className="py-1.5 px-3 space-y-5">
       <header className="sticky top-0 space-y-3 bg-gray-50 pt-2">
         <Input
           labelActive={true}
