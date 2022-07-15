@@ -11,7 +11,7 @@ export default function Pill({
       disabled={disabled}
       type={type}
       style={style}
-      onClick={onClick}
+      onClick={() => !disabled && onClick()}
       className={`py-1 w-full text-xxs border-2 shadow-sm active:shadow-inner rounded-full flex items-center gap-1 justify-center duration-200  ${className}`}
     >
       {children}

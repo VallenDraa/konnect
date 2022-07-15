@@ -1,29 +1,29 @@
-import { useEffect, useState, Fragment, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaPaperPlane } from 'react-icons/fa';
-import { HiOutlineMenu } from 'react-icons/hi';
-import RenderIf from '../../utils/React/RenderIf';
-import { StartScreen } from '../StartScreen/StartScreen';
-import socket from '../../utils/socketClient/socketClient';
-import { useContext } from 'react';
-import { UserContext } from '../../context/user/userContext';
-import getUsersPreview from '../../utils/apis/getusersPreview';
-import { Message } from '../Message/Message';
+import { useEffect, useState, Fragment, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FaPaperPlane } from "react-icons/fa";
+import { HiOutlineMenu } from "react-icons/hi";
+import RenderIf from "../../utils/React/RenderIf";
+import { StartScreen } from "../StartScreen/StartScreen";
+import socket from "../../utils/socketClient/socketClient";
+import { useContext } from "react";
+import { UserContext } from "../../context/user/userContext";
+import getUsersPreview from "../../utils/apis/getusersPreview";
+import { Message } from "../Message/Message";
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
-} from '../../context/activeChat/ActiveChatContext';
-import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext';
-import MESSAGE_LOGS_ACTIONS from '../../context/messageLogs/messageLogsActions';
-import { getSentAtStatus } from '../../utils/dates/dates';
-import { BiCheckDouble } from 'react-icons/bi';
-import throttle from '../../utils/performance/throttle';
+} from "../../context/activeChat/ActiveChatContext";
+import { MessageLogsContext } from "../../context/messageLogs/MessageLogsContext";
+import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
+import { getSentAtStatus } from "../../utils/dates/dates";
+import { BiCheckDouble } from "react-icons/bi";
+import throttle from "../../utils/performance/throttle";
 import getScrollPercentage, {
   isWindowScrollable,
-} from '../../utils/scroll/getScrollPercentage';
-import { ChatboxContext } from '../../context/chatBoxState/chatBoxContext';
-import { UrlHistoryContext } from '../../pages/Home/Home';
-import { useDetectFirstRender } from '../../utils/hooks/useDetectFirstRender/useDetectFirstRender';
+} from "../../utils/scroll/getScrollPercentage";
+import { ChatboxContext } from "../../context/chatBoxState/chatBoxContext";
+import { UrlHistoryContext } from "../../pages/Home/Home";
+import { useDetectFirstRender } from "../../utils/hooks/useDetectFirstRender/useDetectFirstRender";
 
 export const pushNewEntry = async ({
   targetId,
@@ -75,7 +75,7 @@ export const ChatBox = ({ sidebarState }) => {
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
-  const [newMessage, setnewMessage] = useState('');
+  const [newMessage, setnewMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const [target, setTarget] = useState({ targetId: null, chatType: null }); //target id
@@ -88,14 +88,14 @@ export const ChatBox = ({ sidebarState }) => {
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
-    if (location.pathname === '/chats') {
+    if (location.pathname === "/chats") {
       // if (location.pathname + location.search === urlHistory.prev) return;
 
       const search = Object.fromEntries(
         location.search
           .slice(1, location.search.length)
-          .split('&')
-          .map((q) => q.split('='))
+          .split("&")
+          .map((q) => q.split("="))
       );
 
       // set the target recipient data
@@ -117,9 +117,9 @@ export const ChatBox = ({ sidebarState }) => {
 
           // execute different code according to the search type
           switch (search.type) {
-            case 'user':
+            case "user":
               // fetch the initials, profile picture, and username from the server
-              getUsersPreview(sessionStorage.getItem('token'), [search.id])
+              getUsersPreview(sessionStorage.getItem("token"), [search.id])
                 .then((userPrev) => {
                   Object.assign(newActiveChat, userPrev[0]);
                   setActiveChat(newActiveChat);
@@ -129,7 +129,7 @@ export const ChatBox = ({ sidebarState }) => {
 
               break;
 
-            case 'group':
+            case "group":
               break;
 
             default:
@@ -177,9 +177,9 @@ export const ChatBox = ({ sidebarState }) => {
       setWillGoToBottom(scrollPercent > 70 ? true : false);
     }, 200);
 
-    window.addEventListener('scroll', scrollCb);
+    window.addEventListener("scroll", scrollCb);
 
-    return () => window.removeEventListener('scroll', scrollCb);
+    return () => window.removeEventListener("scroll", scrollCb);
   }, []); //automatically scroll down to the latest message
 
   useEffect(() => {
@@ -187,7 +187,7 @@ export const ChatBox = ({ sidebarState }) => {
   }, [activeChat]); //set the isMsgWillBeRead when active chat has been changed
 
   useEffect(() => {
-    socket.on('receive-msg', async (data) => {
+    socket.on("receive-msg", async (data) => {
       const { message, chatId, success } = data;
       const assembledMsg = { ...message, chatId };
 
@@ -204,7 +204,7 @@ export const ChatBox = ({ sidebarState }) => {
             msgLogs,
             targetId: message.by,
             message: assembledMsg,
-            token: sessionStorage.getItem('token'),
+            token: sessionStorage.getItem("token"),
             currentActiveChatId: activeChat._id,
             dispatch: msgLogsDispatch,
           });
@@ -224,7 +224,7 @@ export const ChatBox = ({ sidebarState }) => {
       willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
     });
 
-    return () => socket.off('receive-msg');
+    return () => socket.off("receive-msg");
   }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
 
   useEffect(() => {
@@ -241,10 +241,10 @@ export const ChatBox = ({ sidebarState }) => {
       const finalMesIndex = activeChatLog.chat.length - 1;
 
       if (currMsgLog[finalMesIndex].by !== userState.user._id) {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem("token");
 
         socket.emit(
-          'read-msg',
+          "read-msg",
           new Date().toISOString(),
           token,
           activeChat._id,
@@ -257,7 +257,7 @@ export const ChatBox = ({ sidebarState }) => {
   }, [activeChat, msgLogs]); //set the message to read
 
   useEffect(() => {
-    socket.on('msg-on-read', (isRead, recipientId, time) => {
+    socket.on("msg-on-read", (isRead, recipientId, time) => {
       if (isRead) {
         if (!msgLogs.content[recipientId]) return;
 
@@ -274,11 +274,11 @@ export const ChatBox = ({ sidebarState }) => {
       }
     });
 
-    return () => socket.off('msg-on-read');
+    return () => socket.off("msg-on-read");
   }, [msgLogs]); //msg onread
 
   useEffect(() => {
-    socket.on('msg-sent', ({ success, message, chatId, timeSent }) => {
+    socket.on("msg-sent", ({ success, message, chatId, timeSent }) => {
       if (!success) return;
       // console.log(chatId, success);
 
@@ -310,7 +310,7 @@ export const ChatBox = ({ sidebarState }) => {
       }
     });
 
-    return () => socket.off('msg-sent');
+    return () => socket.off("msg-sent");
   }, [msgLogs]); // for changing the message state indicator
 
   useEffect(() => {
@@ -323,17 +323,17 @@ export const ChatBox = ({ sidebarState }) => {
     const sentAt = getSentAtStatus(new Date(), timeMessageSent);
 
     switch (sentAt) {
-      case 'today':
+      case "today":
         const formattedTime = timeMessageSent
           .toTimeString()
-          .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));
+          .slice(0, timeMessageSent.toTimeString().lastIndexOf(":"));
 
         return setTimeMessageRead(formattedTime);
 
-      case 'yesterday':
-        return setTimeMessageRead('a day ago');
+      case "yesterday":
+        return setTimeMessageRead("a day ago");
 
-      case 'long ago':
+      case "long ago":
         return setTimeMessageRead(timeMessageSent.toLocaleDateString());
       default:
         break;
@@ -342,12 +342,12 @@ export const ChatBox = ({ sidebarState }) => {
 
   const handleNewMessage = (e) => {
     e.preventDefault();
-    if (newMessage === '') return;
+    if (newMessage === "") return;
 
     const newMessageInput = {
       by: userState.user._id,
       to: activeChat._id,
-      msgType: 'text',
+      msgType: "text",
       content: newMessage,
       isSent: false,
       time: new Date().toISOString(),
@@ -365,18 +365,18 @@ export const ChatBox = ({ sidebarState }) => {
           msgLogs,
           targetId: activeChat._id,
           message: newMessageInput,
-          token: sessionStorage.getItem('token'),
+          token: sessionStorage.getItem("token"),
           currentActiveChatId: activeChat._id,
           dispatch: msgLogsDispatch,
         });
     setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 150);
 
     // reset the input bar
-    setnewMessage('');
+    setnewMessage("");
 
     // send the message to the server
     // add a "to" field to the final object to indicate who the message is for
-    socket.emit('new-msg', newMessageInput, sessionStorage.getItem('token'));
+    socket.emit("new-msg", newMessageInput, sessionStorage.getItem("token"));
   };
 
   // const changeLocation = () => {
@@ -404,7 +404,7 @@ export const ChatBox = ({ sidebarState }) => {
                 <Link
                   to="/chats"
                   onClick={handleGoToMenu}
-                  className="block lg:hidden hover:text-pink-400 duration-200 text-xl pl-1"
+                  className="block lg:hidden hover:text-pink-400 duration-200 text-2xl md:text-xl pl-1"
                 >
                   <HiOutlineMenu />
                 </Link>
@@ -416,13 +416,13 @@ export const ChatBox = ({ sidebarState }) => {
                   <img
                     src="https://picsum.photos/200/200"
                     alt=""
-                    className="rounded-full h-8 w-8"
+                    className="rounded-full h-9 w-9"
                   />
                   <div className="flex flex-col items-start">
-                    <span className="text-xs max-w-[200px] truncate">
+                    <span className="text-sm max-w-[200px] truncate">
                       {activeChat.username}
                     </span>
-                    <span className="text-xxs text-gray-500 relative z-10 max-w-[200px] truncate">
+                    <span className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate">
                       Status
                     </span>
                   </div>
@@ -463,8 +463,7 @@ export const ChatBox = ({ sidebarState }) => {
           {/* input */}
           <form
             onSubmit={(e) => handleNewMessage(e)}
-            className="bg-gray-100 sticky bottom-0 min-h-[1rem] flex items-center justify-center gap-3 
-                        py-2 px-5"
+            className="sticky bottom-0 min-h-[1rem] flex items-center justify-center gap-3 py-2 px-5"
           >
             <input
               type="text"
@@ -473,9 +472,9 @@ export const ChatBox = ({ sidebarState }) => {
               className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
                          rounded-full px-6 resize-none flex items-center justify-center h-8 transition"
             />
-            <RenderIf conditionIs={newMessage !== ''}>
+            <RenderIf conditionIs={newMessage !== ""}>
               <button
-                className="w-9 h-9 max-w-[36px] max-h-[36px] rounded-full bg-blue-300 
+                className="w-10 h-10 max-w-[40px] max-h-[40px] rounded-full bg-blue-300 text-white
                           hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
                           flex items-center justify-center shadow aspect-square text-xs animate-pop-in"
               >

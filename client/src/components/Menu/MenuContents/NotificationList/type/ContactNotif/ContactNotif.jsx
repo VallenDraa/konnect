@@ -1,33 +1,33 @@
-import { FaCheck, FaTimes } from 'react-icons/fa';
-import { ImBlocked } from 'react-icons/im';
-import generateRgb from '../../../../../../utils/generateRgb/generateRgb';
-import RenderIf from '../../../../../../utils/React/RenderIf';
-import PicturelessProfile from '../../../../../PicturelessProfile/PicturelessProfile';
-import socket from '../../../../../../utils/socketClient/socketClient';
-import { UserContext } from '../../../../../../context/user/userContext';
-import { Link } from 'react-router-dom';
-import { useContext } from 'react';
+import { FaCheck, FaTimes } from "react-icons/fa";
+import { ImBlocked } from "react-icons/im";
+import generateRgb from "../../../../../../utils/generateRgb/generateRgb";
+import RenderIf from "../../../../../../utils/React/RenderIf";
+import PicturelessProfile from "../../../../../PicturelessProfile/PicturelessProfile";
+import socket from "../../../../../../utils/socketClient/socketClient";
+import { UserContext } from "../../../../../../context/user/userContext";
+import { Link } from "react-router-dom";
+import { useContext } from "react";
 
 export default function ContactNotif({ info, type }) {
   // console.log(info, type);
   const { userState } = useContext(UserContext);
 
   const handleResponse = (answer, type) => {
-    if (type === 'inbox') {
+    if (type === "inbox") {
       const payload = {
         answer,
-        token: sessionStorage.getItem('token'),
+        token: sessionStorage.getItem("token"),
         senderId: info.by._id,
         recipientId: userState.user._id,
       };
-      socket.emit('contact-requests-response', payload);
+      socket.emit("contact-requests-response", payload);
     }
   };
 
   const cancelRequest = () => {
-    const senderToken = sessionStorage.getItem('token');
+    const senderToken = sessionStorage.getItem("token");
     socket.emit(
-      'send-add-contact',
+      "send-add-contact",
       userState.user._id,
       info.by._id,
       senderToken,
@@ -60,14 +60,14 @@ export default function ContactNotif({ info, type }) {
         <main className="flex flex-col items-center gap-y-1">
           <span className="text-slate-500 text-sm">
             <RenderIf conditionIs={info.answer === null}>
-              <RenderIf conditionIs={type === 'inbox'}>
+              <RenderIf conditionIs={type === "inbox"}>
                 <span className="font-bold text-slate-800">
                   {info.by.username}
-                </span>{' '}
+                </span>{" "}
                 has sent you a contact request !
               </RenderIf>
-              <RenderIf conditionIs={type === 'outbox'}>
-                A contact request has been sent to{' '}
+              <RenderIf conditionIs={type === "outbox"}>
+                A contact request has been sent to{" "}
                 <span className="font-bold text-slate-800">
                   {info.by.username}
                 </span>
@@ -77,7 +77,7 @@ export default function ContactNotif({ info, type }) {
             <RenderIf conditionIs={info.answer !== null}>
               <span className="font-bold text-slate-800">
                 {info.by.username}
-              </span>{' '}
+              </span>{" "}
               <RenderIf conditionIs={info.answer === true}>
                 Has been added to your contacts list.
               </RenderIf>
@@ -91,7 +91,7 @@ export default function ContactNotif({ info, type }) {
 
       {/* response options will only render if request hasn't been answered yet */}
       <RenderIf conditionIs={info.answer === null}>
-        <RenderIf conditionIs={type === 'inbox'}>
+        <RenderIf conditionIs={type === "inbox"}>
           <div className="flex items-center gap-2 mt-2 self-end">
             <button
               onClick={() => handleResponse(false, type)}
@@ -109,7 +109,7 @@ export default function ContactNotif({ info, type }) {
             </button>
           </div>
         </RenderIf>
-        <RenderIf conditionIs={type === 'outbox'}>
+        <RenderIf conditionIs={type === "outbox"}>
           <div className="flex items-center gap-2 self-end">
             <button
               onClick={cancelRequest}

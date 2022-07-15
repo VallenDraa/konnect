@@ -1,7 +1,7 @@
-import noActiveChat from '../../svg/home/noActiveChat.svg';
-import { HiOutlineMenu } from 'react-icons/hi';
-import CTA from '../CTA/CTA';
-import { Logo } from '../Logo/Logo';
+import noActiveChat from "../../svg/home/noActiveChat.svg";
+import { HiOutlineMenu } from "react-icons/hi";
+import CTA from "../CTA/CTA";
+import { Logo } from "../Logo/Logo";
 
 export const StartScreen = ({ handleGoToMenu }) => {
   return (
@@ -12,11 +12,13 @@ export const StartScreen = ({ handleGoToMenu }) => {
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
               onClick={handleGoToMenu}
-              className="block lg:hidden hover:text-pink-400 duration-200 text-xl"
+              className="block lg:hidden hover:text-pink-400 duration-200 text-2xl md:text-xl"
             >
               <HiOutlineMenu />
             </button>
-            <Logo />
+            <div className="relative bottom-0.5 lg:bottom-0">
+              <Logo />
+            </div>
           </div>
 
           <CTA className="flex justify-evenly gap-2 basis-full sm:basis-3/4 md:basis-1/2 xl:basis-1/3" />
@@ -28,7 +30,7 @@ export const StartScreen = ({ handleGoToMenu }) => {
       </h1>
       <span className="text-gray-500 font-light text-xs text-center md:text-sm">
         Click one of the available messages or go start a new one by pressing
-        the <span className="font-semibold text-gray-600">New Chat</span>{' '}
+        the <span className="font-semibold text-gray-600">New Chat</span>{" "}
         button.
       </span>
     </main>

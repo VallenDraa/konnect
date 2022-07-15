@@ -1,10 +1,11 @@
-import { useContext } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { UserContext } from './context/user/userContext';
-import { Login } from './pages/Login/Login';
-import { Register } from './pages/Register/Register';
-import Home from './pages/Home/Home';
-import RenderIf from './utils/React/RenderIf';
+import { useContext, useEffect } from "react";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { UserContext } from "./context/user/userContext";
+import { Login } from "./pages/Login/Login";
+import { Register } from "./pages/Register/Register";
+import Home from "./pages/Home/Home";
+import RenderIf from "./utils/React/RenderIf";
+import LandscapeAlert from "./components/LandscapeAlert/LandscapeAlert";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -12,6 +13,8 @@ export const App = () => {
 
   return (
     <div className="text-gray-800 antialiased">
+      <LandscapeAlert />
+
       <BrowserRouter>
         <Routes>
           <Route

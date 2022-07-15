@@ -1,21 +1,21 @@
-import { Link, useNavigate } from 'react-router-dom';
-import patternBgLight from '../../svg/authPage/patternBgLight.svg';
-import { RiLoginCircleLine } from 'react-icons/ri';
-import { Logo } from '../../components/Logo/Logo';
-import { useRef, useContext, useState } from 'react';
-import api from '../../utils/apiAxios/apiAxios';
-import USER_ACTIONS from '../../context/User/userAction';
-import socket from '../../utils/socketClient/socketClient';
-import Input from '../../components/Input/Input';
-import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
-import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
+import { Link, useNavigate } from "react-router-dom";
+import patternBgLight from "../../svg/authPage/patternBgLight.svg";
+import { RiLoginCircleLine } from "react-icons/ri";
+import { Logo } from "../../components/Logo/Logo";
+import { useRef, useContext, useState } from "react";
+import api from "../../utils/apiAxios/apiAxios";
+import USER_ACTIONS from "../../context/User/userAction";
+import socket from "../../utils/socketClient/socketClient";
+import Input from "../../components/Input/Input";
+import { isInitialLoadingContext } from "../../context/isInitialLoading/isInitialLoading";
+import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
 
 export const Login = ({ user }) => {
   const { userState, userDispatch } = user;
   const rememberMe = useRef();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { setIsInitialLoading } = useContext(isInitialLoadingContext);
   const { setIsLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
 
@@ -26,14 +26,14 @@ export const Login = ({ user }) => {
     const formValue = { username, password };
 
     try {
-      const { data } = await api.post('/auth/login', formValue);
+      const { data } = await api.post("/auth/login", formValue);
       const loginCb = (success, message) => {
         if (success) {
-          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem("token", data.token);
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
           setIsLoginViaRefresh(false);
           setIsInitialLoading(true);
-          navigate('/');
+          navigate("/");
         } else {
           alert(message);
         }
@@ -41,7 +41,7 @@ export const Login = ({ user }) => {
 
       // callback for handling error
       socket.emit(
-        'login',
+        "login",
         { userId: data.user._id, token: data.token },
         loginCb
       );
@@ -53,9 +53,9 @@ export const Login = ({ user }) => {
         className="basis-full md:basis-2/3 min-h-screen shadow-inner blur-2xl md:blur-none"
         style={{
           backgroundImage: `url(${patternBgLight})`,
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
         }}
       />
       <section
@@ -69,7 +69,7 @@ export const Login = ({ user }) => {
             </div>
             <RiLoginCircleLine className="text-blue-600 text-2xl" />
             <h1 className="font-bold text-3xl">Login</h1>
-            <span className="text-gray-500 text-xxs md:text-xs">
+            <span className="text-gray-500 text-xs">
               Login to start
               <span className="font-medium text-pink-600"> chatting </span>
               and
@@ -94,7 +94,7 @@ export const Login = ({ user }) => {
                   customState={[password, setPassword]}
                 />
               </div>
-              <div className="text-xxs md:text-xs flex justify-between text-gray-500">
+              <div className="text-xs flex justify-between text-gray-500">
                 <div className="flex items-center gap-1">
                   <input
                     id="remember"
@@ -120,11 +120,11 @@ export const Login = ({ user }) => {
               <button className="w-full py-2 text-sm md:text-base max-w-xs mx-auto rounded-full duration-200 bg-blue-400 hover:bg-blue-500 focus:bg-blue-600 shadow focus:shadow-inner shadow-blue-500 font-semibold text-white">
                 Login
               </button>
-              <span className="text-gray-500 text-xxs md:text-xs">
-                Not Registered ? click here to{' '}
+              <span className="text-gray-500 text-xs">
+                Not Registered ? click here to{" "}
                 <Link
                   to="/register"
-                  className="text-pink-400 underline underline-offset-4"
+                  className="text-pink-400 underline underline-offset-4 font-bold"
                 >
                   Register
                 </Link>
