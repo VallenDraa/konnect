@@ -1,12 +1,26 @@
-import { RiContactsBook2Line, RiNotification3Line } from 'react-icons/ri';
-import { IoSearch } from 'react-icons/io5';
-import { BsChatDots } from 'react-icons/bs';
-
+import {
+  RiChatQuoteFill,
+  RiChatQuoteLine,
+  RiContactsBook2Fill,
+  RiContactsBook2Line,
+  RiNotification3Fill,
+  RiNotification3Line,
+  RiSearchEyeFill,
+  RiSearchEyeLine,
+} from 'react-icons/ri';
 const MENUS = [
-  { name: 'chats', icon: BsChatDots },
-  { name: 'contacts', icon: RiContactsBook2Line },
-  { name: 'search', icon: IoSearch },
-  { name: 'notifications', icon: RiNotification3Line },
+  { name: 'chats', icon: RiChatQuoteLine, activeIcon: RiChatQuoteFill },
+  {
+    name: 'contacts',
+    icon: RiContactsBook2Line,
+    activeIcon: RiContactsBook2Fill,
+  },
+  { name: 'search', icon: RiSearchEyeLine, activeIcon: RiSearchEyeFill },
+  {
+    name: 'notifications',
+    icon: RiNotification3Line,
+    activeIcon: RiNotification3Fill,
+  },
 ];
 
 export default MENUS;

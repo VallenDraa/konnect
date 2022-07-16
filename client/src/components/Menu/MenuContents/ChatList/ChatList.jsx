@@ -9,6 +9,7 @@ import {
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
 import { useNavigate } from 'react-router-dom';
+import { chatPreviewTimeStatus } from '../../../../utils/dates/dates';
 
 export default function ChatList({ setIsSidebarOn }) {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -42,11 +43,10 @@ export default function ChatList({ setIsSidebarOn }) {
 
     // check if target id is the same as the current one, if so deactivate it
     if (target._id !== activeChat._id) {
-      const { lastMessageReadAt, chat } = msgLogs.content[target._id];
+      const { chat } = msgLogs.content[target._id];
 
       setActiveChat({
         ...target,
-        lastMessageReadAt,
         lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
       });
     } else {
@@ -87,11 +87,14 @@ export default function ChatList({ setIsSidebarOn }) {
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, { user, chat }]) => {
-              if (!user) return;
               return (
                 <ChatPreview
                   key={_id}
                   lastMessage={chat[chat.length - 1]}
+                  timeSentArg={chatPreviewTimeStatus(
+                    new Date(),
+                    new Date(chat[chat.length - 1].time)
+                  )}
                   user={user}
                   isActive={_id === activeChat._id}
                   handleActiveChat={handleActiveChat}

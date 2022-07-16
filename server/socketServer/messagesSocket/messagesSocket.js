@@ -40,7 +40,6 @@ export default function messages(socket) {
       if (new Date(time).getMonth().toString() === NaN.toString()) {
         throw createErrorNonExpress(400, 'invalid time arguments');
       }
-      console.log('msg read');
 
       // set all passed in messages isRead field to true
       const { data } = await axios.put(
@@ -50,7 +49,6 @@ export default function messages(socket) {
 
       // check if sender is online
       const isSenderOnline = senderId in global.onlineUsers;
-      console.log('isSenderOnline: ', isSenderOnline);
 
       if (isSenderOnline) {
         const senderSocketId = global.onlineUsers[senderId];

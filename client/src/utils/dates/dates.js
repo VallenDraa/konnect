@@ -12,25 +12,25 @@ export function getDayDifference(now, then) {
 /**
  *
  * @param {Date} now
- * @param {Date} then
+ * @param {Date} timeSent
  * @returns
  */
 
-export function getSentAtStatus(now, then) {
+export const getSentAtStatus = (now, timeSent) => {
   let sentAt;
 
   const currDate = now.getDate();
-  const thenDate = then.getDate();
+  const timeSentDate = timeSent.getDate();
   const currMonthAndYear = `${now.getMonth()}/${now.getFullYear()}`;
-  const thenMonthAndYear = `${then.getMonth()}/${then.getFullYear()}`;
+  const timeSentMonthAndYear = `${timeSent.getMonth()}/${timeSent.getFullYear()}`;
 
   // determine the time at which the message was sent
-  if (currDate === thenDate) {
+  if (currDate === timeSentDate) {
     sentAt = 'today';
   } else if (
-    currDate > thenDate &&
-    currDate - thenDate === 1 &&
-    currMonthAndYear === thenMonthAndYear
+    currDate > timeSentDate &&
+    currDate - timeSentDate === 1 &&
+    currMonthAndYear === timeSentMonthAndYear
   ) {
     sentAt = 'yesterday';
   } else {
@@ -38,4 +38,32 @@ export function getSentAtStatus(now, then) {
   }
 
   return sentAt;
-}
+};
+
+/**
+ *
+ * @param {Date} now
+ * @param {Date} timeSent
+ * @returns
+ */
+export const chatPreviewTimeStatus = (now, timeSent) => {
+  const sentAt = getSentAtStatus(now, timeSent);
+
+  // determine the time indicator that'll be displayed
+  switch (sentAt) {
+    case 'today':
+      const formattedTime = timeSent
+        .toTimeString()
+        .slice(0, timeSent.toTimeString().lastIndexOf(':'));
+
+      return formattedTime;
+
+    case 'yesterday':
+      return 'Yesterday';
+
+    case 'long ago':
+      return timeSent.toLocaleDateString();
+    default:
+      return timeSent.toLocaleDateString();
+  }
+};

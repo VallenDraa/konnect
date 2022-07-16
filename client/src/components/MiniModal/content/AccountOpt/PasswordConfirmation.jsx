@@ -3,13 +3,14 @@ import { useContext } from 'react';
 import { MiniModalContext } from '../../../../context/miniModal/miniModalContext';
 import MINI_MODAL_ACTIONS from '../../../../context/miniModal/miniModalActions';
 import { useState } from 'react';
+import Pill from '../../../Buttons/Pill';
 
 /**
  *
  * @param {Object} param0 Pass in a callback that'll execute
  * @returns
  */
-export default function PasswordConfirmation({ cb, title, payload }) {
+export default function PasswordConfirmation({ cb, title, caption, payload }) {
   const { miniModalDispatch } = useContext(MiniModalContext);
   const [password, setPassword] = useState('');
 
@@ -22,29 +23,34 @@ export default function PasswordConfirmation({ cb, title, payload }) {
     <form
       onSubmit={(e) => handleAccountEdits(e)}
       autoComplete="new-password"
-      className="flex flex-col justify-between grow text-center"
+      className="flex flex-col grow text-center p-5"
     >
-      <h3 className="font-semibold pt-3 text-sm sm:text-base">{title}</h3>
-      <div className="w-full px-5">
-        <Input type="password" customState={[password, setPassword]} />
-      </div>
-      <div className="border-t-4 flex w-full divide-x-2 h-10">
-        <button
-          className="basis-1/2 h-full hover:bg-pink-400 hover:text-white text-pink-400 font-light duration-200 rounded-bl-xl"
+      <header className="flex flex-col w-full grow-[20]">
+        <header className="space-y-1">
+          <h3 className="font-bold text-base text-gray-800 pt-2">{title}</h3>
+          <p className="text-xs text-gray-400">{caption}</p>
+        </header>
+        <footer className="mt-[20%]">
+          <Input type="password" customState={[password, setPassword]} />
+        </footer>
+      </header>
+      <footer className="flex w-full gap-x-2 h-10 grow-[1] pt-3">
+        <Pill
+          className="h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold duration-200 border-0"
           type="button"
           onClick={() =>
             miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing })
           }
         >
           Cancel
-        </button>
-        <button
-          className="basis-1/2 h-full hover:bg-blue-400 hover:text-white text-blue-400 font-light duration-200 rounded-br-xl"
+        </Pill>
+        <Pill
+          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-xl font-bold duration-200 border-0"
           type="submit"
         >
           Change
-        </button>
-      </div>
+        </Pill>
+      </footer>
     </form>
   );
 }

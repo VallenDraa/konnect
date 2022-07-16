@@ -3,7 +3,6 @@ import { createContext, useEffect, useState } from 'react';
 export const ACTIVE_CHAT_DEFAULT = {
   _id: null,
   initials: null,
-  lastMessageReadAt: null,
   lastMessage: null,
   profilePicture: null,
   username: null,

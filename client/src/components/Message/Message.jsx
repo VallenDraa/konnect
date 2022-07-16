@@ -14,7 +14,8 @@ export const Message = ({
     .slice(0, time.toTimeString().lastIndexOf(':'));
 
   return (
-    <div
+    <li
+      aria-label="message"
       className={`h-max flex items-center mt-5 animate-pop-in
                      ${isSentByMe ? 'justify-end' : ''}`}
     >
@@ -41,27 +42,22 @@ export const Message = ({
           </time>
 
           <RenderIf conditionIs={isSentByMe}>
-            <RenderIf conditionIs={!state.isSent}>
-              <AiOutlineLoading3Quarters className="animate-spin" />
+            {/* check if message hasn't been sent or read yet */}
+            <RenderIf conditionIs={!state.isSent && !state.readAt}>
+              <AiOutlineLoading3Quarters className="animate-spin text-lg self-start animate-fade-in text-gray-400" />
+            </RenderIf>
+
+            {/* check if message has been sent but not read yet */}
+            <RenderIf conditionIs={state.isSent}>
+              <BiCheckDouble
+                className={`text-lg self-start animate-fade-in 
+                          ${state.readAt ? 'text-pink-300' : 'text-gray-400'}
+              `}
+              />
             </RenderIf>
           </RenderIf>
-
-          {/* check if message hasn't been sent or read yet */}
-          {/* <RenderIf conditionIs={!state.isSent && !state.isRead}>
-              <BiCheck className="text-lg self-start animate-fade-in text-gray-400" />
-            </RenderIf> */}
-
-          {/* check if message has been sent but not read yet */}
-          {/* <RenderIf conditionIs={state.isSent && !state.isRead}>
-              <BiCheckDouble className="text-lg self-start animate-fade-in text-gray-400" />
-            </RenderIf> */}
-
-          {/* check if message has been sent and read */}
-          {/* <RenderIf conditionIs={state.isSent && state.isRead}>
-              <BiCheckDouble className="text-lg self-start animate-fade-in text-blue-400" />
-            </RenderIf> */}
         </div>
       </div>
-    </div>
+    </li>
   );
 };

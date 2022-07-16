@@ -8,7 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@picmo/popup-picker": "^5.2.0",
     "axios": "^0.27.2",
+    "picmo": "^5.2.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-icons": "^4.4.0",

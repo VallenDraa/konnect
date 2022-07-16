@@ -1,5 +1,4 @@
 import { useEffect, useReducer, useState } from 'react';
-import { useRef } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 import emptySearchResults from '../../../../svg/searchList/emptySearchResults.svg';
@@ -11,6 +10,7 @@ import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
 } from '../../../../reducer/searchResultsReducer/searchResultsReducer';
+import { FaUserAlt } from 'react-icons/fa';
 
 export default function SearchList() {
   const [query, setQuery] = useState('');
@@ -109,7 +109,7 @@ export default function SearchList() {
             </RenderIf>
           </div>
           {/* results */}
-          <ul>
+          <ul className="space-y-2">
             {/* the list item containing the user result */}
             <RenderIf
               conditionIs={
@@ -123,7 +123,7 @@ export default function SearchList() {
                       // this link will open a modal containing info of the user (code is ini Menu.jsx)
                       title={`Go To ${username}'s Profile`}
                       to={`user/${username}`}
-                      className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 duration-200 rounded-md`}
+                      className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-md shadow`}
                     >
                       <img
                         src="https://picsum.photos/200/200"
@@ -132,6 +132,7 @@ export default function SearchList() {
                       />
 
                       <span className="text-sm truncate">{username}</span>
+                      <FaUserAlt className="text-xs ml-auto mr-1 text-gray-500" />
                     </Link>
                   </li>
                 );

@@ -1,20 +1,17 @@
 import User from '../../../../model/User.js';
 import PrivateChat from '../../../../model/PrivateChat.js';
 import createError from '../../../../utils/createError.js';
-import jwt from 'jsonwebtoken';
 
 export const saveMessage = async (req, res, next) => {
   const { to, ...messageData } = req.body.message;
-
-  // console.log(req.body.message);
 
   // save message new test
   try {
     // find the chat log according to the ids
     const [privateChat] = await PrivateChat.where({
       $or: [
-        { 'users.0.user': to, 'users.1.user': messageData.by },
-        { 'users.0.user': messageData.by, 'users.1.user': to },
+        { 'users.0': to, 'users.1': messageData.by },
+        { 'users.0': messageData.by, 'users.1': to },
       ],
     });
     const msgToPush = { ...messageData, isSent: true };
@@ -22,8 +19,8 @@ export const saveMessage = async (req, res, next) => {
     // check if chat log exists
     if (!privateChat) {
       const newPrivateChat = {
-        'users.0.user': messageData.by,
-        'users.1.user': to,
+        'users.0': messageData.by,
+        'users.1': to,
         chat: [msgToPush],
       };
 
@@ -49,7 +46,7 @@ export const saveMessage = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 };
@@ -58,31 +55,51 @@ export const readMessage = async (req, res, next) => {
   const { time, token, senderId, chatLogId } = req.body;
 
   // check if the time passed in is of a date format
-
   if (new Date(time).getMonth().toString() === NaN.toString()) {
     return createError(next, 400, 'invalid time arguments');
   }
 
-  // new
+  // individual message read status
   try {
     // this is the id for the recipient whose lastMessageReadAt will be updated
-    const { _id } = jwt.decode(token);
     const chatLog = await PrivateChat.findById(chatLogId);
+    const { chat } = chatLog;
 
-    for (const i in chatLog.users) {
-      const currUserId = chatLog.users[i].user.toString();
+    // set the latest unread message to read
+    for (let i = chat.length - 1; i > 0; i--) {
+      if (chat[i].readAt !== null) break;
 
-      if (currUserId === _id) {
-        chatLog.users[i].lastMessageReadAt = time;
-      } else {
-        chatLog.users[i].lastMessageReadAt = null;
-      }
+      chatLog.chat[i].readAt = time;
     }
+
+    // save the updated message log
     await chatLog.save();
     res.json({ success: true });
   } catch (error) {
+    console.error(error);
     next(error);
   }
+
+  // new
+  // try {
+  //   // this is the id for the recipient whose lastMessageReadAt will be updated
+  //   const { _id } = jwt.decode(token);
+  //   const chatLog = await PrivateChat.findById(chatLogId);
+
+  //   for (const i in chatLog.users) {
+  //     const currUserId = chatLog.users[i].user.toString();
+
+  //     if (currUserId === _id) {
+  //       chatLog.users[i].lastMessageReadAt = time;
+  //     } else {
+  //       chatLog.users[i].lastMessageReadAt = null;
+  //     }
+  //   }
+  //   await chatLog.save();
+  //   res.json({ success: true });
+  // } catch (error) {
+  //   next(error);
+  // }
 };
 
 export const deleteMessage = async (req, res, next) => {};

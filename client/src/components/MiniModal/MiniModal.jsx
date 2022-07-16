@@ -36,7 +36,7 @@ export default function MiniModal({ children }) {
       >
         <div
           ref={miniModalRef}
-          className="min-h-[200px] w-screen sm:w-[600px] bg-white shadow-xl rounded-xl flex flex-col mx-5 animate-pop-in"
+          className="min-h-[350px] min-w-[350px] bg-white shadow-xl rounded-xl flex flex-col mx-5 animate-pop-in"
         >
           {miniModalState.content}
         </div>

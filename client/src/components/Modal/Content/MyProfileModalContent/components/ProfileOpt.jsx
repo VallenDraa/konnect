@@ -1,28 +1,28 @@
-import { useContext, useEffect, useId, useState } from "react";
-import { UserContext } from "../../../../../context/user/userContext";
+import { useContext, useEffect, useId, useState } from 'react';
+import { UserContext } from '../../../../../context/user/userContext';
 
-import { BiHappyHeartEyes } from "react-icons/bi";
-import { FaCamera } from "react-icons/fa";
-import { FiSave } from "react-icons/fi";
-import { ImProfile, ImBlocked, ImPencil } from "react-icons/im";
-import Pill from "../../../../Buttons/Pill";
-import Input from "../../../../Input/Input";
-import RenderIf from "../../../../../utils/React/RenderIf";
-import ContactsSwiperCard from "../../../../../utils/ContactsSwiperCard/ContactsSwiperCard";
-import api from "../../../../../utils/apiAxios/apiAxios";
-import USER_ACTIONS from "../../../../../context/user/userAction";
-import { MiniModalContext } from "../../../../../context/miniModal/miniModalContext";
-import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalActions";
-import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
+import { BiHappyHeartEyes } from 'react-icons/bi';
+import { FaCamera } from 'react-icons/fa';
+import { FiSave } from 'react-icons/fi';
+import { ImProfile, ImBlocked, ImPencil } from 'react-icons/im';
+import Pill from '../../../../Buttons/Pill';
+import Input from '../../../../Input/Input';
+import RenderIf from '../../../../../utils/React/RenderIf';
+import ContactsSwiperCard from '../../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
+import api from '../../../../../utils/apiAxios/apiAxios';
+import USER_ACTIONS from '../../../../../context/user/userAction';
+import { MiniModalContext } from '../../../../../context/miniModal/miniModalContext';
+import MINI_MODAL_ACTIONS from '../../../../../context/miniModal/miniModalActions';
+import PasswordConfirmation from '../../../../MiniModal/content/AccountOpt/PasswordConfirmation';
 
 const ProfileOpt = () => {
   const imageId = useId();
   const { userState, userDispatch } = useContext(UserContext);
   const [contactsPreview, setContactsPreview] = useState();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [firstName, setFirstName] = useState(userState.user.firstName || "");
-  const [lastName, setLastName] = useState(userState.user.lastName || "");
-  const [status, setStatus] = useState(userState.user.status || "unset");
+  const [firstName, setFirstName] = useState(userState.user.firstName || '');
+  const [lastName, setLastName] = useState(userState.user.lastName || '');
+  const [status, setStatus] = useState(userState.user.status || 'unset');
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
 
   // get contacts preview
@@ -32,8 +32,8 @@ const ProfileOpt = () => {
       const contactIds = contacts.map((contact) => contact.user);
 
       try {
-        const { data } = await api.post("/query/user/get_users_preview", {
-          token: sessionStorage.getItem("token"),
+        const { data } = await api.post('/query/user/get_users_preview', {
+          token: sessionStorage.getItem('token'),
           userIds: contactIds,
         });
         const result = data.map(({ profilePicture, initials, username }) => ({
@@ -52,24 +52,24 @@ const ProfileOpt = () => {
 
   useEffect(() => {
     if (isEditMode) {
-      status === "unset" && setStatus("");
+      status === 'unset' && setStatus('');
     } else {
-      userState.user.status === "" && setStatus("unset");
-      if (firstName !== "" && userState.user.firstName === "") setFirstName("");
-      if (lastName !== "" && userState.user.lastName === "") setLastName("");
+      userState.user.status === '' && setStatus('unset');
+      if (firstName !== '' && userState.user.firstName === '') setFirstName('');
+      if (lastName !== '' && userState.user.lastName === '') setLastName('');
     }
   }, [isEditMode]);
 
   const handleUserEdit = async (password, payload) => {
     try {
       userDispatch({ type: USER_ACTIONS.updateStart });
-      const { data } = await api.put("/user/edit_profile", {
+      const { data } = await api.put('/user/edit_profile', {
         password,
         ...payload,
       });
 
       if (data.success) {
-        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem('token', data.token);
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
         setIsEditMode(false);
         miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
@@ -89,7 +89,7 @@ const ProfileOpt = () => {
       firstName,
       lastName,
       status,
-      token: sessionStorage.getItem("token"),
+      token: sessionStorage.getItem('token'),
     };
 
     if (!miniModalState.isActive) {
@@ -98,7 +98,8 @@ const ProfileOpt = () => {
         payload: (
           <PasswordConfirmation
             cb={handleUserEdit}
-            title="Enter Password To Edit Profile"
+            title="Enter Password"
+            caption="Enter your password to edit your profile"
             payload={payload}
           />
         ),
@@ -138,7 +139,7 @@ const ProfileOpt = () => {
           {/* user data */}
           <footer className="py-3 space-y-8">
             <header
-              style={{ flexWrap: isEditMode ? "wrap-reverse" : "nowrap" }}
+              style={{ flexWrap: isEditMode ? 'wrap-reverse' : 'nowrap' }}
               className="flex  justify-between items-center gap-1 px-5"
             >
               {/* username and date joined */}
@@ -155,15 +156,20 @@ const ProfileOpt = () => {
               {/* buttons */}
               <div
                 style={{
-                  gap: isEditMode ? "0.5rem" : "0",
-                  width: isEditMode ? "100%" : "50%",
+                  gap: isEditMode ? '0.5rem' : '0',
+                  width: isEditMode ? '100%' : '50%',
                 }}
                 className="flex h-full justify-end"
               >
                 <Pill
                   onClick={() => setIsEditMode(!isEditMode)}
-                  style={{ width: isEditMode ? "50%" : "100px" }}
-                  className="text-sm px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2"
+                  style={{ width: isEditMode ? '50%' : '100px' }}
+                  className={`text-sm px-4 py-1 font-bold flex items-center gap-x-2
+                  ${
+                    !isEditMode
+                      ? 'hover:bg-pink-400 active:bg-pink-500 hover:text-white'
+                      : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100'
+                  }`}
                 >
                   <RenderIf conditionIs={!isEditMode}>
                     <ImPencil />
@@ -180,11 +186,11 @@ const ProfileOpt = () => {
                   type="submit"
                   disabled={!isEditMode}
                   style={{
-                    cursor: isEditMode ? "pointer" : "default",
-                    padding: isEditMode ? "0.25rem 1rem" : "0",
-                    borderWidth: isEditMode ? "2px" : "0",
-                    opacity: isEditMode ? "1" : "0",
-                    width: isEditMode ? "50%" : "0%",
+                    cursor: isEditMode ? 'pointer' : 'default',
+                    padding: isEditMode ? '0.25rem 1rem' : '0',
+                    borderWidth: isEditMode ? '2px' : '0',
+                    opacity: isEditMode ? '1' : '0',
+                    width: isEditMode ? '50%' : '0%',
                   }}
                   className="text-sm font-bold hover:bg-blue-400 active:bg-blue-500 hover:text-white flex items-center gap-x-2"
                 >
@@ -208,7 +214,7 @@ const ProfileOpt = () => {
                       customState={[firstName, setFirstName]}
                       className="basis-1/2 text-base md:text-sm"
                       type="text"
-                      placeholder={"Edit First Name"}
+                      placeholder={'Edit First Name'}
                     />
                     {/* last name */}
                     <Input
@@ -216,7 +222,7 @@ const ProfileOpt = () => {
                       customState={[lastName, setLastName]}
                       className="basis-1/2 text-base md:text-sm"
                       type="text"
-                      placeholder={"Edit Last Name"}
+                      placeholder={'Edit Last Name'}
                     />
                   </div>
                 </RenderIf>
@@ -225,8 +231,8 @@ const ProfileOpt = () => {
                 <RenderIf conditionIs={!isEditMode}>
                   <RenderIf
                     conditionIs={
-                      userState.user.firstName !== "" ||
-                      userState.user.lastName !== ""
+                      userState.user.firstName !== '' ||
+                      userState.user.lastName !== ''
                     }
                   >
                     <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
@@ -245,12 +251,12 @@ const ProfileOpt = () => {
                 <RenderIf conditionIs={isEditMode}>
                   <Input
                     labelActive={true}
-                    placeholder={"Edit Status"}
+                    placeholder={'Edit Status'}
                     required={false}
                     label="Status"
                     type="text"
                     customState={[status, setStatus]}
-                    style={{ fontSize: "24px" }}
+                    style={{ fontSize: '24px' }}
                     icon={<BiHappyHeartEyes className="text-lg" />}
                   />
                 </RenderIf>

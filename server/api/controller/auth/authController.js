@@ -55,9 +55,9 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   const { username, password } = req.body;
   try {
-    const user = await UserModel.findOne({ username }).select(
-      global.exemptedUserInfos
-    );
+    const user = await UserModel.findOne({ username })
+      .select(global.exemptedUserInfos)
+      .lean();
 
     if (user === null) {
       return createError(next, 401, 'Username or password is invalid !');
@@ -65,7 +65,7 @@ export const login = async (req, res, next) => {
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (isPasswordCorrect) {
-      const { password, ...otherData } = user._doc;
+      const { password, ...otherData } = user;
 
       // send user data back as a JWT token
       const secret = process.env.JWT_SECRET;

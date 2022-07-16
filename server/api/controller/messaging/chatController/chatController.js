@@ -8,7 +8,7 @@ export const getAllChatHistory = async (req, res, next) => {
   // new way
   try {
     const { _id } = jwt.decode(token);
-    const { chats } = await User.findById(_id).select('chats');
+    const { chats } = await User.findById(_id).select('chats').lean();
     console.log(chats);
 
     if (chats.length > 0) {
@@ -16,18 +16,16 @@ export const getAllChatHistory = async (req, res, next) => {
         _id: { $in: chats },
       })
         .populate({
-          path: 'users.user',
+          path: 'users',
           select: ['username', 'status', 'initials', 'profilePicture'],
         })
         .lean();
 
       // formatting the result
       const formattedPC = privateChats.map((pc) => {
-        const { user, lastMessageReadAt } = pc.users.filter(
-          ({ user }) => user._id.toString() !== _id
-        )[0];
+        const user = pc.users.filter((user) => user._id.toString() !== _id)[0];
 
-        return { chatId: pc._id, user, lastMessageReadAt, chat: pc.chat };
+        return { chatId: pc._id, user, chat: pc.chat };
       });
 
       const response = {

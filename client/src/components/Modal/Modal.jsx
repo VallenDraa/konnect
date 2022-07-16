@@ -47,12 +47,12 @@ export const Modal = () => {
         >
           <div
             ref={modal}
-            className="h-full md:h-3/4 md:max-h-[800px] md:aspect-square bg-white relative flex flex-col animate-pop-in z-100"
+            className="h-full lg:h-3/4 lg:max-h-[800px] lg:aspect-square bg-white relative flex flex-col animate-pop-in z-100 lg:rounded-xl overflow-clip"
           >
             <header className="flex justify-end items-center px-4 py-3">
               {/* close button */}
               <button
-                className="text-xl hover:text-pink-400  rounded-full flex items-center justify-center duration-200"
+                className="text-2xl lg:text-xl hover:text-blue-400  rounded-full flex items-center justify-center duration-200"
                 onClick={handleModalClose}
               >
                 <IoClose />

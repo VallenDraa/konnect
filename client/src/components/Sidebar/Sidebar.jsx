@@ -1,27 +1,27 @@
-import { useState, useEffect, useRef, useContext } from "react";
-import { BiLogOut } from "react-icons/bi";
-import { Menu } from "../Menu/Menu";
-import { ModalContext } from "../../context/modal/modalContext";
-import { MyProfileModalContent } from "../Modal/Content/MyProfileModalContent/MyProfileModalContent";
-import { Link, useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/user/userContext";
-import ChatList from "../Menu/MenuContents/ChatList/ChatList";
-import ContactList from "../Menu/MenuContents/ContactList/ContactList";
-import SearchList from "../Menu/MenuContents/SearchList/SearchList";
-import MODAL_ACTIONS from "../../context/modal/modalActions";
-import CTA from "../CTA/CTA";
-import Pill from "../Buttons/Pill";
-import USER_ACTIONS from "../../context/user/userAction";
-import socket from "../../utils/socketClient/socketClient";
-import RenderIf from "../../utils/React/RenderIf";
-import MENUS from "../Menu/MENUS";
-import SIDEBAR_APPEARANCE from "./SidebarAppearance/SidebarAppearance";
-import NotificationList from "../Menu/MenuContents/NotificationList/NotificationList";
+import { useState, useEffect, useRef, useContext } from 'react';
+import { BiLogOut } from 'react-icons/bi';
+import { Menu } from '../Menu/Menu';
+import { ModalContext } from '../../context/modal/modalContext';
+import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from '../../context/user/userContext';
+import ChatList from '../Menu/MenuContents/ChatList/ChatList';
+import ContactList from '../Menu/MenuContents/ContactList/ContactList';
+import SearchList from '../Menu/MenuContents/SearchList/SearchList';
+import MODAL_ACTIONS from '../../context/modal/modalActions';
+import CTA from '../CTA/CTA';
+import Pill from '../Buttons/Pill';
+import USER_ACTIONS from '../../context/user/userAction';
+import socket from '../../utils/socketClient/socketClient';
+import RenderIf from '../../utils/React/RenderIf';
+import MENUS from '../Menu/MENUS';
+import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
+import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
-} from "../../context/activeChat/ActiveChatContext";
-import throttle from "../../utils/performance/throttle";
+} from '../../context/activeChat/ActiveChatContext';
+import throttle from '../../utils/performance/throttle';
 
 export const Sidebar = ({ sidebarState, urlHistory }) => {
   const Navigate = useNavigate();
@@ -33,13 +33,13 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
   const sidebar = useRef();
 
   const handleLogout = () => {
-    socket.emit("logout", userState.user._id, (success, message) => {
+    socket.emit('logout', userState.user._id, (success, message) => {
       // deactivate chat
       setActiveChat(ACTIVE_CHAT_DEFAULT);
 
       userDispatch({ type: USER_ACTIONS.logout });
-      sessionStorage.removeItem("token");
-      Navigate("/login");
+      sessionStorage.removeItem('token');
+      Navigate('/login');
     });
   };
 
@@ -52,19 +52,19 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
 
       // disable body scrolling if window size is less than 1024
       if (window.innerWidth <= 1024) {
-        document.body.style.overflowY = "hidden";
+        document.body.style.overflowY = 'hidden';
       }
     } else {
       sidebar.current.className = SIDEBAR_APPEARANCE.CLOSED;
 
       // only enable scrolling when the modal is not active
       if (!modalState.isActive) {
-        document.body.style.overflowY = "auto";
+        document.body.style.overflowY = 'auto';
       }
 
       // remove slide out animation if window size is larger than 1024
       if (window.innerWidth >= 1024) {
-        sidebar.current.classList.remove("animate-sidebar-out");
+        sidebar.current.classList.remove('animate-sidebar-out');
       }
     }
   }, [isSidebarOn]);
@@ -75,14 +75,17 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
       if (window.innerWidth >= 1024) isSidebarOn && setIsSidebarOn(false);
     }, 200);
 
-    window.addEventListener("resize", closeSidebar);
+    window.addEventListener('resize', closeSidebar);
 
-    return () => window.removeEventListener("resize", closeSidebar);
+    return () => window.removeEventListener('resize', closeSidebar);
   }, [setIsSidebarOn, isSidebarOn]);
 
   return (
     <aside ref={sidebar}>
-      <header className="border-b-2 space-y-5 basis-1/6 p-3">
+      <header
+        className="space-y-5 basis-1/6 p-3"
+        style={{ borderBottom: '1px solid #e5e7eb' }}
+      >
         {/* profile and more menu */}
         <div className="flex justify-between items-center gap-2">
           {/* profile  */}
@@ -108,7 +111,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
                 {userState.user.username}
               </span>
               <span className="text-xxs text-gray-500 relative z-10 truncate">
-                {userState.user.status || "unset"}
+                {userState.user.status || 'unset'}
               </span>
             </div>
           </Link>
@@ -127,23 +130,25 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
           activeMenuState={{ activeMenu, setActiveMenu }}
         />
         {/* cta */}
-        <CTA urlHistory={urlHistory} />
+        <section className="lg:hidden" aria-label="action-buttons">
+          <CTA urlHistory={urlHistory} />
+        </section>
       </header>
       {/* menu contents */}
       <main className="basis-5/6 overflow-y-auto overflow-x-auto">
-        <RenderIf conditionIs={activeMenu === "chats"}>
+        <RenderIf conditionIs={activeMenu === 'chats'}>
           <ChatList
             contacts={userState.user.contacts}
             setIsSidebarOn={setIsSidebarOn}
           />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === "contacts"}>
+        <RenderIf conditionIs={activeMenu === 'contacts'}>
           <ContactList setIsSidebarOn={setIsSidebarOn} />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === "search"}>
+        <RenderIf conditionIs={activeMenu === 'search'}>
           <SearchList />
         </RenderIf>
-        <RenderIf conditionIs={activeMenu === "notifications"}>
+        <RenderIf conditionIs={activeMenu === 'notifications'}>
           <NotificationList />
         </RenderIf>
       </main>

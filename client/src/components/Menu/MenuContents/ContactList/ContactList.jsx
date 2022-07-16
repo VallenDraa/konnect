@@ -103,43 +103,43 @@ const ContactList = ({ setIsSidebarOn }) => {
     dispatch({ type: GROUPED_CONTACTS_ACTIONS.isLoaded, payload: result });
   }, [contacts]);
 
-  const handleActiveContact = (target) => {
-    // initiate the update
-    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-    const updatedLogs = msgLogs;
-    // const { chat, lastMessageReadAt } = updatedLogs.content;
+  // const handleActiveContact = (target) => {
+  //   // initiate the update
+  //   msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+  //   const updatedLogs = msgLogs;
+  //   // const { chat, lastMessageReadAt } = updatedLogs.content;
 
-    if (updatedLogs.content[target._id]) {
-      msgLogsDispatch({
-        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-        payload: updatedLogs.content,
-      });
+  //   if (updatedLogs.content[target._id]) {
+  //     msgLogsDispatch({
+  //       type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+  //       payload: updatedLogs.content,
+  //     });
 
-      setActiveChat(target);
-    } else {
-      pushNewEntry({
-        msgLogs,
-        targetId: target._id,
-        token: sessionStorage.getItem('token'),
-        currentActiveChatId: target._id,
-        dispatch: msgLogsDispatch,
-      });
+  //     setActiveChat(target);
+  //   } else {
+  //     pushNewEntry({
+  //       msgLogs,
+  //       targetId: target._id,
+  //       token: sessionStorage.getItem('token'),
+  //       currentActiveChatId: target._id,
+  //       dispatch: msgLogsDispatch,
+  //     });
 
-      const newActiveChat = {
-        _id: target._id,
-        lastMessageReadAt: null,
-        initials: target.initials,
-        lastMessage: null,
-        profilePicture: target.profilePicture,
-        username: target.username,
-      };
+  //     const newActiveChat = {
+  //       _id: target._id,
+  //       lastMessageReadAt: null,
+  //       initials: target.initials,
+  //       lastMessage: null,
+  //       profilePicture: target.profilePicture,
+  //       username: target.username,
+  //     };
 
-      setActiveChat(newActiveChat);
-    }
+  //     setActiveChat(newActiveChat);
+  //   }
 
-    // close sidebar for smaller screen
-    setIsSidebarOn(false);
-  };
+  //   // close sidebar for smaller screen
+  //   setIsSidebarOn(false);
+  // };
 
   // useEffect(() => {
   //   console.log(groupedContacts);
@@ -187,16 +187,15 @@ const ContactList = ({ setIsSidebarOn }) => {
       >
         {groupedContacts.contents.map(([letter, nameList], i) => {
           return (
-            <div key={i} className="space-y-3 mb-3 px-3">
+            <div key={i} className="space-y-3 mb-3 p-3">
               <span className="block sticky top-0 bg-gray-200 px-2 font-bold uppercase text-gray-600">
                 {letter}
               </span>
               {nameList.map((contact) => (
                 <Link
-                  to={`/chats?id=${contact._id}&type=user`}
+                  to={`/user/${contact.username}`}
                   key={contact}
-                  onClick={() => handleActiveContact(contact)}
-                  className={`pl-3 cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 duration-200 rounded-md`}
+                  className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 duration-200 rounded-md shadow`}
                 >
                   <img
                     src="https://picsum.photos/200/200"

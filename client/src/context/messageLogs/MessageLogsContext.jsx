@@ -43,7 +43,6 @@ export default function MessageLogsContextProvider({ children }) {
       .then(([user]) => {
         const newMessageLogContent = {
           user, //this'll get the last user (new user) in the contact array
-          lastMessageReadAt: null,
           chatId: null,
           chat: [],
           activeChat: false,
@@ -78,7 +77,6 @@ export default function MessageLogsContextProvider({ children }) {
           user: log.user,
           chatId: log.chatId,
           chat: log.chat,
-          lastMessageReadAt: log.lastMessageReadAt,
         };
       }
 
