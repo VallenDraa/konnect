@@ -51,16 +51,16 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
       sidebar.current.className = SIDEBAR_APPEARANCE.OPEN;
 
       // disable body scrolling if window size is less than 1024
-      if (window.innerWidth <= 1024) {
-        document.body.style.overflowY = 'hidden';
-      }
+      // if (window.innerWidth <= 1024) {
+      //   document.body.style.overflowY = 'hidden';
+      // }
     } else {
       sidebar.current.className = SIDEBAR_APPEARANCE.CLOSED;
 
       // only enable scrolling when the modal is not active
-      if (!modalState.isActive) {
-        document.body.style.overflowY = 'auto';
-      }
+      // if (!modalState.isActive) {
+      //   document.body.style.overflowY = 'auto';
+      // }
 
       // remove slide out animation if window size is larger than 1024
       if (window.innerWidth >= 1024) {

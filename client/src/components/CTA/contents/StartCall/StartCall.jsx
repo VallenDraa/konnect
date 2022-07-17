@@ -15,7 +15,9 @@ export default function StartCall() {
           Start Call
         </>
       }
-      searchCb={findUsersFromContact}
+      searchCb={(query) =>
+        findUsersFromContact(query, sessionStorage.getItem('token'))
+      }
       queryState={{ query, setQuery }}
       selectedState={{ selected, setSelected }}
       multipleSelect={false}

@@ -1,13 +1,25 @@
 import jwt from 'jsonwebtoken';
+import createError from '../../../utils/createError.js';
 
 export default function verifyToken(req, res, next) {
+  const authorization = req.headers.authorization;
+
+  // check if the client passed in an authentication token
+  if (!authorization) {
+    return createError(next, 403, 'Pass in an auth token to proceed !');
+  }
+
   // check if the body contains token key
   try {
-    const { token } = req.body['token'] ? req.body : req.query;
+    const [prefix, token] = authorization.split(' ');
     const secret = process.env.JWT_SECRET;
 
     // check if tokeen signature is verified
-    jwt.verify(token, secret) && next();
+    const isVerified = jwt.verify(token, secret);
+    if (isVerified) {
+      res.locals.tokenData = isVerified;
+      next();
+    }
   } catch (error) {
     console.log(error, 'verifytoken');
     next(error);

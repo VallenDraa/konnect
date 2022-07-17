@@ -1,7 +1,6 @@
 import { useEffect, useState, Fragment, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaPaperPlane } from 'react-icons/fa';
-import { createPopup } from '@picmo/popup-picker';
 import RenderIf from '../../utils/React/RenderIf';
 import { StartScreen } from '../StartScreen/StartScreen';
 import socket from '../../utils/socketClient/socketClient';
@@ -19,7 +18,11 @@ import throttle from '../../utils/performance/throttle';
 import getScrollPercentage, {
   isWindowScrollable,
 } from '../../utils/scroll/getScrollPercentage';
-import { BsArrowLeftShort, BsEmojiSmile } from 'react-icons/bs';
+import { BsArrowLeftShort } from 'react-icons/bs';
+import Picker from 'emoji-picker-react';
+import EmojiBarToggle from './components/EmojiBarToggle/EmojiBarToggle';
+import notifSound from '../../audio/notifSound.mp3';
+import { playAudio } from '../../utils/AudioPlayer/audioPlayer';
 
 export const pushNewEntry = async ({
   targetId,
@@ -65,6 +68,7 @@ export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
 };
 
 export const ChatBox = ({ sidebarState }) => {
+  const notifSFX = new Audio(notifSound);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
@@ -72,8 +76,8 @@ export const ChatBox = ({ sidebarState }) => {
   const [newMessage, setnewMessage] = useState('');
   const location = useLocation();
   const [willGoToBottom, setWillGoToBottom] = useState(false);
-  const emojiPickerRef = useRef();
-  const [emojiPicker, setEmojiPicker] = useState(null);
+  const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
+  const inputRef = useRef();
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
@@ -143,42 +147,6 @@ export const ChatBox = ({ sidebarState }) => {
   // END OF INITIAL LOADING USE EFFECT
 
   useEffect(() => {
-    let picker;
-
-    const pickEmoji = (emoji) => {
-      setnewMessage((msg) => msg + emoji);
-    };
-    const initEmoji = (position = 'auto', rootElement) => {
-      picker = createPopup(
-        { animate: true, emojiSize: '1.5rem' },
-        {
-          referenceElement: rootElement,
-          triggerElement: rootElement,
-          hideOnEmojiSelect: false,
-          hideOnEscape: false,
-          showCloseButton: false,
-          className: '',
-          position: 'auto-start',
-        }
-      );
-
-      picker.addEventListener('emoji:select', ({ emoji }) => pickEmoji(emoji));
-
-      setEmojiPicker(picker);
-    };
-
-    // init emoji picker
-    setTimeout(() => initEmoji('auto', emojiPickerRef.current), 1000);
-
-    return () => {
-      picker.removeEventListener('emoji:select', ({ emoji }) =>
-        pickEmoji(emoji)
-      );
-      picker.destroy();
-    };
-  }, []); //emoji picker controller
-
-  useEffect(() => {
     window.scrollTo({ top: window.scrollMaxY });
   }, [activeChat]); // will go to the bottom of the screen when active chat changes
 
@@ -204,8 +172,6 @@ export const ChatBox = ({ sidebarState }) => {
       const { message, chatId, success } = data;
       const assembledMsg = { ...message, chatId };
 
-      console.log(message);
-
       // update the message logs
       msgLogs.content[message.by]
         ? pushNewMsgToEntry({
@@ -227,8 +193,10 @@ export const ChatBox = ({ sidebarState }) => {
       // update the active chat last message so that when receiver see it, the message can be flag as read
       setActiveChat({ ...activeChat, lastMessage: message });
 
-      // read msg if current active chat is the same user that sent the message
+      // play notification audio when receiving a message but only if the message sender is not the same as the current activeChat id
+      if (message.by !== activeChat._id) playAudio(notifSFX);
 
+      // read msg if current active chat is the same user that sent the message
       willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
     });
 
@@ -283,6 +251,7 @@ export const ChatBox = ({ sidebarState }) => {
     socket.on('msg-on-read', (isRead, recipientId, time) => {
       if (isRead) {
         if (!msgLogs.content[recipientId]) return;
+        if (!msgLogs.content[activeChat._id]) return;
 
         msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
         const updatedMsgLogs = msgLogs;
@@ -304,7 +273,7 @@ export const ChatBox = ({ sidebarState }) => {
     });
 
     return () => socket.off('msg-on-read');
-  }, [msgLogs]); //msg onread
+  }, [msgLogs, activeChat]); //msg onread
 
   useEffect(() => {
     socket.on('msg-sent', ({ success, message, chatId, timeSent }) => {
@@ -342,37 +311,10 @@ export const ChatBox = ({ sidebarState }) => {
     return () => socket.off('msg-sent');
   }, [msgLogs]); // for changing the message state indicator
 
-  // useEffect(() => {
-  //   if (!msgLogs?.content[activeChat._id]) return;
-  //   const lastIndex = msgLogs?.content[activeChat._id].chat.length - 1; //last index of the the message log
-  //   const { readAt } = msgLogs?.content[activeChat._id].chat[lastIndex];
-  //   if (!readAt) return;
-
-  //   const timeMessageSent = new Date(readAt);
-
-  //   const sentAt = getSentAtStatus(new Date(), timeMessageSent);
-
-  //   switch (sentAt) {
-  //     case 'today':
-  //       const formattedTime = timeMessageSent
-  //         .toTimeString()
-  //         .slice(0, timeMessageSent.toTimeString().lastIndexOf(':'));
-
-  //       return setTimeMessageRead(formattedTime);
-
-  //     case 'yesterday':
-  //       return setTimeMessageRead('a day ago');
-
-  //     case 'long ago':
-  //       return setTimeMessageRead(timeMessageSent.toLocaleDateString());
-  //     default:
-  //       break;
-  //   }
-  // }, [msgLogs, activeChat]); //for determining the time sent
-
   const handleNewMessage = (e) => {
     e.preventDefault();
     if (newMessage === '') return;
+    if (isEmojiBarOn) setIsEmojiBarOn(false);
 
     const newMessageInput = {
       by: userState.user._id,
@@ -411,12 +353,11 @@ export const ChatBox = ({ sidebarState }) => {
 
   const handleGoToMenu = () => {
     setIsSidebarOn(!isSidebarOn);
-    setActiveChat(ACTIVE_CHAT_DEFAULT);
+
+    setTimeout(() => setActiveChat(ACTIVE_CHAT_DEFAULT), 330);
   };
 
-  const handleEmojiPicker = () => {
-    emojiPicker.isOpen ? emojiPicker.close() : emojiPicker.open();
-  };
+  const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 
   return (
     <>
@@ -424,83 +365,97 @@ export const ChatBox = ({ sidebarState }) => {
         <StartScreen handleGoToMenu={handleGoToMenu} />
       </RenderIf>
       <RenderIf conditionIs={activeChat?.username}>
-        <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen relative flex flex-col">
-          <header className="h-14 sticky top-0 inset-x-0 z-10 bg-gray-50 shadow-inner p-2 border-b-2">
-            <div className="flex justify-between">
-              <div className="flex items-center gap-2">
-                {/* sidebar btn (will show up when screen is <lg) */}
-                <Link
-                  to="/chats"
-                  onClick={handleGoToMenu}
-                  className="block lg:hidden hover:text-blue-400 duration-200 text-3xl"
-                >
-                  <BsArrowLeftShort />
-                </Link>
-                {/* profile  */}
-                <Link
-                  to={`user/${activeChat.username}`}
-                  className="flex items-center gap-1"
-                >
-                  <img
-                    src="https://picsum.photos/200/200"
-                    alt=""
-                    className="rounded-full h-9 w-9"
-                  />
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm max-w-[200px] truncate">
-                      {activeChat.username}
-                    </span>
-                    <span className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate">
-                      Status
-                    </span>
-                  </div>
-                </Link>
+        <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
+          <header className="h-14 bg-gray-50 shadow-inner p-2 border-b-2 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              {/* sidebar btn (will show up when screen is <lg) */}
+              <Link
+                to="/chats"
+                onClick={handleGoToMenu}
+                className="block lg:hidden hover:text-blue-400 duration-200 text-3xl"
+              >
+                <BsArrowLeftShort />
+              </Link>
+              {/* profile  */}
+              <Link
+                to={`user/${activeChat.username}`}
+                className="flex items-center gap-1"
+              >
+                <img
+                  src="https://picsum.photos/200/200"
+                  alt=""
+                  className="rounded-full h-9 w-9"
+                />
+                <div className="flex flex-col items-start">
+                  <span className="text-sm max-w-[200px] truncate">
+                    {activeChat.username}
+                  </span>
+                  <span className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate">
+                    Status
+                  </span>
+                </div>
+              </Link>
 
-                {/* chat action buttons */}
-                <div></div>
-              </div>
+              {/* chat action buttons */}
+              <div></div>
             </div>
           </header>
-          <main className="max-w-screen-lg w-full mx-auto relative flex flex-col grow">
-            {/* message */}
-            <ul aria-label="chat-log" className="p-3 bg-gray-100 grow">
-              {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
-                return (
-                  <Fragment key={i}>
-                    <Message
-                      state={{ isSent: log.isSent, readAt: log.readAt }}
-                      isSentByMe={log.by === userState.user._id}
-                      msg={log.content}
-                      time={new Date(log.time)}
-                    />
-                  </Fragment>
-                );
-              })}
-            </ul>
-          </main>
+
+          {/* message */}
+          <ul
+            aria-label="chat-log"
+            className="bg-gray-100 relative flex flex-col h-0 grow pb-3 overflow-auto"
+          >
+            {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
+              return (
+                <Fragment key={i}>
+                  <Message
+                    state={{ isSent: log.isSent, readAt: log.readAt }}
+                    isSentByMe={log.by === userState.user._id}
+                    msg={log.content}
+                    time={new Date(log.time)}
+                  />
+                </Fragment>
+              );
+            })}
+          </ul>
+
           {/* input */}
           <form
             onSubmit={(e) => handleNewMessage(e)}
-            className="sticky bg-gray-100 bottom-0 min-h-[1rem] flex items-center justify-center gap-3 py-2 px-5"
+            className="sticky bottom-0 flex items-center justify-center gap-3 py-3 px-5 bg-gray-100"
           >
+            {/* emoji btn */}
             <div aria-label="message-button-group" className="self-end">
-              <button
-                disabled={emojiPicker ? false : true}
-                type="button"
-                ref={emojiPickerRef}
-                onClick={() => emojiPicker && handleEmojiPicker()}
-                className={`text-xl disabled:cursor-not-allowed disabled:animate-pulse disabled:text-gray-500 text-gray-700 duration-200`}
-              >
-                <BsEmojiSmile />
-              </button>
+              <EmojiBarToggle
+                isEmojiBarOnState={{ isEmojiBarOn, setIsEmojiBarOn }}
+              />
             </div>
+            <RenderIf conditionIs={isEmojiBarOn}>
+              <Picker
+                pickerStyle={{
+                  shadow:
+                    '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                  borderRadius: '20px',
+                  position: 'absolute',
+                  left: '25px',
+                  bottom: '60px',
+                }}
+                disableAutoFocus={true}
+                native={true}
+                onEmojiClick={onEmojiClick}
+              />
+            </RenderIf>
+            {/* the input bar */}
             <input
               type="text"
+              ref={inputRef}
               onChange={(e) => setnewMessage(e.target.value)}
               value={newMessage}
               className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
-                         rounded-full px-6 resize-none flex items-center justify-center h-8 transition"
+                         rounded-full px-6 resize-none flex items-center justify-center h-8"
             />
+            {/* the send msg btn */}
             <RenderIf conditionIs={newMessage !== ''}>
               <button
                 className="w-10 h-10 max-w-[40px] max-h-[40px] rounded-full bg-blue-300 text-white

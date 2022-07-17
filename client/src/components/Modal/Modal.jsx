@@ -12,9 +12,9 @@ export const Modal = () => {
   const navigate = useNavigate();
 
   // hides scrollbar when modal is active
-  useEffect(() => {
-    if (modalState.isActive) document.body.style.overflowY = 'hidden';
-  }, [modalState]);
+  // useEffect(() => {
+  //   if (modalState.isActive) document.body.style.overflowY = 'hidden';
+  // }, [modalState]);
 
   const handleModalClose = () => {
     if (!modal.current || !modalWrapper.current) return;
@@ -27,7 +27,7 @@ export const Modal = () => {
     setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
 
     // only re-show screen scrollbar when the screen width is >=1024px
-    if (window.innerWidth >= 1024) document.body.style.overflowY = 'auto';
+    // if (window.innerWidth >= 1024) document.body.style.overflowY = 'auto';
 
     // go back to '/chats' path if the onExitReturnToHome in the modal context is true
     modalState.onExitReturnToHome && navigate('/chats');

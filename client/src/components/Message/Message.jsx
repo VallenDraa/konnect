@@ -17,7 +17,8 @@ export const Message = ({
     <li
       aria-label="message"
       className={`h-max flex items-center mt-5 animate-pop-in
-                     ${isSentByMe ? 'justify-end' : ''}`}
+                     ${isSentByMe ? 'justify-end' : ''}
+                     ${isSentByMe ? 'pr-5 lg:pr-8' : 'pl-5 lg:pl-8'}`}
     >
       <div
         className={`max-w-[75%] rounded-lg shadow p-3 space-y-2 min-w-[100px]

@@ -19,7 +19,9 @@ export default function NewChat() {
           navigate(`/chats?id=${selected[0].user._id}&type=user`);
         }
       }}
-      searchCb={findUsersFromContact}
+      searchCb={(query) =>
+        findUsersFromContact(query, sessionStorage.getItem('token'))
+      }
       multipleSelect={false}
     />
   );

@@ -36,7 +36,14 @@ export default function SearchList() {
       try {
         searchResultsDispatch({ type: SEARCH_RESULTS_ACTIONS.loading });
 
-        const { data } = await api.get(`/query/user/find_users?query=${query}`);
+        const { data } = await api.get(
+          `/query/user/find_users?query=${query}`,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            },
+          }
+        );
         searchResultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload: data,
@@ -123,7 +130,7 @@ export default function SearchList() {
                       // this link will open a modal containing info of the user (code is ini Menu.jsx)
                       title={`Go To ${username}'s Profile`}
                       to={`user/${username}`}
-                      className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-md shadow`}
+                      className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-lg shadow`}
                     >
                       <img
                         src="https://picsum.photos/200/200"

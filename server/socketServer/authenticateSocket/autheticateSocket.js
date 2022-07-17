@@ -18,7 +18,12 @@ export default function authentication(socket) {
       try {
         const { data } = await axios.post(
           `${process.env.API_URL}/chat/get_all_chat_history`,
-          { token }
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (data.success) {

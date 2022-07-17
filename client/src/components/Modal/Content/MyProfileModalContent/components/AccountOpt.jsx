@@ -22,10 +22,15 @@ const AccountOpt = () => {
   const submitChanges = async (password, payload) => {
     try {
       userDispatch({ type: USER_ACTIONS.updateStart });
-      const { data } = await api.put('/user/edit_account', {
-        password,
-        ...payload,
-      });
+      const { data } = await api.put(
+        '/user/edit_account',
+        { password, ...payload },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        }
+      );
 
       if (data.success) {
         sessionStorage.setItem('token', data.token);

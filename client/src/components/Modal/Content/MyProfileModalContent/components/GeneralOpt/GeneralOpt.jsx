@@ -3,21 +3,21 @@ import {
   IoSparklesSharp,
   IoAccessibilitySharp,
   IoLanguageSharp,
-} from "react-icons/io5";
-import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
-import SwitchBtn from "../../../../../Buttons/SwitchBtn";
-import { UserContext } from "../../../../../../context/user/userContext";
-import { useContext, useState } from "react";
-import { useEffect } from "react";
-import Language, { LANGUAGES } from "./components/Languange/Language";
-import api from "../../../../../../utils/apiAxios/apiAxios";
-import USER_ACTIONS from "../../../../../../context/User/userAction";
+} from 'react-icons/io5';
+import { BsFillSunFill, BsFillMoonFill } from 'react-icons/bs';
+import SwitchBtn from '../../../../../Buttons/SwitchBtn';
+import { UserContext } from '../../../../../../context/user/userContext';
+import { useContext, useState } from 'react';
+import { useEffect } from 'react';
+import Language, { LANGUAGES } from './components/Languange/Language';
+import api from '../../../../../../utils/apiAxios/apiAxios';
+import USER_ACTIONS from '../../../../../../context/User/userAction';
 
 const GeneralOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
   const { general } = userState.user.settings;
   const [language, setLanguage] = useState(general.language || LANGUAGES[0]);
-  const [theme, setTheme] = useState(general.theme || "light");
+  const [theme, setTheme] = useState(general.theme || 'light');
 
   // for updating user settings in the database
   useEffect(() => {
@@ -32,15 +32,18 @@ const GeneralOpt = () => {
       if (isAllOptsSame) return;
 
       const payload = {
-        token: sessionStorage.getItem("token"),
-        type: "general",
+        type: 'general',
         settings: opts,
       };
 
       try {
-        const { data } = await api.put("/user/edit_settings", payload);
+        const { data } = await api.put('/user/edit_settings', payload, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        });
         if (data.success) {
-          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem('token', data.token);
           userDispatch({
             type: USER_ACTIONS.updateSuccess,
             payload: data.user,
@@ -81,8 +84,8 @@ const GeneralOpt = () => {
               Theme
             </span>
             <SwitchBtn
-              on={theme === "dark" && true}
-              onClick={(isLight) => setTheme(isLight ? "light" : "dark")}
+              on={theme === 'dark' && true}
+              onClick={(isLight) => setTheme(isLight ? 'light' : 'dark')}
               icon1={<BsFillSunFill className="text-sm" />}
               icon2={<BsFillMoonFill className="text-sm" />}
             />

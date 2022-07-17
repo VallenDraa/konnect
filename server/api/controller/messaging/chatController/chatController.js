@@ -3,11 +3,9 @@ import PrivateChat from '../../../../model/PrivateChat.js';
 import User from '../../../../model/User.js';
 
 export const getAllChatHistory = async (req, res, next) => {
-  const { token } = req.body;
-
   // new way
   try {
-    const { _id } = jwt.decode(token);
+    const { _id } = res.locals.tokenData;
     const { chats } = await User.findById(_id).select('chats').lean();
     console.log(chats);
 
@@ -50,7 +48,7 @@ export const getAllChatHistory = async (req, res, next) => {
 
   // get chat log from contact
   // try {
-  //   const { _id } = jwt.decode(token);
+  //   const { _id } = res.locals.tokenData
   //   const { contacts } = await User.findById(_id)
   //     .select([
   //       'contacts.user',

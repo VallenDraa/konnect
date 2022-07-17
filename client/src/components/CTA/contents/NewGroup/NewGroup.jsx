@@ -15,7 +15,9 @@ export default function NewGroup() {
           Start Group
         </>
       }
-      searchCb={findUsersFromContact}
+      searchCb={(query) =>
+        findUsersFromContact(query, sessionStorage.getItem('token'))
+      }
       queryState={{ query, setQuery }}
       selectedState={{ selected, setSelected }}
       multipleSelect={true}

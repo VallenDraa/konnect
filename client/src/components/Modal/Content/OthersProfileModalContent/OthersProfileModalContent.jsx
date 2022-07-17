@@ -89,7 +89,12 @@ export const OthersProfileModalContent = ({ username }) => {
     const getOtherUserDetail = async () => {
       try {
         const { data } = await api.get(
-          `/query/user/get_user_detail?username=${username}`
+          `/query/user/get_user_detail?username=${username}`,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            },
+          }
         );
 
         data === null && navigate('/chats');

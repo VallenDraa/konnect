@@ -1,11 +1,11 @@
 import api from '../apiAxios/apiAxios';
 
-export default async function findUsersFromContact(query) {
+export default async function findUsersFromContact(query, token) {
   try {
-    const { data } = await api.post(`/query/user/find_users_from_contact`, {
-      query,
-      token: sessionStorage.getItem('token'),
-    });
+    const { data } = await api.get(
+      `/contacts/find_users_from_contact?query=${query}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
     // console.log(data);
     return data;

@@ -83,7 +83,7 @@ export const readMessage = async (req, res, next) => {
   // new
   // try {
   //   // this is the id for the recipient whose lastMessageReadAt will be updated
-  //   const { _id } = jwt.decode(token);
+  //   const { _id } = res.locals.tokenData
   //   const chatLog = await PrivateChat.findById(chatLogId);
 
   //   for (const i in chatLog.users) {

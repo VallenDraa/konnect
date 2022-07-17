@@ -1,26 +1,35 @@
-import { Link, useNavigate } from "react-router-dom";
-import patternBgLight from "../../svg/authPage/patternBgLight.svg";
-import { RiLoginCircleLine } from "react-icons/ri";
-import { Logo } from "../../components/Logo/Logo";
-import Input from "../../components/Input/Input";
-import api from "../../utils/apiAxios/apiAxios";
-import { useState } from "react";
+import { Link, useNavigate } from 'react-router-dom';
+import patternBgLight from '../../svg/authPage/patternBgLight.svg';
+import { RiLoginCircleLine } from 'react-icons/ri';
+import { Logo } from '../../components/Logo/Logo';
+import Input from '../../components/Input/Input';
+import api from '../../utils/apiAxios/apiAxios';
+import { useState } from 'react';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formValue = { email, username, password };
 
     try {
-      const { data } = await api.post("/auth/register", formValue);
+      const { data } = await api.post(
+        '/auth/register',
+
+        formValue,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        }
+      );
 
       if (data.success) {
-        navigate("/login");
+        navigate('/login');
       }
     } catch (error) {
       console.log(error);
@@ -32,9 +41,9 @@ export const Register = () => {
         className="basis-full md:basis-2/3 min-h-screen shadow-inner blur-2xl md:blur-none"
         style={{
           backgroundImage: `url(${patternBgLight})`,
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
         }}
       />
       <section className="md:basis-1/3 md:min-w-[400px] min-h-screen md:bg-gray-50 shadow-xl absolute md:static inset-x-0 flex flex-col">
@@ -46,7 +55,7 @@ export const Register = () => {
             <RiLoginCircleLine className="text-blue-600 text-2xl" />
             <h1 className="font-bold text-3xl">Register</h1>
             <span className="text-gray-500 text-xs">
-              Register to Make a new{" "}
+              Register to Make a new{' '}
               <span className="font-medium text-pink-600">Account</span>
             </span>
           </header>
@@ -81,7 +90,7 @@ export const Register = () => {
                 Register
               </button>
               <span className="text-gray-500 text-xs">
-                Got an account ? click here to{" "}
+                Got an account ? click here to{' '}
                 <Link
                   to="/login"
                   className="text-pink-400 underline underline-offset-4 font-bold"

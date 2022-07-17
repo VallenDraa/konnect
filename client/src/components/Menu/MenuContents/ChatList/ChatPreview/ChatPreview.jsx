@@ -16,7 +16,7 @@ export const ChatPreview = ({
     <li onClick={() => handleActiveChat(user)}>
       <Link
         to={isActive ? '/chats' : `/chats?id=${user._id}&type=user`}
-        className={`flex items-center p-2 cursor-pointer duration-200 rounded-md shadow
+        className={`flex items-center p-2 cursor-pointer duration-200 rounded-lg shadow
               ${
                 isActive
                   ? 'bg-blue-100 font-semibold'

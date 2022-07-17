@@ -60,10 +60,11 @@ export default function NotificationList() {
           // fetch the notification detail according to the type
           const { data } = await api.post(
             `/notification/notif_${type}_detail`,
+            { userId, ids: { inbox, outbox } },
             {
-              userId,
-              ids: { inbox, outbox },
-              token: sessionStorage.getItem('token'),
+              headers: {
+                Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              },
             }
           );
 
@@ -151,12 +152,15 @@ export default function NotificationList() {
   useEffect(() => {
     const updateNotifSeen = async (boxType) => {
       try {
-        const { data } = await api.put('/notification/set_notif_to_seen', {
-          notifIds,
-          boxType,
-          userId,
-          token: sessionStorage.getItem('token'),
-        });
+        const { data } = await api.put(
+          '/notification/set_notif_to_seen',
+          { notifIds, boxType, userId },
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            },
+          }
+        );
 
         sessionStorage.setItem('token', data.token);
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });

@@ -12,7 +12,12 @@ export default function messages(socket) {
     try {
       const { data } = await axios.put(
         `${process.env.API_URL}/messages/save_message`,
-        { token, message }
+        { message },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       // send success flag if everything is daijoubu
@@ -44,7 +49,12 @@ export default function messages(socket) {
       // set all passed in messages isRead field to true
       const { data } = await axios.put(
         `${process.env.API_URL}/messages/read_message`,
-        { time, token, senderId, chatLogId }
+        { time, senderId, chatLogId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       // check if sender is online

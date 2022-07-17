@@ -10,7 +10,8 @@ export default function unfriend(socket) {
     try {
       const senderData = await axios.put(
         `${process.env.API_URL}/user/unfriend`,
-        { myId, targetId, token }
+        { myId, targetId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (senderData.data.success) {
@@ -28,7 +29,12 @@ export default function unfriend(socket) {
     try {
       const targetData = await axios.put(
         `${process.env.API_URL}/user/unfriend`,
-        { myId: targetId, targetId: myId, token }
+        { myId: targetId, targetId: myId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       //   only send back info to the target client if target is online

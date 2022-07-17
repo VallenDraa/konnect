@@ -12,6 +12,7 @@ import RenderIf from '../../../../utils/React/RenderIf';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
 import { pushNewEntry } from '../../../ChatBox/ChatBox';
+import getUsersContactsPreview from '../../../../utils/apis/getUserContactsPreview';
 
 const ContactList = ({ setIsSidebarOn }) => {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -48,13 +49,12 @@ const ContactList = ({ setIsSidebarOn }) => {
 
       try {
         // fetch the contacts data
-        const { data } = await api.post(
-          '/query/contact/get_user_contacts_preview',
-          { userId: userState.user._id }
+        const { contacts } = await getUsersContactsPreview(
+          sessionStorage.getItem('token')
         );
 
         // parse the incoming contacts data
-        for (const contact of data.contacts) {
+        for (const contact of contacts) {
           const { username, initials, profilePicture, _id } = contact.user;
           // assemble the parsed data into a contact object
 
@@ -195,7 +195,7 @@ const ContactList = ({ setIsSidebarOn }) => {
                 <Link
                   to={`/user/${contact.username}`}
                   key={contact}
-                  className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 duration-200 rounded-md shadow`}
+                  className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 duration-200 rounded-lg shadow`}
                 >
                   <img
                     src="https://picsum.photos/200/200"

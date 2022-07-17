@@ -17,32 +17,6 @@ export const findUsers = async (req, res, next) => {
   }
 };
 
-export const findUsersFromContact = async (req, res, next) => {
-  const { query, token } = req.body;
-
-  try {
-    const { _id } = jwt.decode(token);
-    const results = [];
-
-    // get all the users from the contact that match the query
-    const { contacts } = await User.findById(_id)
-      .select('contacts.user')
-      .populate({
-        path: 'contacts.user',
-        select: ['username', 'initials', 'profilePicture'],
-        match: { username: { $regex: query } },
-      });
-
-    for (const item of contacts) {
-      if (item.user !== null) results.push(item);
-    }
-
-    res.json(results);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getUsersPreview = async (req, res, next) => {
   const { userIds } = req.body;
 

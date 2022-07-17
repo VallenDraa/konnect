@@ -13,7 +13,7 @@ export const editProfile = async (req, res, next) => {
 
   try {
     // decode token
-    const { _id } = jwt.decode(token);
+    const { _id } = res.locals.tokenData;
 
     const user = await User.findById(_id);
 
@@ -51,7 +51,7 @@ export const editAccount = async (req, res, next) => {
     }
 
     // decode token
-    const { _id } = jwt.decode(token);
+    const { _id } = res.locals.tokenData;
 
     try {
       const user = await User.findById(_id);
@@ -83,7 +83,7 @@ export const editSettings = async (req, res, next) => {
 
   try {
     // decode the token to get the user id
-    const { _id } = jwt.decode(token);
+    const { _id } = res.locals.tokenData;
 
     const user = await User.findById(_id);
 

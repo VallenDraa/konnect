@@ -32,10 +32,15 @@ const ProfileOpt = () => {
       const contactIds = contacts.map((contact) => contact.user);
 
       try {
-        const { data } = await api.post('/query/user/get_users_preview', {
-          token: sessionStorage.getItem('token'),
-          userIds: contactIds,
-        });
+        const { data } = await api.post(
+          '/query/user/get_users_preview',
+          { userIds: contactIds },
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            },
+          }
+        );
         const result = data.map(({ profilePicture, initials, username }) => ({
           user: { initials, username, profilePicture },
         }));
@@ -63,10 +68,15 @@ const ProfileOpt = () => {
   const handleUserEdit = async (password, payload) => {
     try {
       userDispatch({ type: USER_ACTIONS.updateStart });
-      const { data } = await api.put('/user/edit_profile', {
-        password,
-        ...payload,
-      });
+      const { data } = await api.put(
+        '/user/edit_profile',
+        { password, ...payload },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        }
+      );
 
       if (data.success) {
         sessionStorage.setItem('token', data.token);

@@ -11,25 +11,28 @@ import NotificationsContextProvider from './context/notifications/notificationsC
 import MiniModalContextProvider from './context/miniModal/miniModalContext';
 import ActiveChatContextProvider from './context/activeChat/ActiveChatContext';
 import MessageLogsContextProvider from './context/messageLogs/MessageLogsContext';
+import ContactsContextProvider from './context/contactContext/ContactContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <IsLoginViaRefreshContextProvider>
     <UserContextProvider>
-      <NotificationsContextProvider>
-        <IsAuthorizedContextProvider>
-          <IsLoadingContextProvider>
-            <ModalContextProvider>
-              <MiniModalContextProvider>
-                <MessageLogsContextProvider>
-                  <ActiveChatContextProvider>
-                    <App />
-                  </ActiveChatContextProvider>
-                </MessageLogsContextProvider>
-              </MiniModalContextProvider>
-            </ModalContextProvider>
-          </IsLoadingContextProvider>
-        </IsAuthorizedContextProvider>
-      </NotificationsContextProvider>
+      <ContactsContextProvider>
+        <NotificationsContextProvider>
+          <IsAuthorizedContextProvider>
+            <IsLoadingContextProvider>
+              <ModalContextProvider>
+                <MiniModalContextProvider>
+                  <MessageLogsContextProvider>
+                    <ActiveChatContextProvider>
+                      <App />
+                    </ActiveChatContextProvider>
+                  </MessageLogsContextProvider>
+                </MiniModalContextProvider>
+              </ModalContextProvider>
+            </IsLoadingContextProvider>
+          </IsAuthorizedContextProvider>
+        </NotificationsContextProvider>
+      </ContactsContextProvider>
     </UserContextProvider>
   </IsLoginViaRefreshContextProvider>
 );

@@ -91,11 +91,11 @@ export default function SearchBox({
     submitCb && submitCb(results, query, selected);
 
     // re-enable Y axis scrolling because clicking the button that runs this function will close the modal
-    if (selected.length > 0) document.body.style.overflowY = 'auto';
+    // if (selected.length > 0) document.body.style.overflowY = 'auto';
   };
 
   return (
-    <div className="w-screen md:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2">
+    <div className="w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2">
       <header className="px-4 flex flex-col gap-y-2">
         <div className="flex flex-wrap justify-between items-center">
           <h2 className="font-semibold text-xl">Search For People</h2>
@@ -161,7 +161,7 @@ export default function SearchBox({
                   alt=""
                   className="w-[200px] mx-auto"
                 />
-                <span className="block font-semibold text-xl md:text-lg text-gray-600">
+                <span className="block font-semibold text-xl lg:text-lg text-gray-600">
                   Welp nothing here :(
                 </span>
                 <span className="text-gray-400 text-xs">
