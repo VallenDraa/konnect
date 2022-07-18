@@ -69,7 +69,7 @@ const GeneralOpt = () => {
   // };
 
   return (
-    <ul className="space-y-10 p-3">
+    <ul className="space-y-10 p-5 lg:p-3">
       {/* appearance options */}
       <li className="border-b-2">
         <h2 className="font-semibold flex items-center gap-2 text-gray-500 text-xs mb-2">

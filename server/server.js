@@ -90,14 +90,14 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === 'production';
 
-  isProduction && console.log(err);
+  if (isProduction) console.log(err);
 
   return res
     .status(status || 500)
     .json(isProduction ? TEMPLATE : { stack, ...TEMPLATE });
 });
 
-httpServer.listen(3001, () => {
+httpServer.listen(process.env.PORT || 3001, () => {
   dbConnect();
   mongoose.connection.on('disconnected', () => console.log('db disconnected'));
   mongoose.connection.on('connected', () => console.log('db connected'));

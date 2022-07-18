@@ -2,7 +2,10 @@ import express from 'express';
 import {
   contactRequestRespondRecipient,
   contactRequestRespondSender,
+  deleteContactRequest,
   queueRequestToSender,
+  respondToContactRequest,
+  sendContactRequest,
   sendRequestToRecipient,
 } from '../controller/requests/contactRequestController/ContactRequestController.js';
 import verifyToken from '../controller/auth/tokenController.js';
@@ -86,5 +89,9 @@ router.put(
   isUserAlreadyInContact,
   contactRequestRespondRecipient
 );
+
+router.put('/send_contact_request_new', verifyToken, sendContactRequest);
+router.put('/respond_to_contact_request', verifyToken, respondToContactRequest);
+router.put('/delete_contact_request', verifyToken, deleteContactRequest);
 
 export default router;

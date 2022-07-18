@@ -1,4 +1,5 @@
 import User from '../../../../model/User.js';
+import createError from '../../../../utils/createError.js';
 import { renewToken } from '../../auth/tokenController.js';
 
 // for sending contact request response
@@ -199,6 +200,134 @@ export const contactRequestRespondSender = async (req, res, next) => {
         next(error);
       }
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const sendContactRequest = async (req, res, next) => {
+  const { recipientId } = req.body;
+  const { _id } = res.locals.tokenData;
+
+  try {
+    const users = await User.where('_id').equals([recipientId, _id]);
+
+    // if the result doesn't return 2 data which is the recipient and sender
+    if (users.length !== 2) {
+      return createError(next, 400, 'Invalid arguments !');
+    }
+
+    // seperate into sender and recipient
+    const sender = users.find((s) => s._id.toString() === _id);
+    const recipient = users.find((r) => r._id.toString() === recipientId);
+
+    // check if requests has already been sent
+    const isRequestSent = sender.requests.contacts.outbox.some(
+      ({ by }) => by.toString() === recipientId
+    );
+    if (isRequestSent) {
+      return createError(
+        next,
+        409,
+        'A contact request has been sent to this user !'
+      );
+    }
+
+    // push the request to the database
+    sender.requests.contacts.outbox.push({
+      by: recipientId,
+      iat: new Date(),
+    });
+    recipient.requests.contacts.inbox.push({
+      by: _id,
+      iat: new Date(),
+    });
+
+    // save it to the database
+    await sender.save();
+    await recipient.save();
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const respondToContactRequest = async (req, res, next) => {
+  const { recipientId, answer } = req.body;
+  const { _id } = res.locals.tokenData;
+
+  try {
+    const users = await User.where('_id').equals([recipientId, _id]);
+
+    // if the result doesn't return 2 data which is the recipient and sender
+    if (users.length !== 2) {
+      return createError(next, 400, 'Invalid arguments !');
+    }
+
+    // seperate into sender and recipient
+    const sender = users.find((s) => s._id.toString() === _id);
+    const recipient = users.find((r) => r._id.toString() === recipientId);
+
+    // push the answer to the database
+    for (const i in sender.requests.contacts.outbox) {
+      if (sender.requests.contacts.outbox[i].by.toString() === recipientId) {
+        sender.requests.contacts.outbox[i].answer = answer;
+        break;
+      }
+    }
+    for (const i in recipient.requests.contacts.inbox) {
+      if (recipient.requests.contacts.inbox[i].by.toString() === _id) {
+        recipient.requests.contacts.inbox[i].answer = answer;
+        break;
+      }
+    }
+    // save it to the database
+    await sender.save();
+    await recipient.save();
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteContactRequest = async (req, res, next) => {
+  const { recipientId } = req.body;
+  const { _id } = res.locals.tokenData;
+
+  try {
+    const users = await User.where('_id').equals([recipientId, _id]);
+
+    // if the result doesn't return 2 data which is the recipient and sender
+    if (users.length !== 2) {
+      return createError(next, 400, 'Invalid arguments !');
+    }
+
+    // seperate into sender and recipient
+    const sender = users.find((s) => s._id.toString() === _id);
+    const recipient = users.find((r) => r._id.toString() === recipientId);
+
+    // check if requests has already been sent
+    const isMissing = sender.requests.contacts.outbox.every(
+      ({ by }) => by.toString() !== recipientId
+    );
+    if (isMissing) return createError(next, 409, 'Invalid passed in ids !');
+
+    // delete the request to the database
+    sender.requests.contacts.outbox = sender.requests.contacts.outbox.filter(
+      (item) => item.by.toString() !== recipientId
+    );
+    recipient.requests.contacts.inbox =
+      recipient.requests.contacts.inbox.filter(
+        (item) => item.by.toString() !== _id
+      );
+
+    // save it to the database
+    await sender.save();
+    await recipient.save();
+
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

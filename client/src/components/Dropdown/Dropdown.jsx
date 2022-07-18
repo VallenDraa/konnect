@@ -80,7 +80,7 @@ export default function Dropdown({
   }, []);
 
   useEffect(() => {
-    const autoCloseDropdown = throttle((e) => {
+    const autoCloseDropdown = (e) => {
       if (!dropDown.current) return;
 
       [...dropDown.current.children].forEach((child) => {
@@ -91,7 +91,7 @@ export default function Dropdown({
           }
         }
       });
-    }, 500);
+    };
     window.addEventListener('click', autoCloseDropdown);
 
     return () => {

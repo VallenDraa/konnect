@@ -1,7 +1,7 @@
-import Dropdown from "../../../../../../../Dropdown/Dropdown";
-import DropdownItem from "../../../../../../../Dropdown/DropdownItem/DropdownItem";
+import Dropdown from '../../../../../../../Dropdown/Dropdown';
+import DropdownItem from '../../../../../../../Dropdown/DropdownItem/DropdownItem';
 
-export const LANGUAGES = ["English", "Indonesian"];
+export const LANGUAGES = ['English', 'Indonesian'];
 export default function Language({ languageState }) {
   const { language, setLanguage } = languageState;
 
@@ -10,8 +10,8 @@ export default function Language({ languageState }) {
       <Dropdown
         text={language}
         fontSize={14}
-        className="absolute right-6"
-        position={"origin-top-right right-0"}
+        className="absolute right-[40px] lg:right-[30px]"
+        position={'origin-top-right right-0'}
       >
         {LANGUAGES.map((l) => {
           return (

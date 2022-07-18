@@ -44,19 +44,23 @@ export default function ContactsContextProvider({ children }) {
           sessionStorage.getItem('token')
         );
 
-        for (const contact of data.contacts) {
-          const { username, initials, profilePicture, _id } = contact.user;
-          // assemble the parsed data into a contact object
+        if (data.contacts.length > 0) {
+          for (const contact of data.contacts) {
+            const { username, initials, profilePicture, _id } = contact.user;
+            // assemble the parsed data into a contact object
 
-          const parsedContact = {
-            _id,
-            username,
-            initials,
-            profilePicture,
-          };
-          result.push(parsedContact);
+            const parsedContact = {
+              _id,
+              username,
+              initials,
+              profilePicture,
+            };
+            result.push(parsedContact);
+          }
+          setContacts(result);
+        } else {
+          setContacts([]);
         }
-        setContacts(result);
       } catch (error) {
         console.error(error);
       }
@@ -73,7 +77,7 @@ export default function ContactsContextProvider({ children }) {
     }
 
     const groupContact = () => {
-      if (contacts.length === 0) return;
+      if (contacts.length !== 0) return [];
 
       const temp = {};
       const sortedContacts = contacts.sort((a, b) =>
@@ -103,6 +107,10 @@ export default function ContactsContextProvider({ children }) {
       payload: groupContact(),
     });
   }, [contacts]);
+
+  useEffect(() => {
+    console.log(groupedContacts);
+  }, [groupedContacts]);
 
   return (
     <ContactsContext.Provider

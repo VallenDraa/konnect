@@ -78,6 +78,7 @@ export const ChatBox = ({ sidebarState }) => {
   const [willGoToBottom, setWillGoToBottom] = useState(false);
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
   const inputRef = useRef();
+  const messageLogRef = useRef();
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
@@ -147,8 +148,10 @@ export const ChatBox = ({ sidebarState }) => {
   // END OF INITIAL LOADING USE EFFECT
 
   useEffect(() => {
-    window.scrollTo({ top: window.scrollMaxY });
-  }, [activeChat]); // will go to the bottom of the screen when active chat changes
+    if (!messageLogRef.current) return;
+
+    messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
+  }, [activeChat, messageLogRef]); // will go to the bottom of the screen when active chat changes
 
   useEffect(() => {
     setWillGoToBottom(isWindowScrollable());
@@ -162,9 +165,9 @@ export const ChatBox = ({ sidebarState }) => {
       setWillGoToBottom(scrollPercent > 70 ? true : false);
     }, 200);
 
-    window.addEventListener('scroll', scrollCb);
+    messageLogRef.current?.addEventListener('scroll', scrollCb);
 
-    return () => window.removeEventListener('scroll', scrollCb);
+    return () => messageLogRef.current?.removeEventListener('scroll', scrollCb);
   }, []); //automatically scroll down to the latest message
 
   useEffect(() => {
@@ -193,11 +196,13 @@ export const ChatBox = ({ sidebarState }) => {
       // update the active chat last message so that when receiver see it, the message can be flag as read
       setActiveChat({ ...activeChat, lastMessage: message });
 
-      // play notification audio when receiving a message but only if the message sender is not the same as the current activeChat id
-      if (message.by !== activeChat._id) playAudio(notifSFX);
+      // play notification audio when receiving a message
+      playAudio(notifSFX);
 
       // read msg if current active chat is the same user that sent the message
-      willGoToBottom && window.scrollTo({ top: window.scrollMaxY });
+      if (willGoToBottom) {
+        messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
+      }
     });
 
     return () => socket.off('receive-msg');
@@ -241,7 +246,7 @@ export const ChatBox = ({ sidebarState }) => {
             activeChat._id,
             updatedMsgLogs.chatId
           );
-          window.scrollTo({ top: window.scrollMaxY });
+          messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
         }
       }
     }
@@ -268,7 +273,14 @@ export const ChatBox = ({ sidebarState }) => {
           payload: updatedMsgLogs.content,
         });
 
-        setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 250);
+        setTimeout(
+          () => {
+            messageLogRef.current.scrollTop =
+              messageLogRef.current.scrollHeight;
+          },
+
+          250
+        );
       }
     });
 
@@ -304,7 +316,14 @@ export const ChatBox = ({ sidebarState }) => {
         });
 
         // when finish sending message go straight to the bottom
-        setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 250);
+        setTimeout(
+          () => {
+            messageLogRef.current.scrollTop =
+              messageLogRef.current.scrollHeight;
+          },
+
+          250
+        );
       }
     });
 
@@ -342,7 +361,9 @@ export const ChatBox = ({ sidebarState }) => {
           currentActiveChatId: activeChat._id,
           dispatch: msgLogsDispatch,
         });
-    setTimeout(() => window.scrollTo({ top: window.scrollMaxY }), 150);
+    setTimeout(() => {
+      messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
+    }, 150);
 
     // reset the input bar
     setnewMessage('');
@@ -403,7 +424,8 @@ export const ChatBox = ({ sidebarState }) => {
 
           {/* message */}
           <ul
-            aria-label="chat-log"
+            ref={messageLogRef}
+            aria-label="message-log"
             className="bg-gray-100 relative flex flex-col h-0 grow pb-3 overflow-auto"
           >
             {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
@@ -458,7 +480,7 @@ export const ChatBox = ({ sidebarState }) => {
             {/* the send msg btn */}
             <RenderIf conditionIs={newMessage !== ''}>
               <button
-                className="w-10 h-10 max-w-[40px] max-h-[40px] rounded-full bg-blue-300 text-white
+                className="w-8 h-8 rounded-full bg-blue-300 text-white
                           hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
                           flex items-center justify-center shadow aspect-square text-xs animate-pop-in"
               >
