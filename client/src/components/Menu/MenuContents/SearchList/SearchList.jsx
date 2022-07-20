@@ -116,7 +116,7 @@ export default function SearchList() {
             </RenderIf>
           </div>
           {/* results */}
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {/* the list item containing the user result */}
             <RenderIf
               conditionIs={
@@ -136,12 +136,14 @@ export default function SearchList() {
                         <img
                           src="https://picsum.photos/200/200"
                           alt=""
-                          className="rounded-full h-8 w-8"
+                          className="rounded-full h-12 w-12"
                         />
 
-                        <span className="text-sm truncate">{username}</span>
+                        <span className="text-lg truncate font-medium">
+                          {username}
+                        </span>
                       </div>
-                      <FaUserAlt className="text-xs ml-auto mr-1 text-gray-500 group-hover:text-pink-600" />
+                      <FaUserAlt className="ml-auto mr-1 text-gray-500 group-hover:text-pink-600" />
                     </Link>
                   </li>
                 );

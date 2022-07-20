@@ -24,9 +24,7 @@ export const Message = ({
         className={`max-w-[75%] rounded-lg shadow p-3 space-y-2 min-w-[100px]
                       ${isSentByMe ? 'bg-white' : ' bg-gray-300'}`}
       >
-        <span
-          className={`text-gray-800 leading-5 md:leading-6 text-sm self-start`}
-        >
+        <span className={`text-gray-800 leading-5 md:leading-6  self-start`}>
           {msg}
         </span>
 

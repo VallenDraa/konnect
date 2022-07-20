@@ -1,6 +1,4 @@
 import User from '../../../model/User.js';
-import createError from '../../../utils/createError.js';
-import { renewToken } from '../auth/tokenController.js';
 
 export const getAllNotifications = async (req, res, next) => {
   const { full } = req.query; //only accepts true or false
@@ -144,10 +142,7 @@ export const setNotifToSeen = async (req, res, next) => {
     }
     await user.save();
 
-    // make a new token
-    const token = renewToken(user._doc, process.env.JWT_SECRET);
-
-    res.json({ user, token });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

@@ -9,8 +9,8 @@ import NotifListItem from './NotifListItem/NotifListItem';
 import ContactNotif from './type/ContactNotif/ContactNotif';
 import nothing from '../../../../svg/notificationList/nothing.svg';
 import { useLocation } from 'react-router-dom';
-import USER_ACTIONS from '../../../../context/user/userAction';
 import { NotifContext } from '../../../../context/notifContext/NotifContext';
+import NOTIF_CONTEXT_ACTIONS from '../../../../context/notifContext/notifContextActions';
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
@@ -18,9 +18,8 @@ export default function NotificationList() {
     { name: 'outbox', icon: MdOutlineOutbox },
   ];
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
-  const { notifs } = useContext(NotifContext);
-  const { userState, userDispatch } = useContext(UserContext);
-  const [userId] = useState(userState.user._id);
+  const { notifs, notifsDispatch } = useContext(NotifContext);
+  const { userState } = useContext(UserContext);
   const location = useLocation();
   const [activeLocation, setActiveLocation] = useState(location);
 
@@ -50,40 +49,48 @@ export default function NotificationList() {
   }, [activeLocation]);
 
   // if user selected one of the box, then set all the contents of that box to seen
-  // useEffect(() => {
-  //   const updateNotifSeen = async (boxType) => {
-  //     try {
-  //       const { data } = await api.put(
-  //         '/notification/set_notif_to_seen',
-  //         { notifIds, boxType, userId },
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-  //           },
-  //         }
-  //       );
+  useEffect(() => {
+    const updateNotifSeen = async ({ boxType, notifIds, userId }) => {
+      // update the seen status to the database
+      const { data } = await api.put(
+        '/notification/set_notif_to_seen',
+        { notifIds, boxType, userId },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        }
+      );
+    };
 
-  //       sessionStorage.setItem('token', data.token);
-  //       userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
-  //     } catch (error) {
-  //       userDispatch({ type: USER_ACTIONS.updateFailure, payload: error });
-  //     }
-  //   };
+    const { name } = activeBox;
+    const toBeSeenNotifIds = []; // the notif ids whose seen parameter will be changed to true
+    const updatedNotifs = notifs.content;
 
-  //   const { name } = activeBox;
-  //   const notifIds = []; // the notif ids whose seen parameter will be changed to true
+    // loop over the notif contents to update the seen status locally and also to pick the ids whose seen status will be updated in the database
+    for (const i in updatedNotifs[name]) {
+      if (!updatedNotifs[name][i].seen) {
+        toBeSeenNotifIds.push(updatedNotifs[name][i]._id);
+        updatedNotifs[name][i].seen = true;
+      }
+    }
 
-  //   // loop over the [NOTIF_TYPES]
-  //   for (const nt in notifications) {
-  //     // loop over notif contents to see if it has been seen
-  //     for (const { seen, _id } of notifications[nt][name]) {
-  //       !seen && notifIds.push(_id);
-  //     }
-  //   }
-
-  //   // will reach for the api if the notifIds is not empty
-  //   notifIds.length !== 0 && updateNotifSeen(name);
-  // }, [activeBox, userId]);
+    // will reach for the api if the toBeSeenNotifIds is not empty
+    try {
+      toBeSeenNotifIds.length !== 0 &&
+        updateNotifSeen({
+          boxType: name,
+          notifIds: toBeSeenNotifIds,
+          userId: userState.user._id,
+        });
+      notifsDispatch({
+        type: NOTIF_CONTEXT_ACTIONS.loaded,
+        payload: updatedNotifs,
+      });
+    } catch (error) {
+      notifsDispatch({ type: NOTIF_CONTEXT_ACTIONS.error, payload: error });
+    }
+  }, [activeBox, userState]);
 
   return (
     <div className="p-3 space-y-3">

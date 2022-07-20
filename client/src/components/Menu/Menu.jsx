@@ -14,7 +14,7 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   const location = useLocation();
   const { modalDispatch } = useContext(ModalContext);
   const { userState } = useContext(UserContext);
-  const { notifs } = useContext(NotifContext);
+  const { notifs, unseen } = useContext(NotifContext);
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
@@ -58,16 +58,15 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
       case 'search':
         return;
       case 'notifications':
-      // return (
-      //   <NotifBadge
-      //     isActive={
-      //       totalNotifs.total !== 0 && typeof totalNotifs.total === 'number'
-      //     }
-      //   >
-      //     {totalNotifs.total <= 99 ? totalNotifs.total : '99+'}
-      //   </NotifBadge>
-      // );
-
+        if (unseen) {
+          return (
+            <NotifBadge
+              isActive={unseen.total !== 0 && typeof unseen.total === 'number'}
+            >
+              {unseen.total <= 99 ? unseen.total : '99+'}
+            </NotifBadge>
+          );
+        }
       default:
         break;
     }

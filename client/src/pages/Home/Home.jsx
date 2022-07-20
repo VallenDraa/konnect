@@ -24,7 +24,6 @@ import locationForModal from '../../components/Modal/utils/locationForModal';
 import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/React/hooks/useUrlHistory/useUrlHistory';
 import ChatboxContextProvider from '../../context/chatBoxState/chatBoxContext';
-import api from '../../utils/apiAxios/apiAxios';
 
 // url history context
 export const UrlHistoryContext = createContext(null);
@@ -39,7 +38,8 @@ export default function Home() {
   // const {}
   const [urlHistory, urlHistoryError] = useUrlHistory();
   const { contacts, setContacts } = useContext(ContactsContext);
-  const { notifs, notifsDispatch } = useContext(NotifContext);
+  const { notifs, notifsDispatch, unseen, setUnseen } =
+    useContext(NotifContext);
 
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, 'history error');
@@ -66,23 +66,27 @@ export default function Home() {
     receiveSendAddContact({
       notifs,
       notifsDispatch,
+      unseen,
+      setUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
     });
 
     return () => socket.off('receive-send-add-contact');
-  }, [notifs]);
+  }, [notifs, unseen]);
 
   // when a contact request is cancelled
   useEffect(() => {
     receiveCancelAddContact({
       notifs,
       notifsDispatch,
+      unseen,
+      setUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
       userState,
     });
 
     return () => socket.off('receive-cancel-add-contact');
-  }, [userState, notifs]);
+  }, [userState, notifs, unseen]);
 
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {

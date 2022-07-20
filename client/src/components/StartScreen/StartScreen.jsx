@@ -21,7 +21,7 @@ export const StartScreen = ({ handleGoToMenu }) => {
             </div>
           </div>
 
-          <CTA className="flex justify-evenly gap-2 basis-full sm:basis-3/4 md:basis-1/2 xl:basis-1/3" />
+          <CTA className="flex justify-evenly gap-2 basis-full sm:basis-2/3 md:basis-1/2 xl:basis-[40%]" />
         </div>
       </header>
       {/* <img src={noActiveChat} className="w-2/3 md:w-1/3" />

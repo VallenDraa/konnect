@@ -69,7 +69,11 @@ export const NotifContext = createContext(NOTIF_DEFAULT);
 
 export default function NotifContextProvider({ children }) {
   const [notifs, notifsDispatch] = useReducer(notifReducer, NOTIF_DEFAULT);
-  const [unseen, setUnseen] = useState(0);
+  const [unseen, setUnseen] = useState({
+    inbox: 0,
+    outbox: 0,
+    total: 0,
+  });
   const { userState } = useContext(UserContext);
 
   // get all notifications for initial loading
@@ -108,7 +112,44 @@ export default function NotifContextProvider({ children }) {
     getAllNotifs();
   }, [userState]);
 
-  useEffect(() => console.log(notifs), [notifs]);
+  // determine how many notifs are not seen yet
+  useEffect(() => {
+    if (notifs.isLoaded) {
+      let inboxUnseen = 0;
+      let outboxUnseen = 0;
+      const { inbox, outbox } = notifs.content;
+
+      // determine how many notifications have not been seen
+      const largestBoxLen =
+        inbox.length >= outbox.length ? inbox.length : outbox.length;
+
+      if (largestBoxLen === 0) {
+        setUnseen({ inbox: 0, outbox: 0, total: 0 });
+      } else {
+        for (let i = 0; i < largestBoxLen; i++) {
+          // determine the unseen for inbox
+          if (inbox[i]) {
+            if (!inbox[i].seen) inboxUnseen++;
+          }
+
+          // determine the unseen for outbox
+          if (outbox[i]) {
+            if (!outbox[i].seen) outboxUnseen++;
+          }
+        }
+
+        setUnseen({
+          inbox: inboxUnseen,
+          outbox: outboxUnseen,
+          total: inboxUnseen + outboxUnseen,
+        });
+      }
+    }
+  }, [notifs]);
+
+  // useEffect(() => {
+  //   console.log(notifs);
+  // }, [notifs]);
 
   return (
     <NotifContext.Provider
@@ -121,6 +162,8 @@ export default function NotifContextProvider({ children }) {
 
 export const receiveSendAddContact = ({
   cb,
+  unseen,
+  setUnseen,
   notifs,
   notifsDispatch,
   notifActions,
@@ -131,12 +174,12 @@ export const receiveSendAddContact = ({
         ...notifs.content,
         [type]: [...notifs.content[type], notif],
       };
-
       notifsDispatch({
         type: notifActions.updateLoaded,
         payload: updatedNotifs,
       });
 
+      // execute the passed in callback if it exist
       if (cb) cb({ success, notif, type });
     }
   });
@@ -144,6 +187,8 @@ export const receiveSendAddContact = ({
 
 export const receiveCancelAddContact = ({
   cb,
+  unseen,
+  setUnseen,
   notifs,
   notifsDispatch,
   notifActions,
@@ -170,6 +215,7 @@ export const receiveCancelAddContact = ({
           payload: updatedNotifs,
         });
 
+        // execute the passed in callback if it exist
         if (cb) cb({ senderId, recipientId, success, type });
       }
     }
@@ -193,6 +239,7 @@ export const receiveContactRequestResponse = ({
         const idToUse =
           recipientId !== userState.user._id ? recipientId : senderId;
 
+        // add new user to contact when answer is true
         if (answer) {
           // fetch the user preview using the id that is different from the current userState id
 
@@ -212,7 +259,6 @@ export const receiveContactRequestResponse = ({
 
         // update the notifs
         const updatedNotifs = notifs.content;
-
         for (let i = updatedNotifs[type].length - 1; i >= 0; i--) {
           if (updatedNotifs[type][i].type === 'contact_request') {
             if (updatedNotifs[type][i].by._id === idToUse) {
@@ -221,7 +267,6 @@ export const receiveContactRequestResponse = ({
             }
           }
         }
-
         notifsDispatch({
           type: notifActions.updateLoaded,
           payload: updatedNotifs,
