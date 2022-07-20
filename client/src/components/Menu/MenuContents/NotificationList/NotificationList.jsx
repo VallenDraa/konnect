@@ -75,22 +75,23 @@ export default function NotificationList() {
       }
     }
 
-    // will reach for the api if the toBeSeenNotifIds is not empty
-    try {
-      toBeSeenNotifIds.length !== 0 &&
+    if (toBeSeenNotifIds.length > 0) {
+      // will reach for the api if the toBeSeenNotifIds is not empty
+      try {
         updateNotifSeen({
           boxType: name,
           notifIds: toBeSeenNotifIds,
           userId: userState.user._id,
         });
-      notifsDispatch({
-        type: NOTIF_CONTEXT_ACTIONS.loaded,
-        payload: updatedNotifs,
-      });
-    } catch (error) {
-      notifsDispatch({ type: NOTIF_CONTEXT_ACTIONS.error, payload: error });
+        notifsDispatch({
+          type: NOTIF_CONTEXT_ACTIONS.loaded,
+          payload: updatedNotifs,
+        });
+      } catch (error) {
+        notifsDispatch({ type: NOTIF_CONTEXT_ACTIONS.error, payload: error });
+      }
     }
-  }, [activeBox, userState]);
+  }, [activeBox, userState, notifs]);
 
   return (
     <div className="p-3 space-y-3">

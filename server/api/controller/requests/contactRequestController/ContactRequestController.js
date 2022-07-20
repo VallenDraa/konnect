@@ -17,62 +17,95 @@ export const sendContactRequest = async (req, res, next) => {
     const recipient = users.find((r) => r._id.toString() === recipientId);
 
     // check if requests has already been sent
-    const isRequestSent = sender.requests.contacts.outbox.some(
-      ({ by }) => by.toString() === recipientId
+    const isRequestSentButNotAnswered = sender.requests.contacts.outbox.some(
+      ({ by, answer }) => {
+        return by.toString() === recipientId && answer === null;
+      }
     );
-    if (isRequestSent) {
+
+    if (isRequestSentButNotAnswered) {
       return createError(
         next,
         409,
         'A contact request has been sent to this user !'
       );
+    } else {
+      const isRequestSentAndAccepted = sender.requests.contacts.outbox.some(
+        ({ by, answer }) => {
+          return by.toString() === recipientId && answer === true;
+        }
+      );
+
+      if (isRequestSentAndAccepted) {
+        return createError(
+          next,
+          409,
+          'A contact request has been sent to this user !'
+        );
+      } else {
+        const senderRejectedIndex = sender.requests.contacts.outbox.findIndex(
+          ({ by, answer }) => {
+            return by.toString() === recipientId && answer === false;
+          }
+        );
+        const recipientRejectedIndex =
+          recipient.requests.contacts.inbox.findIndex(({ by, answer }) => {
+            return by.toString() === senderId && answer === false;
+          });
+
+        const iat = new Date();
+        if (senderRejectedIndex === -1 && recipientRejectedIndex === -1) {
+          // push the request to the database
+          sender.requests.contacts.outbox.push({ by: recipientId, iat });
+          recipient.requests.contacts.inbox.push({ by: senderId, iat });
+        } else {
+          sender.requests.contacts.outbox[senderRejectedIndex].answer = null;
+          recipient.requests.contacts.inbox[recipientRejectedIndex].answer =
+            null;
+        }
+
+        // save it to the database
+        await sender.save();
+        await recipient.save();
+
+        const senderNotif =
+          sender.requests.contacts.outbox[
+            sender.requests.contacts.outbox.length - 1
+          ];
+        const { by: senderBy, ...newSenderNotif } = senderNotif._doc;
+
+        const recipientNotif =
+          recipient.requests.contacts.inbox[
+            recipient.requests.contacts.inbox.length - 1
+          ];
+        const { by: recipientBy, ...newRecipientNotif } = recipientNotif._doc;
+
+        res.json({
+          success: true,
+          iat,
+          senderNotif: {
+            ...newSenderNotif,
+            type: 'contact_request',
+            by: {
+              _id: recipient._id,
+              username: recipient.username,
+              initials: recipient.initials,
+              profilePicture: recipient.profilePicture,
+            },
+          },
+          recipientNotif: {
+            ...newRecipientNotif,
+            type: 'contact_request',
+            by: {
+              _id: sender._id,
+              username: sender.username,
+              initials: sender.initials,
+              profilePicture: sender.profilePicture,
+            },
+          },
+        });
+      }
     }
-
-    const iat = new Date();
-    // push the request to the database
-    sender.requests.contacts.outbox.push({ by: recipientId, iat });
-    recipient.requests.contacts.inbox.push({ by: senderId, iat });
-
-    // save it to the database
-    await sender.save();
-    await recipient.save();
-
-    const senderNotif =
-      sender.requests.contacts.outbox[
-        sender.requests.contacts.outbox.length - 1
-      ];
-    const { by: senderBy, ...newSenderNotif } = senderNotif._doc;
-
-    const recipientNotif =
-      recipient.requests.contacts.inbox[
-        recipient.requests.contacts.inbox.length - 1
-      ];
-    const { by: recipientBy, ...newRecipientNotif } = recipientNotif._doc;
-
-    res.json({
-      success: true,
-      iat,
-      senderNotif: {
-        ...newSenderNotif,
-        type: 'contact_request',
-        by: {
-          _id: recipient._id,
-          username: recipient.username,
-          initials: recipient.initials,
-          profilePicture: recipient.profilePicture,
-        },
-      },
-      recipientNotif: {
-        ...newRecipientNotif,
-        type: 'contact_request',
-        by: {
-          _id: sender._id,
-          username: sender.username,
-          initials: sender.initials,
-          profilePicture: sender.profilePicture,
-        },
-      },
-    });
   } catch (error) {
     next(error);
   }
@@ -125,7 +158,6 @@ export const respondToContactRequest = async (req, res, next) => {
 
 export const deleteContactRequest = async (req, res, next) => {
   const { recipientId, senderId } = req.body;
-  console.log(recipientId, senderId);
 
   try {
     const users = await User.where('_id').equals([recipientId, senderId]);

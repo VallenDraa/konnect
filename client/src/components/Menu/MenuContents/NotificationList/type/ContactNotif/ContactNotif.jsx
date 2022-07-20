@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { UserContext } from '../../../../../../context/user/userContext';
 import { useContext } from 'react';
 import generateRgb from '../../../../../../utils/generateRgb/generateRgb';
-import RenderIf from '../../../../../../utils/React/RenderIf';
+
 import PicturelessProfile from '../../../../../PicturelessProfile/PicturelessProfile';
 import socket from '../../../../../../utils/socketClient/socketClient';
+import RenderIf from '../../../../../../utils/React/RenderIf';
 
 export default function ContactNotif({ info, type }) {
   // console.log(info, type);
@@ -79,14 +80,22 @@ export default function ContactNotif({ info, type }) {
             </RenderIf>
 
             <RenderIf conditionIs={info.answer !== null}>
-              <span className="font-bold text-slate-800">
-                {info.by?.username}
-              </span>{' '}
               <RenderIf conditionIs={info.answer === true}>
-                Has been added to your contacts list.
+                <span className="font-bold text-slate-800">
+                  {info.by?.username}
+                </span>{' '}
+                has been added to your contacts list.
               </RenderIf>
               <RenderIf conditionIs={info.answer === false}>
-                Rejected your contact request.
+                <RenderIf conditionIs={type === 'outbox'}>
+                  rejected your contact request.
+                </RenderIf>
+                <RenderIf conditionIs={type === 'inbox'}>
+                  You rejected a contact request by{' '}
+                  <span className="font-bold text-slate-800">
+                    {info.by?.username}
+                  </span>
+                </RenderIf>
               </RenderIf>
             </RenderIf>
           </span>

@@ -147,9 +147,9 @@ export default function NotifContextProvider({ children }) {
     }
   }, [notifs]);
 
-  // useEffect(() => {
-  //   console.log(notifs);
-  // }, [notifs]);
+  useEffect(() => {
+    console.log(notifs);
+  }, [notifs]);
 
   return (
     <NotifContext.Provider
@@ -162,18 +162,27 @@ export default function NotifContextProvider({ children }) {
 
 export const receiveSendAddContact = ({
   cb,
-  unseen,
-  setUnseen,
   notifs,
   notifsDispatch,
   notifActions,
 }) => {
   socket.on('receive-send-add-contact', ({ success, notif, type }) => {
     if (success) {
-      const updatedNotifs = {
-        ...notifs.content,
-        [type]: [...notifs.content[type], notif],
-      };
+      let updatedNotifs;
+      // check if the notif is duplicate of a rejected one
+      const indexExisitingReq = notifs.content[type].findIndex(
+        ({ _id }) => _id === notif._id
+      );
+
+      if (indexExisitingReq === -1) {
+        updatedNotifs = {
+          ...notifs.content,
+          [type]: [...notifs.content[type], notif],
+        };
+      } else {
+        updatedNotifs = notifs.content;
+        updatedNotifs[type][indexExisitingReq] = notif;
+      }
       notifsDispatch({
         type: notifActions.updateLoaded,
         payload: updatedNotifs,
@@ -187,8 +196,6 @@ export const receiveSendAddContact = ({
 
 export const receiveCancelAddContact = ({
   cb,
-  unseen,
-  setUnseen,
   notifs,
   notifsDispatch,
   notifActions,
@@ -255,7 +262,7 @@ export const receiveContactRequestResponse = ({
         }
 
         // execute the passed in callback if it exist
-        if (cb) cb(answer);
+        if (cb) cb(answer, type);
 
         // update the notifs
         const updatedNotifs = notifs.content;

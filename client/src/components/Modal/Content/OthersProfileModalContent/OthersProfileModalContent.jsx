@@ -134,7 +134,10 @@ export const OthersProfileModalContent = ({ username }) => {
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {
     receiveContactRequestResponse({
-      cb: (answer) => setIsAFriend(answer),
+      cb: (answer, type) => {
+        type === 'inbox' ? setIsRequested(false) : setIsRequesting(false);
+        setIsAFriend(answer);
+      },
       contacts,
       setContacts,
       notifs,
