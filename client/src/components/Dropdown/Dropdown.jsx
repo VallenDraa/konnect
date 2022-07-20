@@ -7,6 +7,7 @@ export default function Dropdown({
   className = '',
   btnClassName = '',
   listClassName = '',
+  offset = 0,
   listStyle = {},
   children,
   icon,
@@ -34,7 +35,7 @@ export default function Dropdown({
     'capitalize',
     'hover:text-pink-400',
     'duration-200',
-    'rounded',
+    'rounded-full',
     'flex',
     'items-center',
     'gap-x-1',
@@ -50,9 +51,11 @@ export default function Dropdown({
     'sm:w-60',
     'bg-gray-50',
     'shadow-md',
-    'rounded',
-    'p-1',
-    'divide-y-2',
+    'rounded-lg',
+    'p-2',
+    'flex',
+    'flex-col',
+    'gap-y-2',
     'animate-d-down-open',
     'overflow-y-auto',
     'border-2',
@@ -143,7 +146,7 @@ export default function Dropdown({
             className={`${position} ${listDefaultClasses.join(
               ' '
             )} ${listClassName}`}
-            style={{ top: `${btnOffsetHeight + 1}px`, ...listStyle }}
+            style={{ top: `${btnOffsetHeight + offset + 1}px`, ...listStyle }}
           >
             {children}
           </ul>

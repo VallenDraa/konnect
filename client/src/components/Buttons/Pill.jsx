@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import RenderIf from '../../utils/React/RenderIf';
 
@@ -10,6 +11,10 @@ export default function Pill({
   disabled = false,
   link,
 }) {
+  const [defaultClasses] = useState(
+    'py-1 w-full shadow-md hover:shadow-lg active:shadow-inner rounded-full flex items-center gap-1 justify-center duration-200 text-xxs'
+  );
+
   return (
     <>
       <RenderIf conditionIs={!link}>
@@ -20,7 +25,7 @@ export default function Pill({
           onClick={() => {
             if (typeof onClick === 'function') !disabled && onClick();
           }}
-          className={`py-1 w-full text-xxs border-2 shadow-md hover:shadow-xl active:shadow-inner rounded-full flex items-center gap-1 justify-center duration-200  ${className}`}
+          className={`${defaultClasses} ${className}`}
         >
           {children}
         </button>
@@ -34,7 +39,7 @@ export default function Pill({
           onClick={() => {
             if (typeof onClick === 'function') !disabled && onClick();
           }}
-          className={`py-1 w-full border-2 shadow-md hover:shadow-xl active:shadow-inner rounded-full flex items-center gap-1 justify-center duration-200  ${className}`}
+          className={`${defaultClasses} ${className}`}
         >
           {children}
         </Link>

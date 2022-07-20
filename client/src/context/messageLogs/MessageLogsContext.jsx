@@ -29,40 +29,6 @@ export default function MessageLogsContextProvider({ children }) {
   );
   const { userState } = useContext(UserContext);
 
-  const refreshMsgLogs = () => {
-    if (!userState.user || !userState) return;
-
-    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-    const updatedMsgLogs = msgLogs;
-
-    const newUserId =
-      userState.user.contacts[userState.user.contacts.length - 1].user;
-
-    // assemble the final result object
-    getUsersPreview(sessionStorage.getItem('token'), [newUserId])
-      .then(([user]) => {
-        const newMessageLogContent = {
-          user, //this'll get the last user (new user) in the contact array
-          chatId: null,
-          chat: [],
-          activeChat: false,
-        };
-        updatedMsgLogs.content[newUserId] = newMessageLogContent;
-
-        // save the new message log
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedMsgLogs.content,
-        });
-      })
-      .catch((e) => {
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateError,
-          payload: e,
-        });
-      });
-  };
-
   // fetch all the message log from the server
   useEffect(() => {
     if (msgLogs.length > 0) return;
@@ -97,6 +63,40 @@ export default function MessageLogsContextProvider({ children }) {
 
   // refresh messageLog
   useEffect(() => {
+    const refreshMsgLogs = () => {
+      if (!userState.user || !userState) return;
+      if (userState.user.contacts.length === 0) return;
+
+      msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+      const updatedMsgLogs = msgLogs;
+
+      const newUserId =
+        userState.user.contacts[userState.user.contacts.length - 1].user;
+
+      // assemble the final result object
+      getUsersPreview(sessionStorage.getItem('token'), [newUserId])
+        .then(([user]) => {
+          const newMessageLogContent = {
+            user, //this'll get the last user (new user) in the contact array
+            chatId: null,
+            chat: [],
+            activeChat: false,
+          };
+          updatedMsgLogs.content[newUserId] = newMessageLogContent;
+
+          // save the new message log
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+            payload: updatedMsgLogs.content,
+          });
+        })
+        .catch((e) => {
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateError,
+            payload: e,
+          });
+        });
+    };
     socket.on('refresh-msg-log', refreshMsgLogs);
 
     return () => socket.off('refresh-msg-log');
@@ -110,3 +110,46 @@ export default function MessageLogsContextProvider({ children }) {
     </MessageLogsContext.Provider>
   );
 }
+
+export const pushNewEntry = async ({
+  targetId,
+  token,
+  message = null,
+  currentActiveChatId,
+  msgLogs,
+  dispatch,
+}) => {
+  dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+  try {
+    const [user] = await getUsersPreview(token, [targetId]);
+    const isActiveChat = currentActiveChatId === targetId;
+    const updatedMsgLogs = msgLogs;
+
+    // assemble the final result object
+    const newMessageLogContent = {
+      user,
+      chatId: message ? message.chatId : null,
+      chat: message ? [message] : [],
+      activeChat: isActiveChat,
+    };
+    updatedMsgLogs.content[targetId] = newMessageLogContent;
+
+    // save the new message log
+    dispatch({
+      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+      payload: updatedMsgLogs.content,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
+  const updatedMsgLogs = msgLogs;
+  updatedMsgLogs.content[targetId].chat.push(message);
+
+  dispatch({
+    type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+    payload: updatedMsgLogs.content,
+  });
+};

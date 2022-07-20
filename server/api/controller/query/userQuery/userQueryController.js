@@ -5,12 +5,9 @@ export const findUsers = async (req, res, next) => {
   const { query } = req.query;
 
   try {
-    const result = await User.where({ username: { $regex: query } }).select([
-      'status',
-      'username',
-      'initials',
-      'profilePicture',
-    ]);
+    const result = await User.where({ username: { $regex: query } })
+      .lean()
+      .select(['status', 'username', 'initials', 'profilePicture']);
     res.json(result);
   } catch (error) {
     next(error);
@@ -18,15 +15,13 @@ export const findUsers = async (req, res, next) => {
 };
 
 export const getUsersPreview = async (req, res, next) => {
-  const { userIds } = req.body;
+  const userIds = req.query.userIds.split(',');
+  console.log(userIds);
 
   try {
-    const users = await User.find({ _id: { $in: userIds } }).select([
-      'status',
-      'username',
-      'initials',
-      'profilePicture',
-    ]);
+    const users = await User.find({ _id: { $in: userIds } })
+      .lean()
+      .select(['status', 'username', 'initials', 'profilePicture']);
 
     res.json(users);
   } catch (error) {
@@ -39,6 +34,7 @@ export const getUserDetail = async (req, res, next) => {
 
   try {
     const result = await User.findOne({ username })
+      .lean()
       .select(['-password', '-settings'])
       .populate({
         path: 'contacts.user',
@@ -50,5 +46,3 @@ export const getUserDetail = async (req, res, next) => {
     next(error);
   }
 };
-
-export const getUser = async (req, res, next) => {};

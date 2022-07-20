@@ -3,7 +3,7 @@ import verifyToken from '../controller/auth/tokenController.js';
 import {
   findUsersFromContact,
   getUserContactsPreview,
-} from '../controller/contacts/contacts.js';
+} from '../controller/contacts/contactsController.js';
 const router = express.Router();
 
 router.get('/get_user_contacts_preview', verifyToken, getUserContactsPreview);

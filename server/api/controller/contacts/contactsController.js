@@ -12,7 +12,7 @@ export const findUsersFromContact = async (req, res, next) => {
       .select('contacts.user')
       .populate({
         path: 'contacts.user',
-        select: ['username', 'initials', 'profilePicture'],
+        select: ['username', 'initials', 'profilePicture', 'status'],
         match: { username: { $regex: query } },
       });
 
@@ -33,8 +33,10 @@ export const getUserContactsPreview = async (req, res, next) => {
       .select(['contacts', '-_id'])
       .populate({
         path: 'contacts.user',
-        select: ['username', 'profilePicture', 'initials'],
+        select: ['username', 'profilePicture', 'initials', 'status'],
       });
+
+    console.log(contacts);
 
     res.json({ contacts });
   } catch (error) {

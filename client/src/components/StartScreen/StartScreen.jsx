@@ -24,7 +24,7 @@ export const StartScreen = ({ handleGoToMenu }) => {
           <CTA className="flex justify-evenly gap-2 basis-full sm:basis-3/4 md:basis-1/2 xl:basis-1/3" />
         </div>
       </header>
-      <img src={noActiveChat} className="w-2/3 md:w-1/3" />
+      {/* <img src={noActiveChat} className="w-2/3 md:w-1/3" />
       <h1 className="font-bold text-2xl md:text-3xl text-gray-600">
         Go Start a Chat !
       </h1>
@@ -32,7 +32,7 @@ export const StartScreen = ({ handleGoToMenu }) => {
         Click one of the available messages or go start a new one by pressing
         the <span className="font-semibold text-gray-600">New Chat</span>{' '}
         button.
-      </span>
+      </span> */}
     </main>
   );
 };

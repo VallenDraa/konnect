@@ -12,7 +12,11 @@ import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
 } from '../../context/activeChat/ActiveChatContext';
-import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext';
+import {
+  MessageLogsContext,
+  pushNewEntry,
+  pushNewMsgToEntry,
+} from '../../context/messageLogs/MessageLogsContext';
 import MESSAGE_LOGS_ACTIONS from '../../context/messageLogs/messageLogsActions';
 import throttle from '../../utils/performance/throttle';
 import getScrollPercentage, {
@@ -21,54 +25,11 @@ import getScrollPercentage, {
 import { BsArrowLeftShort } from 'react-icons/bs';
 import Picker from 'emoji-picker-react';
 import EmojiBarToggle from './components/EmojiBarToggle/EmojiBarToggle';
-import notifSound from '../../audio/notifSound.mp3';
+import newMsgSfx from '../../audio/newMsgSfx.mp3';
 import { playAudio } from '../../utils/AudioPlayer/audioPlayer';
 
-export const pushNewEntry = async ({
-  targetId,
-  token,
-  message = null,
-  currentActiveChatId,
-  msgLogs,
-  dispatch,
-}) => {
-  dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-  try {
-    const [user] = await getUsersPreview(token, targetId);
-    const isActiveChat = currentActiveChatId === targetId;
-    const updatedMsgLogs = msgLogs;
-
-    // assemble the final result object
-    const newMessageLogContent = {
-      user,
-      chatId: message ? message.chatId : null,
-      chat: message ? [message] : [],
-      activeChat: isActiveChat,
-    };
-    updatedMsgLogs.content[targetId] = newMessageLogContent;
-
-    // save the new message log
-    dispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedMsgLogs.content,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
-  const updatedMsgLogs = msgLogs;
-  updatedMsgLogs.content[targetId].chat.push(message);
-
-  dispatch({
-    type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-    payload: updatedMsgLogs.content,
-  });
-};
-
 export const ChatBox = ({ sidebarState }) => {
-  const notifSFX = new Audio(notifSound);
+  const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
@@ -197,7 +158,7 @@ export const ChatBox = ({ sidebarState }) => {
       setActiveChat({ ...activeChat, lastMessage: message });
 
       // play notification audio when receiving a message
-      playAudio(notifSFX);
+      playAudio(newMsgSound);
 
       // read msg if current active chat is the same user that sent the message
       if (willGoToBottom) {
@@ -262,7 +223,9 @@ export const ChatBox = ({ sidebarState }) => {
         const updatedMsgLogs = msgLogs;
         const { chat } = updatedMsgLogs.content[activeChat._id];
 
+        // set the readAt time for messages
         for (let i = chat.length - 1; i > 0; i--) {
+          // it will break when the loop encounters a message that has been read
           if (chat[i].readAt !== null) break;
 
           chat[i].readAt = time;

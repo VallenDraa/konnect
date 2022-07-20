@@ -4,18 +4,27 @@ import { ChatBox } from '../../components/ChatBox/ChatBox';
 import { Modal } from '../../components/modal/Modal';
 import { InitialLoadingScreen } from '../../components/InitialLoadingScreen/InitialLoadingScreen';
 import { ModalContext } from '../../context/modal/modalContext';
+import { ContactsContext } from '../../context/contactContext/ContactContext';
 import { useEffect } from 'react';
 import { UserContext } from '../../context/user/userContext';
-import socket from '../../utils/socketClient/socketClient';
+import {
+  NotifContext,
+  receiveCancelAddContact,
+  receiveContactRequestResponse,
+  receiveSendAddContact,
+} from '../../context/notifContext/NotifContext';
+import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
-import USER_ACTIONS from '../../context/user/userAction';
 import { useLocation } from 'react-router-dom';
-import locationForModal from '../../components/Modal/utils/locationForModal';
+import socket from '../../utils/socketClient/socketClient';
+import USER_ACTIONS from '../../context/user/userAction';
+import NOTIF_CONTEXT_ACTIONS from '../../context/notifContext/notifContextActions';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
+import locationForModal from '../../components/Modal/utils/locationForModal';
 import MiniModal from '../../components/MiniModal/MiniModal';
 import useUrlHistory from '../../utils/hooks/useUrlHistory/useUrlHistory';
-import { ActiveChatContext } from '../../context/activeChat/ActiveChatContext';
 import ChatboxContextProvider from '../../context/chatBoxState/chatBoxContext';
+import api from '../../utils/apiAxios/apiAxios';
 
 // url history context
 export const UrlHistoryContext = createContext(null);
@@ -23,11 +32,14 @@ export const UrlHistoryContext = createContext(null);
 export default function Home() {
   const { activeChat } = useContext(ActiveChatContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
-  const [isSidebarOn, setIsSidebarOn] = useState(false); //will come to effect when screen is smaller than <lg
+  const [isSidebarOn, setIsSidebarOn] = useState(window.innerWidth <= 1024); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
   const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
   const location = useLocation();
+  // const {}
   const [urlHistory, urlHistoryError] = useUrlHistory();
+  const { contacts, setContacts } = useContext(ContactsContext);
+  const { notifs, notifsDispatch } = useContext(NotifContext);
 
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, 'history error');
@@ -35,51 +47,54 @@ export default function Home() {
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {
-    if (Object.keys(userState.user).length !== 0 && isLoginViaRefresh) {
-      socket.emit(
-        'login',
-        { userId: userState.user._id, token: sessionStorage.getItem('token') },
-        (success, message) => !success && alert(message)
-      );
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      if (Object.keys(userState.user).length !== 0 && isLoginViaRefresh) {
+        socket.emit(
+          'login',
+          { userId: userState.user._id, token },
+          (success, message) => !success && alert(message)
+        );
+      }
     }
 
     return () => socket.off('login');
   }, []);
 
-  //the receiving end / recipient of an add contact request
+  //update the notifs context when receiving a contact request
   useEffect(() => {
-    socket.on('receive-add-contact', (recipient, { username, _id }) => {
-      if (recipient.success) {
-        const { token, user } = recipient;
-
-        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-        sessionStorage.setItem('token', token);
-
-        console.log(
-          `${username} has sent you a contact request, what is your response`
-        );
-      }
+    receiveSendAddContact({
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
     });
 
-    return () => socket.off('receive-add-contact');
-  }, []);
+    return () => socket.off('receive-send-add-contact');
+  }, [notifs]);
+
+  // when a contact request is cancelled
+  useEffect(() => {
+    receiveCancelAddContact({
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
+      userState,
+    });
+
+    return () => socket.off('receive-cancel-add-contact');
+  }, [userState, notifs]);
 
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {
-    socket.on('receive-contact-request-response', (data) => {
-      userDispatch({ type: USER_ACTIONS.updateStart });
-      const { success, token, user } = data;
-
-      if (success) {
-        sessionStorage.setItem('token', token);
-        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-      } else {
-        userDispatch({ type: USER_ACTIONS.updateFail, payload: data.message });
-      }
+    receiveContactRequestResponse({
+      contacts,
+      setContacts,
+      token: sessionStorage.getItem('token'),
+      userState,
     });
 
     return () => socket.off('receive-contact-request-response');
-  }, []);
+  }, [userState, contacts]);
 
   // refresh userState
   useEffect(() => {
@@ -125,7 +140,7 @@ export default function Home() {
           <InitialLoadingScreen />
           <div
             className={`flex duration-200
-                     ${modalState.isActive ? 'md:blur-sm' : ''}`}
+                       ${modalState.isActive ? 'md:blur-sm' : ''}`}
           >
             <ChatboxContextProvider>
               <Sidebar

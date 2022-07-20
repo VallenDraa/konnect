@@ -17,7 +17,7 @@ import cookieParser from 'cookie-parser';
 import authentication, {
   tabClose,
 } from './socketServer/authenticateSocket/autheticateSocket.js';
-import sendContactRequest from './socketServer/contactsRelated/sendContactRequestSocket/sendContactRequestSocket.js';
+import contactRequest from './socketServer/contactsRelated/sendContactRequestSocket/sendContactRequestSocket.js';
 import contactRequestRespond from './socketServer/contactsRelated/contactRequestRespondSocket/contactRequestRespondSocket.js';
 import unfriend from './socketServer/contactsRelated/unfriendSocket/unfriendSocket.js';
 
@@ -64,11 +64,11 @@ io.on('connection', (socket) => {
   console.log('new user connected with id: ' + socket.id);
 
   socket.on('disconnect', () => tabClose(socket));
-  socket.on('test', (d, o) => console.log(d, o));
+  // socket.on('test', (d, o) => console.log(d, o));
 
   authentication(socket);
   messages(socket);
-  sendContactRequest(socket);
+  contactRequest(socket);
   contactRequestRespond(socket);
   unfriend(socket);
 });
@@ -90,7 +90,7 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === 'production';
 
-  if (isProduction) console.log(err);
+  if (!isProduction) console.log(stack);
 
   return res
     .status(status || 500)

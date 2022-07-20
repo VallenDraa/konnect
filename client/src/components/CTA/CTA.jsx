@@ -54,7 +54,7 @@ export default function CTA({
     <div className={className}>
       {/* message */}
       <Pill
-        className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
+        className="bg-slate-100 hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
             type: MODAL_ACTIONS.show,
@@ -72,7 +72,7 @@ export default function CTA({
 
       {/* call */}
       <Pill
-        className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
+        className="bg-slate-100 hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
             type: MODAL_ACTIONS.show,
@@ -90,7 +90,7 @@ export default function CTA({
 
       {/* group */}
       <Pill
-        className="hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
+        className="bg-slate-100 hover:bg-gray-200 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
             type: MODAL_ACTIONS.show,

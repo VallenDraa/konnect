@@ -37,18 +37,14 @@ export const OthersProfileModalContent = ({ username }) => {
   //for both sending and cancelling a contact request
   const handleContactRequest = () => {
     requestDispatch({ type: Start });
-    const senderToken = sessionStorage.getItem('token');
     requestDispatch({ type: Loading });
+    const payload = {
+      recipientId: otherUserData._id,
+      senderId: userState.user._id,
+      token: sessionStorage.getItem('token'),
+    };
 
-    const cancel = isRequesting ? true : false;
-
-    socket.emit(
-      'send-add-contact',
-      userState.user._id,
-      otherUserData?._id,
-      senderToken,
-      cancel
-    );
+    socket.emit('send-add-contact', payload);
   };
 
   // for removing a contact from the user data
@@ -76,8 +72,7 @@ export const OthersProfileModalContent = ({ username }) => {
   const handleAction = () => {
     if (isAFriend) return handleRemoveContact();
     if (isRequested) return handleIncomingContactRequest();
-
-    return handleContactRequest();
+    handleContactRequest();
   };
 
   // useEffect(() => {
@@ -97,7 +92,7 @@ export const OthersProfileModalContent = ({ username }) => {
           }
         );
 
-        data === null && navigate('/chats');
+        if (data === null) navigate('/chats');
 
         setOtherUserData(data);
       } catch (error) {
@@ -157,6 +152,7 @@ export const OthersProfileModalContent = ({ username }) => {
         if (otherUserId === user) {
           // console.log(otherUserId === user, otherUserId, user, 'friend');
           setIsAFriend(true);
+          break;
         }
       }
     } else {
@@ -175,6 +171,7 @@ export const OthersProfileModalContent = ({ username }) => {
           //   'requesting'
           // );
           setIsRequesting(true);
+          break;
         }
       }
     } else {
@@ -194,6 +191,7 @@ export const OthersProfileModalContent = ({ username }) => {
           //   'requested'
           // );
           setIsRequested(true);
+          break;
         }
       }
     } else {

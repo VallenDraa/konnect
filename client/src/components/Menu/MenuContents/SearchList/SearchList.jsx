@@ -107,10 +107,10 @@ export default function SearchList() {
                   className="max-w-[300px] mx-auto"
                 />
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
-                  Search For Other People
+                  Find others and Konnect !
                 </span>
                 <span className="font-light text-gray-400 text-xs">
-                  Go find another user and add them to your contact !
+                  Search for new people
                 </span>
               </div>
             </RenderIf>
@@ -130,16 +130,18 @@ export default function SearchList() {
                       // this link will open a modal containing info of the user (code is ini Menu.jsx)
                       title={`Go To ${username}'s Profile`}
                       to={`user/${username}`}
-                      className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-lg shadow`}
+                      className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-lg shadow`}
                     >
-                      <img
-                        src="https://picsum.photos/200/200"
-                        alt=""
-                        className="rounded-full h-8 w-8"
-                      />
+                      <div className="flex items-center gap-2 grow border-r-2 group-hover:border-pink-200">
+                        <img
+                          src="https://picsum.photos/200/200"
+                          alt=""
+                          className="rounded-full h-8 w-8"
+                        />
 
-                      <span className="text-sm truncate">{username}</span>
-                      <FaUserAlt className="text-xs ml-auto mr-1 text-gray-500" />
+                        <span className="text-sm truncate">{username}</span>
+                      </div>
+                      <FaUserAlt className="text-xs ml-auto mr-1 text-gray-500 group-hover:text-pink-600" />
                     </Link>
                   </li>
                 );

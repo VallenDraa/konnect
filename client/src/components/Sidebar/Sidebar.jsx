@@ -99,7 +99,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
                 content: <MyProfileModalContent />,
               })
             }
-            className="flex items-center gap-1 bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-full grow w-3/4"
+            className="flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-lg  grow w-3/4"
           >
             <img
               src="https://picsum.photos/200/200"
@@ -117,7 +117,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
           </Link>
           <Pill
             onClick={handleLogout}
-            className="w-24 md:w-20 border-red-500 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white"
+            className="w-24 md:w-20 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white shadow-red-100 hover:shadow-red-200"
           >
             <BiLogOut />
             <span>Log Out</span>

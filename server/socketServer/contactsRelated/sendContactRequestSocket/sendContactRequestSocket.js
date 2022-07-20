@@ -1,87 +1,77 @@
 import axios from 'axios';
-import { createErrorNonExpress } from '../../../utils/createError.js';
 
-export default function sendContactRequest(socket) {
-  socket.on(
-    'send-add-contact',
-    async (senderId, recipientId, senderToken, cancel) => {
-      const isRecipientOnline = recipientId in global.onlineUsers;
-      const recipientSocketId = isRecipientOnline
-        ? global.onlineUsers[recipientId]
-        : null;
+export default function contactRequest(socket) {
+  socket.on('send-add-contact', async (payload) => {
+    const { recipientId, senderId, token } = payload;
+    const isRecipientOnline = recipientId in global.onlineUsers;
+    const recipientSocketId = isRecipientOnline
+      ? global.onlineUsers[recipientId]
+      : null;
 
-      try {
-        // add sender id to recipients requests parameter in the DB and returns an updated recipient data
-        const send = await axios.put(
-          `${process.env.API_URL}/request/send_contact_request`,
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/request/send_contact_request`,
+        { recipientId, senderId, token },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-          { recipientId, senderId, token: senderToken, cancel },
-          {
-            headers: {
-              Authorization: `Bearer ${senderToken}`,
-            },
-          }
-        );
-        const sendResponse = send.data || null;
-
-        // add recipient id to senders requests parameter in the DB and returns an updated sender data
-        const queue = await axios.put(
-          `${process.env.API_URL}/request/queue_contact_request`,
-
-          { recipientId, senderId, token: senderToken, cancel },
-          {
-            headers: {
-              Authorization: `Bearer ${senderToken}`,
-            },
-          }
-        );
-        const queueResponse = queue.data || null;
-
-        // send the updated sender data to the client
-        if (queueResponse.success) {
-          socket.emit('update-client-data', queueResponse);
-        } else {
-          const { message, status } = queueResponse;
-          console.error(createErrorNonExpress(null, status, message));
-          socket.emit('error', createErrorNonExpress(null, status, message));
-        }
-
-        // send notification to the recipient if recipient is online
-        if (
-          isRecipientOnline &&
-          queueResponse.success &&
-          sendResponse.success
-        ) {
-          const { username, _id } = queueResponse.user;
-          const senderDetail = { username, _id };
-
-          socket
-            .to(recipientSocketId)
-            .emit('receive-add-contact', sendResponse, senderDetail);
-        } else {
-          if (!queueResponse.success) {
-            socket
-              .to(recipientSocketId)
-              .emit(
-                'error',
-                createErrorNonExpress(
-                  queueResponse.status,
-                  queueResponse.message
-                )
-              );
-          } else if (!sendResponse.success) {
-            socket
-              .to(recipientSocketId)
-              .emit(
-                'error',
-                createErrorNonExpress(sendResponse.status, sendResponse.message)
-              );
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        socket.emit('error', error);
+      socket.emit('receive-send-add-contact', {
+        success: data.success,
+        notif: data.senderNotif,
+        type: 'outbox',
+      });
+      // check if the recipient is online
+      if (isRecipientOnline) {
+        socket.to(recipientSocketId).emit('receive-send-add-contact', {
+          success: data.success,
+          notif: data.recipientNotif,
+          type: 'inbox',
+        });
+      }
+    } catch (error) {
+      // console.error(error);
+      socket.emit('error', error);
+      if (isRecipientOnline) {
+        socket.to(recipientSocketId).emit('error', error);
       }
     }
-  );
+  });
+
+  socket.on('cancel-add-contact', async (payload) => {
+    const { senderId, recipientId, token } = payload;
+    const isRecipientOnline = recipientId in global.onlineUsers;
+    const recipientSocketId = isRecipientOnline
+      ? global.onlineUsers[recipientId]
+      : null;
+
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/request/delete_contact_request`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      socket.emit('receive-cancel-add-contact', {
+        senderId,
+        recipientId,
+        success: data.success,
+        type: 'outbox',
+      });
+      // check if the recipient is online
+      if (isRecipientOnline) {
+        socket.to(recipientSocketId).emit('receive-cancel-add-contact', {
+          senderId,
+          recipientId,
+          success: data.success,
+          type: 'inbox',
+        });
+      }
+    } catch (error) {
+      // console.error(error);
+      socket.emit('error', error);
+      if (isRecipientOnline) {
+        socket.to(recipientSocketId).emit('error', error);
+      }
+    }
+  });
 }

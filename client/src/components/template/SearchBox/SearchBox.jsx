@@ -101,7 +101,7 @@ export default function SearchBox({
           <h2 className="font-semibold text-xl">Search For People</h2>
           <Pill
             onClick={() => handleSubmit(results, query, selected)}
-            className="w-[150px] text-sm font-medium shadow-sm active:shadow-inner active:shadow-blue-600 bg-gray-200 hover:bg-blue-400 active:bg-blue-500 hover:text-white"
+            className="w-[150px] text-sm font-medium shadow hover:shadow-lg active:shadow-inner hover:shadow-blue-100 bg-gray-200 hover:bg-blue-400 active:bg-blue-500 hover:text-white"
           >
             {submitBtn}
           </Pill>

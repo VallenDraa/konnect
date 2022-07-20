@@ -1,6 +1,6 @@
 import { useContext, useEffect, useId, useState } from 'react';
 import { UserContext } from '../../../../../context/user/userContext';
-
+import { ContactsContext } from '../../../../../context/contactContext/ContactContext';
 import { BiHappyHeartEyes } from 'react-icons/bi';
 import { FaCamera } from 'react-icons/fa';
 import { FiSave } from 'react-icons/fi';
@@ -18,7 +18,7 @@ import PasswordConfirmation from '../../../../MiniModal/content/AccountOpt/Passw
 const ProfileOpt = () => {
   const imageId = useId();
   const { userState, userDispatch } = useContext(UserContext);
-  const [contactsPreview, setContactsPreview] = useState();
+  const { contacts } = useContext(ContactsContext);
   const [isEditMode, setIsEditMode] = useState(false);
   const [firstName, setFirstName] = useState(userState.user.firstName || '');
   const [lastName, setLastName] = useState(userState.user.lastName || '');
@@ -26,34 +26,28 @@ const ProfileOpt = () => {
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
 
   // get contacts preview
-  useEffect(() => {
-    const getContactsPreview = async () => {
-      const contacts = userState.user.contacts;
-      const contactIds = contacts.map((contact) => contact.user);
+  // useEffect(() => {
+  //   const getContactsPreview = async () => {
+  //     const contactIds = contacts.map(({ _id }) => _id);
 
-      try {
-        const { data } = await api.post(
-          '/query/user/get_users_preview',
-          { userIds: contactIds },
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-            },
-          }
-        );
-        const result = data.map(({ profilePicture, initials, username }) => ({
-          user: { initials, username, profilePicture },
-        }));
+  //     try {
+  //       const { data } = await getUsersPreview(
+  //         sessionStorage.getItem('token'),
+  //         contactIds
+  //       );
+  //       const result = data.map(({ profilePicture, initials, username }) => ({
+  //         user: { initials, username, profilePicture },
+  //       }));
 
-        // console.log(result);
-        setContactsPreview(result);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  //       // console.log(result);
+  //       setContactsPreview(result);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
-    getContactsPreview();
-  }, [userState]);
+  //   getContactsPreview();
+  // }, [userState]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -177,7 +171,7 @@ const ProfileOpt = () => {
                   className={`text-sm px-4 py-1 font-bold flex items-center gap-x-2
                   ${
                     !isEditMode
-                      ? 'hover:bg-pink-400 active:bg-pink-500 hover:text-white'
+                      ? 'bg-slate-100 hover:shadow-pink-100 hover:bg-pink-400 active:bg-pink-500 hover:text-white'
                       : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100'
                   }`}
                 >
@@ -198,11 +192,10 @@ const ProfileOpt = () => {
                   style={{
                     cursor: isEditMode ? 'pointer' : 'default',
                     padding: isEditMode ? '0.25rem 1rem' : '0',
-                    borderWidth: isEditMode ? '2px' : '0',
                     opacity: isEditMode ? '1' : '0',
                     width: isEditMode ? '50%' : '0%',
                   }}
-                  className="text-sm font-bold hover:bg-blue-400 active:bg-blue-500 hover:text-white flex items-center gap-x-2"
+                  className="text-sm font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
                 >
                   <FiSave />
                   Save
@@ -288,7 +281,7 @@ const ProfileOpt = () => {
                 </h2>
                 {/* swiper */}
                 <RenderIf conditionIs={userState.user.contacts}>
-                  <ContactsSwiperCard contacts={contactsPreview} />
+                  <ContactsSwiperCard contacts={contacts} />
                 </RenderIf>
               </div>
             </main>

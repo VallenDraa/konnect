@@ -2,44 +2,31 @@ import axios from 'axios';
 
 export default function contactRequestRespond(socket) {
   socket.on('contact-requests-response', async (payload) => {
-    const { senderId, recipientId } = payload;
+    const { recipientId, senderId, answer } = payload;
     const isSenderOnline = senderId in global.onlineUsers;
 
     // updating the recipients data
     try {
       const { data } = await axios.put(
-        `${process.env.API_URL}/request/handle_contact_request_recipient`,
-        payload
+        `${process.env.API_URL}/request/respond_to_contact_request`,
+        { recipientId, answer, senderId },
+        { headers: { Authorization: `Bearer ${payload.token}` } }
       );
 
-      socket.emit('receive-contact-request-response', data);
-      socket.emit('refresh-msg-log');
-    } catch (error) {
-      console.log(error.response.data);
-      socket.emit('receive-contact-request-response', error.response.data);
-    }
-
-    // updating the sender data
-    try {
-      const { data } = await axios.put(
-        `${process.env.API_URL}/request/handle_contact_request_sender`,
-        payload
-      );
-
+      socket.emit('receive-contact-request-response', { ...payload, ...data });
       // check if sender is online
       if (isSenderOnline) {
         socket
           .to(global.onlineUsers[senderId])
-          .emit('receive-contact-request-response', data);
-
-        socket.to(global.onlineUsers[senderId]).emit('refresh-msg-log');
+          .emit('receive-contact-request-response', { ...payload, ...data });
       }
     } catch (error) {
-      console.log(error.response.data);
+      console.error(error);
+      socket.emit('receive-contact-request-response', error);
       if (isSenderOnline) {
         socket
           .to(global.onlineUsers[senderId])
-          .emit('receive-contact-request-response', error.response.data);
+          .emit('receive-contact-request-response', error);
       }
     }
   });

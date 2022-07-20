@@ -4,7 +4,6 @@ import {
   useEffect,
   useContext,
   useReducer,
-  useCallback,
 } from 'react';
 import groupedContactsReducer, {
   GROUPED_CONTACTS_ACTIONS,
@@ -14,18 +13,7 @@ import api from '../../utils/apiAxios/apiAxios';
 import getUsersContactsPreview from '../../utils/apis/getUserContactsPreview';
 import { UserContext } from '../user/userContext';
 
-export const ContactsContext = createContext([
-  // {
-  //   username: 'john',
-  //   id: '1',
-  //   lastMessage: {
-  //     type: 'text',
-  //     content: 'Lorem ipsum dolor sit',
-  //     by: 'me',
-  //   },
-  //   activeChat: false,
-  // },
-]);
+export const ContactsContext = createContext([]);
 
 export default function ContactsContextProvider({ children }) {
   const [contacts, setContacts] = useState([]);
@@ -37,6 +25,7 @@ export default function ContactsContextProvider({ children }) {
 
   // get all the contact data from the current logged in user initial load
   useEffect(() => {
+    if (contacts.length > 0 || !userState.user) return;
     const getAllContacts = async () => {
       try {
         const result = [];
@@ -46,7 +35,8 @@ export default function ContactsContextProvider({ children }) {
 
         if (data.contacts.length > 0) {
           for (const contact of data.contacts) {
-            const { username, initials, profilePicture, _id } = contact.user;
+            const { username, initials, profilePicture, _id, status } =
+              contact.user;
             // assemble the parsed data into a contact object
 
             const parsedContact = {
@@ -54,6 +44,7 @@ export default function ContactsContextProvider({ children }) {
               username,
               initials,
               profilePicture,
+              status,
             };
             result.push(parsedContact);
           }
@@ -66,7 +57,7 @@ export default function ContactsContextProvider({ children }) {
       }
     };
     getAllContacts();
-  }, []);
+  }, [userState]);
 
   //  group the contacts
   useEffect(() => {
@@ -77,7 +68,7 @@ export default function ContactsContextProvider({ children }) {
     }
 
     const groupContact = () => {
-      if (contacts.length !== 0) return [];
+      if (contacts.length === 0) return [];
 
       const temp = {};
       const sortedContacts = contacts.sort((a, b) =>
@@ -108,16 +99,19 @@ export default function ContactsContextProvider({ children }) {
     });
   }, [contacts]);
 
-  useEffect(() => {
-    console.log(groupedContacts);
-  }, [groupedContacts]);
+  // useEffect(() => {
+  //   console.log(
+  //     '🚀 ~ file: ContactContext.jsx ~ line 111 ~ ContactsContextProvider ~ contacts',
+  //     contacts
+  //   );
+  // }, [contacts]);
+  // useEffect(() => {
+  //   console.log(groupedContacts);
+  // }, [groupedContacts]);
 
   return (
     <ContactsContext.Provider
-      value={{
-        contactState: { contacts, setContacts },
-        gcReducer: { groupedContacts, gcDispatch },
-      }}
+      value={{ contacts, setContacts, groupedContacts, gcDispatch }}
     >
       {children}
     </ContactsContext.Provider>

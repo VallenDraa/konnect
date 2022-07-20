@@ -10,12 +10,9 @@ import NotifListItem from './NotifListItem/NotifListItem';
 import ContactNotif from './type/ContactNotif/ContactNotif';
 import nothing from '../../../../svg/notificationList/nothing.svg';
 import { useReducer } from 'react';
-import notificationsReducer, {
-  NOTIFICATIONS_ACTIONS,
-  NOTIFICATIONS_DEFAULT,
-} from '../../../../reducer/notifications/notificationsReducer';
 import { useLocation } from 'react-router-dom';
 import USER_ACTIONS from '../../../../context/user/userAction';
+import { NotifContext } from '../../../../context/notifContext/NotifContext';
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
@@ -23,105 +20,12 @@ export default function NotificationList() {
     { name: 'outbox', icon: MdOutlineOutbox },
   ];
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
+  const { notifs } = useContext(NotifContext);
   const { notifications } = useContext(NotificationsContext);
   const { userState, userDispatch } = useContext(UserContext);
   const [userId] = useState(userState.user._id);
-  const [detailedNotifs, detailedNotifsDispatch] = useReducer(
-    notificationsReducer,
-    NOTIFICATIONS_DEFAULT
-  );
   const location = useLocation();
   const [activeLocation, setActiveLocation] = useState(location);
-
-  // get notification detail
-  useEffect(() => {
-    // prevent the codes below from executing if any of the notifs are not seen yet
-    let isSeen = false;
-
-    for (const type in notifications) {
-      // if one of the notifications has been seen the stop the loop
-      if (isSeen) break;
-
-      // if the notifs inbox/outbox array is empty
-      if (notifications[type][activeBox.name].length === 0) return;
-      const notifBoxContent = notifications[type][activeBox.name];
-      isSeen = notifBoxContent.every((notif) => notif.seen === true);
-    }
-
-    // will only execute if the notifcations are seen
-    if (isSeen) {
-      const notifsArray = Object.entries(notifications);
-      // the type parameter would be something like contact notif, message, and etc
-      const getNotificationDetail = async (type, notif) => {
-        detailedNotifsDispatch({ type: NOTIFICATIONS_ACTIONS.isLoading });
-        const { inbox, outbox } = notif;
-
-        try {
-          // fetch the notification detail according to the type
-          const { data } = await api.post(
-            `/notification/notif_${type}_detail`,
-            { userId, ids: { inbox, outbox } },
-            {
-              headers: {
-                Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-              },
-            }
-          );
-
-          // assign the type of notification to the final result
-          const result = { inbox: [], outbox: [] };
-
-          // prevent the component from rendering old duplicate notifications
-          for (const box in result) {
-            result[box] = data[box].map((newNotif, i) => {
-              const prev = detailedNotifs.contents[box];
-
-              if (!prev[i]) return { type, ...newNotif };
-
-              return new Date(prev[i].sentAt) <= new Date(newNotif.sentAt)
-                ? { type, ...newNotif }
-                : { type, ...prev[i] };
-            });
-          }
-
-          // check if the two boxes contains the same type of notification
-          result.inbox.forEach((inboxNotif, i) => {
-            if (!result.outbox[i]) return;
-
-            const outboxNotif = result.outbox[i];
-
-            // only render the newest notification
-            if (inboxNotif.type !== outboxNotif.type) return;
-            if (inboxNotif.by._id !== outboxNotif.by._id) return;
-
-            if (inboxNotif.type === 'contacts') {
-              if (new Date(inboxNotif.iat) > new Date(outboxNotif.iat)) {
-                const outbox = result.outbox;
-                result.outbox = outbox.filter((x) => x._id !== outboxNotif._id);
-              } else {
-                const inbox = result.inbox;
-                result.inbox = inbox.filter((x) => x._id !== inboxNotif._id);
-              }
-            }
-          });
-
-          detailedNotifsDispatch({
-            type: NOTIFICATIONS_ACTIONS.isLoaded,
-            payload: result,
-          });
-        } catch (error) {
-          detailedNotifsDispatch({
-            type: NOTIFICATIONS_ACTIONS.isError,
-            payload: error,
-          });
-        }
-      };
-
-      notifsArray.forEach(([type, value]) =>
-        getNotificationDetail(type, value)
-      );
-    }
-  }, [notifications, userState]);
 
   // change the active location if the pathname and search query had changed
   useEffect(() => {
@@ -131,7 +35,7 @@ export default function NotificationList() {
     setActiveLocation(location);
   }, [location]);
 
-  // change the activebox accoridng to the box url
+  // change the activebox according to the box url
   useEffect(() => {
     // parse the query url
     if (activeLocation.pathname !== '/notifications') return;
@@ -189,6 +93,7 @@ export default function NotificationList() {
       <header>
         <nav className="relative w-fit">
           <Dropdown
+            offset={8}
             fontSize={14}
             icon={activeBox.icon()}
             text={activeBox.name}
@@ -211,48 +116,44 @@ export default function NotificationList() {
       </header>
       <main>
         {/* if an error happened */}
-        <RenderIf conditionIs={detailedNotifs.error !== null}>
-          {detailedNotifs.error}
-        </RenderIf>
+        <RenderIf conditionIs={notifs.error !== null}>{notifs.error}</RenderIf>
 
         {/* if the current notifs batch is still loading */}
-        <RenderIf
-          conditionIs={detailedNotifs.isLoading && !detailedNotifs.error}
-        >
+        <RenderIf conditionIs={notifs.isLoading && !notifs.error}>
           <span>loading</span>
         </RenderIf>
 
         {/* if notifs are fine */}
-        <RenderIf
-          conditionIs={!detailedNotifs.isLoading && !detailedNotifs.error}
-        >
+        <RenderIf conditionIs={!notifs.isLoading && !notifs.error}>
           <ul className="border-y-2 divide-y-2">
             {/* if there are no notifications */}
             <RenderIf
-              conditionIs={
-                detailedNotifs?.contents[activeBox.name].length === 0
-              }
+              conditionIs={notifs?.content[activeBox.name]?.length === 0}
             >
               <li className="text-center space-y-10 mt-10 py-4">
                 <img src={nothing} alt="" className="max-w-[300px] mx-auto" />
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
-                  Nothing as far as the eye can see
+                  <RenderIf conditionIs={activeBox.name === 'inbox'}>
+                    Inbox is empty
+                  </RenderIf>
+                  <RenderIf conditionIs={activeBox.name === 'outbox'}>
+                    Outbox is empty
+                  </RenderIf>
                 </span>
                 <span className="font-light text-gray-400 text-xs">
-                  Do some stuff and maybe something will show up here !
+                  Something will show up here eventually ...
                 </span>
               </li>
             </RenderIf>
             {/* if there are notifications */}
             <RenderIf
-              conditionIs={
-                detailedNotifs?.contents[activeBox.name].length !== 0
-              }
+              conditionIs={notifs?.content[activeBox.name]?.length !== 0}
             >
-              {detailedNotifs?.contents[activeBox.name]?.map((info) => {
+              {notifs?.content[activeBox.name]?.map((info) => {
+                console.log(info);
                 return (
-                  <Fragment key={`${info._id}_${info.sentAt}`}>
-                    <RenderIf conditionIs={info.type === 'contacts'}>
+                  <Fragment key={info._id}>
+                    <RenderIf conditionIs={info.type === 'contact_request'}>
                       <NotifListItem>
                         <ContactNotif info={info} type={activeBox.name} />
                       </NotifListItem>

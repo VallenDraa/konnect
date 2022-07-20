@@ -1,12 +1,8 @@
 import express from 'express';
 import {
-  contactRequestRespondRecipient,
-  contactRequestRespondSender,
-  deleteContactRequest,
-  queueRequestToSender,
-  respondToContactRequest,
   sendContactRequest,
-  sendRequestToRecipient,
+  deleteContactRequest,
+  respondToContactRequest,
 } from '../controller/requests/contactRequestController/ContactRequestController.js';
 import verifyToken from '../controller/auth/tokenController.js';
 import createError from '../../utils/createError.js';
@@ -56,41 +52,7 @@ const isUserAlreadyInContact = async (req, res, next) => {
   }
 };
 
-// send request to recipient
-router.put(
-  '/send_contact_request',
-  verifyToken,
-  verifySentIDs,
-  sendRequestToRecipient
-);
-
-// queue the sender's request
-router.put(
-  '/queue_contact_request',
-  verifyToken,
-  verifySentIDs,
-  queueRequestToSender
-);
-
-// handling user response to ther contact request for sender
-router.put(
-  '/handle_contact_request_sender',
-  verifyToken,
-  verifySentIDs,
-  isUserAlreadyInContact,
-  contactRequestRespondSender
-);
-
-// handling user response to ther contact request for recipient
-router.put(
-  '/handle_contact_request_recipient',
-  verifyToken,
-  verifySentIDs,
-  isUserAlreadyInContact,
-  contactRequestRespondRecipient
-);
-
-router.put('/send_contact_request_new', verifyToken, sendContactRequest);
+router.put('/send_contact_request', verifyToken, sendContactRequest);
 router.put('/respond_to_contact_request', verifyToken, respondToContactRequest);
 router.put('/delete_contact_request', verifyToken, deleteContactRequest);
 

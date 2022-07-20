@@ -8,8 +8,8 @@ import {
 const router = express.Router();
 
 // to find all user that matches the query
-router.get('/find_users', findUsers);
-router.get('/get_user_detail', getUserDetail);
-router.post('/get_users_preview', verifyToken, getUsersPreview);
+router.get('/find_users', verifyToken, findUsers);
+router.get('/get_user_detail', verifyToken, getUserDetail);
+router.get('/get_users_preview', verifyToken, getUsersPreview);
 
 export default router;

@@ -12,26 +12,29 @@ import MiniModalContextProvider from './context/miniModal/miniModalContext';
 import ActiveChatContextProvider from './context/activeChat/ActiveChatContext';
 import MessageLogsContextProvider from './context/messageLogs/MessageLogsContext';
 import ContactsContextProvider from './context/contactContext/ContactContext';
+import NotifContextProvider from './context/notifContext/NotifContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <IsLoginViaRefreshContextProvider>
     <UserContextProvider>
       <ContactsContextProvider>
-        <NotificationsContextProvider>
-          <IsAuthorizedContextProvider>
-            <IsLoadingContextProvider>
-              <ModalContextProvider>
-                <MiniModalContextProvider>
-                  <MessageLogsContextProvider>
-                    <ActiveChatContextProvider>
-                      <App />
-                    </ActiveChatContextProvider>
-                  </MessageLogsContextProvider>
-                </MiniModalContextProvider>
-              </ModalContextProvider>
-            </IsLoadingContextProvider>
-          </IsAuthorizedContextProvider>
-        </NotificationsContextProvider>
+        <NotifContextProvider>
+          <NotificationsContextProvider>
+            <IsAuthorizedContextProvider>
+              <IsLoadingContextProvider>
+                <ModalContextProvider>
+                  <MiniModalContextProvider>
+                    <MessageLogsContextProvider>
+                      <ActiveChatContextProvider>
+                        <App />
+                      </ActiveChatContextProvider>
+                    </MessageLogsContextProvider>
+                  </MiniModalContextProvider>
+                </ModalContextProvider>
+              </IsLoadingContextProvider>
+            </IsAuthorizedContextProvider>
+          </NotificationsContextProvider>
+        </NotifContextProvider>
       </ContactsContextProvider>
     </UserContextProvider>
   </IsLoginViaRefreshContextProvider>
