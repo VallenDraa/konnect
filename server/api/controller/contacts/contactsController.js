@@ -36,8 +36,6 @@ export const getUserContactsPreview = async (req, res, next) => {
         select: ['username', 'profilePicture', 'initials', 'status'],
       });
 
-    console.log(contacts);
-
     res.json({ contacts });
   } catch (error) {
     next(error);

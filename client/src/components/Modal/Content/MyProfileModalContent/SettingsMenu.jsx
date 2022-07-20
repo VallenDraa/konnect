@@ -55,7 +55,7 @@ export default function SettingsMenu({ options, activeOptState }) {
             text={activeOpt}
             position={'origin-top'}
             className="border-y-2 bg-gray-200 hover:bg-gray-100 duration-200 text-black"
-            btnClassName="border-0 shadow-none w-full flex justify-center py-1 text-lg"
+            btnClassName="border-0 shadow-none w-full flex justify-center py-1 text-lg rounded-none"
             listStyle={{ width: '100%', borderRadius: '0px' }}
             listClassName="shadow-xl"
           >

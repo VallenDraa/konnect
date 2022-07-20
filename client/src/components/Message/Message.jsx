@@ -45,7 +45,7 @@ export const Message = ({
           <RenderIf conditionIs={isSentByMe}>
             {/* check if message hasn't been sent or read yet */}
             <RenderIf conditionIs={!state.isSent && !state.readAt}>
-              <AiOutlineLoading3Quarters className="animate-spin text-xl self-start animate-fade-in text-gray-400" />
+              <AiOutlineLoading3Quarters className="animate-spin self-start animate-fade-in text-gray-400" />
             </RenderIf>
 
             {/* check if message has been sent but not read yet */}

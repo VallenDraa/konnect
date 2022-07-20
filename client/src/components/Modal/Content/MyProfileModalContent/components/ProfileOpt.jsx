@@ -168,10 +168,10 @@ const ProfileOpt = () => {
                 <Pill
                   onClick={() => setIsEditMode(!isEditMode)}
                   style={{ width: isEditMode ? '50%' : '100px' }}
-                  className={`text-sm px-4 py-1 font-bold flex items-center gap-x-2
+                  className={`text-base px-4 py-1 font-bold flex items-center gap-x-2
                   ${
                     !isEditMode
-                      ? 'bg-slate-100 hover:shadow-pink-100 hover:bg-pink-400 active:bg-pink-500 hover:text-white'
+                      ? 'bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 active:bg-pink-500 text-white'
                       : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100'
                   }`}
                 >
@@ -195,7 +195,7 @@ const ProfileOpt = () => {
                     opacity: isEditMode ? '1' : '0',
                     width: isEditMode ? '50%' : '0%',
                   }}
-                  className="text-sm font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
+                  className="text-base font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-white flex items-center gap-x-2"
                 >
                   <FiSave />
                   Save

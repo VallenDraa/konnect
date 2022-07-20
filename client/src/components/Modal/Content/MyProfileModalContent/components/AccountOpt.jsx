@@ -119,7 +119,7 @@ const AccountOpt = () => {
             disabled={username === userState.user.username || username === ''}
             onClick={handleMiniModalPwConfirm}
             type="submit"
-            className="cursor-pointer disabled:cursor-not-allowed py-1 px-4 border-2 text-sm font-bold bg-gray-400 disabled:bg-gray-300 hover:bg-blue-400 active:bg-blue-500 text-white flex items-center gap-x-2"
+            className="cursor-pointer disabled:cursor-not-allowed py-1 px-4 text-base font-bold bg-blue-400 hover:bg-blue-300 active:bg-blue-500 disabled:bg-gray-300 text-white flex items-center gap-x-2 hover:shadow-blue-100 active:shadow-inner disabled:shadow-none"
           >
             <FiSave />
             Save

@@ -5,8 +5,7 @@ import RenderIf from '../../../../utils/React/RenderIf';
 import { ContactsContext } from '../../../../context/contactContext/ContactContext';
 
 const ContactList = () => {
-  const { contacts, setContacts, groupedContacts, gcDispatch } =
-    useContext(ContactsContext);
+  const { groupedContacts } = useContext(ContactsContext);
 
   return (
     <>
@@ -56,7 +55,7 @@ const ContactList = () => {
               </span>
               {nameList.map((contact) => (
                 <Link
-                  to={`/user/${contact.username}`}
+                  to={`/user/${contact.user.username}`}
                   key={contact}
                   className={`cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 duration-200 rounded-lg shadow`}
                 >
@@ -66,7 +65,7 @@ const ContactList = () => {
                     className="rounded-full h-8 w-8"
                   />
 
-                  <span className="text-sm">{contact.username}</span>
+                  <span>{contact.user.username}</span>
                 </Link>
               ))}
             </div>

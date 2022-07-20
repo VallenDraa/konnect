@@ -20,18 +20,18 @@ export const ChatPreview = ({
               ${
                 isActive
                   ? 'bg-blue-100 font-semibold'
-                  : 'hover:bg-pink-100 bg-gray-100'
+                  : 'hover:bg-pink-100 bg-gray-200'
               } `}
       >
         <div className="flex items-center gap-2 basis-11/12 overflow-hidden">
           <img
             src="https://picsum.photos/200/200"
             alt=""
-            className="rounded-full h-10 w-10"
+            className="rounded-full h-12 w-12"
           />
           <div className="flex flex-col gap-1 overflow-hidden">
-            <span className="truncate text-sm">{user.username}</span>
-            <span className="text-xxs truncate text-gray-500 relative z-10 flex items-center gap-1">
+            <span className="truncate font-medium">{user.username}</span>
+            <span className="text-sm truncate text-gray-500 relative z-10 flex items-center gap-1">
               {lastMessage.msgType === 'image' && (
                 <>
                   <BsFileEarmarkImage />

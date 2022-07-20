@@ -13,12 +13,20 @@ export default function contactRequestRespond(socket) {
         { headers: { Authorization: `Bearer ${payload.token}` } }
       );
 
-      socket.emit('receive-contact-request-response', { ...payload, ...data });
+      socket.emit('receive-contact-request-response', {
+        ...payload,
+        ...data,
+        type: 'inbox',
+      });
       // check if sender is online
       if (isSenderOnline) {
         socket
           .to(global.onlineUsers[senderId])
-          .emit('receive-contact-request-response', { ...payload, ...data });
+          .emit('receive-contact-request-response', {
+            ...payload,
+            ...data,
+            type: 'outbox',
+          });
       }
     } catch (error) {
       console.error(error);

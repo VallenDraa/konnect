@@ -1,24 +1,32 @@
 import { useContext, useEffect, useReducer } from 'react';
 import { useState } from 'react';
 import { BiHappyHeartEyes } from 'react-icons/bi';
-import { FaPaperPlane } from 'react-icons/fa';
 import 'swiper/css';
 import api from '../../../../utils/apiAxios/apiAxios';
 import RenderIf from '../../../../utils/React/RenderIf';
 import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
 import Pill from '../../../Buttons/Pill';
+import socket from '../../../../utils/socketClient/socketClient';
+import generateRgb from '../../../../utils/generateRgb/generateRgb';
+import USER_ACTIONS from '../../../../context/user/userAction';
+import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
+import NOTIF_CONTEXT_ACTIONS from '../../../../context/notifContext/notifContextActions';
+import ContactsSwiperCard from '../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
 import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
   ADD_REQUEST_SENT_ACTIONS,
 } from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
-import socket from '../../../../utils/socketClient/socketClient';
+import { FaPaperPlane } from 'react-icons/fa';
 import { UserContext } from '../../../../context/user/userContext';
-import generateRgb from '../../../../utils/generateRgb/generateRgb';
-import USER_ACTIONS from '../../../../context/user/userAction';
-import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
-import ContactsSwiperCard from '../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
 import { useNavigate } from 'react-router-dom';
 import { ImProfile } from 'react-icons/im';
+import { ContactsContext } from '../../../../context/contactContext/ContactContext';
+import {
+  NotifContext,
+  receiveCancelAddContact,
+  receiveContactRequestResponse,
+  receiveSendAddContact,
+} from '../../../../context/notifContext/NotifContext';
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -29,13 +37,15 @@ export const OthersProfileModalContent = ({ username }) => {
   );
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState('');
+  const { contacts, setContacts } = useContext(ContactsContext);
+  const { notifs, notifsDispatch } = useContext(NotifContext);
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
   const navigate = useNavigate();
 
   //for both sending and cancelling a contact request
-  const handleContactRequest = () => {
+  const handleSendContactRequest = () => {
     requestDispatch({ type: Start });
     requestDispatch({ type: Loading });
     const payload = {
@@ -45,6 +55,17 @@ export const OthersProfileModalContent = ({ username }) => {
     };
 
     socket.emit('send-add-contact', payload);
+  };
+  const handleCancelContactRequest = () => {
+    requestDispatch({ type: Start });
+    requestDispatch({ type: Loading });
+    const payload = {
+      recipientId: otherUserData._id,
+      senderId: userState.user._id,
+      token: sessionStorage.getItem('token'),
+    };
+
+    socket.emit('cancel-add-contact', payload);
   };
 
   // for removing a contact from the user data
@@ -59,8 +80,6 @@ export const OthersProfileModalContent = ({ username }) => {
       otherUserData?._id,
       senderToken
     );
-
-    requestDispatch({ type: Sent });
   };
 
   // for handling incoming contact request
@@ -72,12 +91,56 @@ export const OthersProfileModalContent = ({ username }) => {
   const handleAction = () => {
     if (isAFriend) return handleRemoveContact();
     if (isRequested) return handleIncomingContactRequest();
-    handleContactRequest();
+    if (isRequesting) return handleCancelContactRequest();
+    handleSendContactRequest();
   };
 
-  // useEffect(() => {
-  //   console.log(isAFriend, isRequesting, isRequested);
-  // }, [isAFriend, isRequesting, isRequested]);
+  //update the notifs context when receiving a contact request
+  useEffect(() => {
+    receiveSendAddContact({
+      cb: ({ type }) => {
+        type === 'inbox' ? setIsRequested(true) : setIsRequesting(true);
+        requestDispatch({ type: Sent });
+      },
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
+    });
+
+    return () => socket.off('receive-send-add-contact');
+  }, [notifs]);
+
+  // when a contact request is cancelled
+  useEffect(() => {
+    receiveCancelAddContact({
+      cb: ({ type }) => {
+        type === 'inbox' ? setIsRequested(false) : setIsRequesting(false);
+        requestDispatch({ type: Sent });
+      },
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
+      userState,
+    });
+
+    return () => socket.off('receive-cancel-add-contact');
+  }, [userState, notifs]);
+
+  // update sender data when the recipient accepts or rejects a contact request
+  useEffect(() => {
+    receiveContactRequestResponse({
+      cb: (answer) => setIsAFriend(answer),
+      contacts,
+      setContacts,
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
+      token: sessionStorage.getItem('token'),
+      userState,
+    });
+
+    return () => socket.off('receive-contact-request-response');
+  }, [userState, contacts, notifs]);
 
   // fetch other user detail from the server
   useEffect(() => {
@@ -101,7 +164,6 @@ export const OthersProfileModalContent = ({ username }) => {
     };
 
     setTimeout(getOtherUserDetail, 500);
-    // console.log('fetching other user detail from the server');
   }, [userState]);
 
   // turn initials to rgb
@@ -143,14 +205,13 @@ export const OthersProfileModalContent = ({ username }) => {
   // gets the other user data and determine the state of the action button next to the msg button
   useEffect(() => {
     const otherUserId = otherUserData?._id;
-    const { contacts, requests } = userState.user;
-    const { outbox, inbox } = requests.contacts;
+    const { outbox, inbox } = notifs.content;
 
     // check if the other user target is already a friend of mine
     if (contacts.length > 0) {
       for (const { user } of contacts) {
-        if (otherUserId === user) {
-          // console.log(otherUserId === user, otherUserId, user, 'friend');
+        if (otherUserId === user._id) {
+          console.log(otherUserId, user);
           setIsAFriend(true);
           break;
         }
@@ -162,14 +223,7 @@ export const OthersProfileModalContent = ({ username }) => {
     // check if the other user target sent a contact request to me
     if (outbox.length > 0) {
       for (const { by, answer } of outbox) {
-        if (by === otherUserId && answer === null) {
-          // console.log(
-          //   by === otherUserId && answer === null,
-          //   by,
-          //   otherUserId,
-          //   answer,
-          //   'requesting'
-          // );
+        if (by._id === otherUserId && answer === null) {
           setIsRequesting(true);
           break;
         }
@@ -182,14 +236,7 @@ export const OthersProfileModalContent = ({ username }) => {
     // check if i've sent the other user a contact request
     if (inbox.length > 0) {
       for (const { by, answer } of inbox) {
-        if (by === otherUserId && answer === null) {
-          // console.log(
-          //   by === otherUserId && answer === null,
-          //   by,
-          //   otherUserId,
-          //   answer,
-          //   'requested'
-          // );
+        if (by._id === otherUserId && answer === null) {
           setIsRequested(true);
           break;
         }
@@ -198,7 +245,7 @@ export const OthersProfileModalContent = ({ username }) => {
       // console.log('is not requested');
       setIsRequested(false);
     }
-  }, [userState, otherUserData]);
+  }, [contacts, notifs, otherUserData]);
 
   return (
     <section
@@ -240,8 +287,9 @@ export const OthersProfileModalContent = ({ username }) => {
               {/* buttons */}
               <div className="flex h-full grow sm:flex-grow-0 gap-x-2 items-center">
                 <Pill
+                  disabled={addRequestSent.Loading}
                   onClick={handleAction}
-                  className="text-base px-4 py-1 font-bold hover:bg-pink-400 active:bg-pink-500 hover:text-white flex items-center gap-x-2"
+                  className="text-base px-4 py-1 font-bold bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 active:bg-pink-500 text-white flex items-center gap-x-2 disabled:cursor-not-allowed disabled:hover:bg-gray-100  disabled:hover:text-gray-700 disabled:shadow disabled:bg-gray-100"
                 >
                   <SendRequestBtn
                     Loading={addRequestSent.Loading}
@@ -255,7 +303,7 @@ export const OthersProfileModalContent = ({ username }) => {
 
                 <Pill
                   link={`/chats?id=${otherUserData._id}&type=user`}
-                  className="text-base px-4 py-1 font-bold hover:bg-blue-400 active:bg-blue-500 hover:text-white flex items-center gap-x-2"
+                  className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
                 >
                   <FaPaperPlane />
                   Message

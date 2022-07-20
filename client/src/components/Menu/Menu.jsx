@@ -120,10 +120,10 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
                 className="cursor-pointer flex flex-col items-center gap-1 relative w-full h-full"
               >
                 <RenderIf conditionIs={activeMenu !== menu.name}>
-                  <menu.icon className="text-2xl lg:text-lg" />
+                  <menu.icon className="text-2xl" />
                 </RenderIf>
                 <RenderIf conditionIs={activeMenu === menu.name}>
-                  <menu.activeIcon className="text-2xl lg:text-lg" />
+                  <menu.activeIcon className="text-2xl" />
                 </RenderIf>
 
                 <NotifBadgeSwitcher menuName={menu.name} />

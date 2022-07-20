@@ -108,6 +108,8 @@ export default function NotifContextProvider({ children }) {
     getAllNotifs();
   }, [userState]);
 
+  useEffect(() => console.log(notifs), [notifs]);
+
   return (
     <NotifContext.Provider
       value={{ notifs, notifsDispatch, unseen, setUnseen }}
@@ -118,11 +120,11 @@ export default function NotifContextProvider({ children }) {
 }
 
 export const receiveSendAddContact = ({
+  cb,
   notifs,
   notifsDispatch,
   notifActions,
 }) => {
-  socket.off('receive-send-add-contact');
   socket.on('receive-send-add-contact', ({ success, notif, type }) => {
     if (success) {
       const updatedNotifs = {
@@ -134,17 +136,19 @@ export const receiveSendAddContact = ({
         type: notifActions.updateLoaded,
         payload: updatedNotifs,
       });
+
+      if (cb) cb({ success, notif, type });
     }
   });
 };
 
 export const receiveCancelAddContact = ({
+  cb,
   notifs,
   notifsDispatch,
   notifActions,
   userState,
 }) => {
-  socket.off('receive-cancel-add-contact');
   socket.on(
     'receive-cancel-add-contact',
     ({ senderId, recipientId, success, type }) => {
@@ -165,38 +169,65 @@ export const receiveCancelAddContact = ({
           type: notifActions.updateLoaded,
           payload: updatedNotifs,
         });
+
+        if (cb) cb({ senderId, recipientId, success, type });
       }
     }
   );
 };
 
 export const receiveContactRequestResponse = ({
+  cb,
   contacts,
   setContacts,
+  notifs,
+  notifsDispatch,
+  notifActions,
   token,
   userState,
 }) => {
-  socket.off('receive-contact-request-response');
+  socket.on(
+    'receive-contact-request-response',
+    async ({ recipientId, senderId, success, type, answer }) => {
+      console.log('dsdsdsd');
+      if (success) {
+        const idToUse =
+          recipientId !== userState.user._id ? recipientId : senderId;
 
-  socket.on('receive-contact-request-response', async (data) => {
-    if (data) {
-      // fetch the user preview using the id that is different from the current userState id
-      const idToFetch =
-        data.recipientId !== userState.user._id
-          ? data.recipientId
-          : data.senderId;
+        if (answer) {
+          // fetch the user preview using the id that is different from the current userState id
 
-      const userPreview = await api.get(
-        `/query/user/get_users_preview?userIds=${idToFetch}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          const userPreview = await api.get(
+            `/query/user/get_users_preview?userIds=${idToUse}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          // update contacts if the recipient accepts the contact request
+          setContacts([...contacts, { user: userPreview.data[0] }]);
+
+          setTimeout(() => socket.emit('refresh-msg-log'), 500);
         }
-      );
 
-      setContacts([...contacts, userPreview.data[0]]);
-      setTimeout(() => socket.emit('refresh-msg-log'), 500);
+        // execute the passed in callback if it exist
+        if (cb) cb(answer);
+
+        // update the notifs
+        const updatedNotifs = notifs.content;
+
+        for (let i = updatedNotifs[type].length - 1; i >= 0; i--) {
+          if (updatedNotifs[type][i].type === 'contact_request') {
+            if (updatedNotifs[type][i].by._id === idToUse) {
+              updatedNotifs[type][i].answer = answer;
+              break;
+            }
+          }
+        }
+
+        notifsDispatch({
+          type: notifActions.updateLoaded,
+          payload: updatedNotifs,
+        });
+      }
     }
-  });
+  );
 };

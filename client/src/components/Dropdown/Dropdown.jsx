@@ -29,7 +29,7 @@ export default function Dropdown({
   ]);
   const [btnDefaultClasses, setBtnDefaultClasses] = useState([
     'relative',
-    'font-semibold',
+    'font-medium',
     'py-1',
     'px-3',
     'capitalize',
@@ -39,9 +39,12 @@ export default function Dropdown({
     'flex',
     'items-center',
     'gap-x-1',
-    'border-2',
-    'border-gray-300',
-    'shadow',
+    'bg-gray-200',
+    'hover:bg-gray-100',
+    'active:bg-gray-300',
+    'shadow-md',
+    'hover:shadow-lg',
+    'active:shadow-inner',
   ]);
   const [listDefaultClasses, setListDefaultClasses] = useState([
     'z-30',

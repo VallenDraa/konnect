@@ -89,12 +89,15 @@ export default function Home() {
     receiveContactRequestResponse({
       contacts,
       setContacts,
+      notifs,
+      notifsDispatch,
+      notifActions: NOTIF_CONTEXT_ACTIONS,
       token: sessionStorage.getItem('token'),
       userState,
     });
 
     return () => socket.off('receive-contact-request-response');
-  }, [userState, contacts]);
+  }, [userState, contacts, notifs]);
 
   // refresh userState
   useEffect(() => {

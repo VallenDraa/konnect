@@ -3,7 +3,6 @@ import { ImBlocked } from 'react-icons/im';
 import { Link } from 'react-router-dom';
 import { UserContext } from '../../../../../../context/user/userContext';
 import { useContext } from 'react';
-import { ContactsContext } from '../../../../../../context/contactContext/contactContext';
 import generateRgb from '../../../../../../utils/generateRgb/generateRgb';
 import RenderIf from '../../../../../../utils/React/RenderIf';
 import PicturelessProfile from '../../../../../PicturelessProfile/PicturelessProfile';
@@ -12,7 +11,6 @@ import socket from '../../../../../../utils/socketClient/socketClient';
 export default function ContactNotif({ info, type }) {
   // console.log(info, type);
   const { userState } = useContext(UserContext);
-  const { contacts, setContacts } = useContext(ContactsContext);
 
   const handleResponse = (answer, type) => {
     if (type === 'inbox') {

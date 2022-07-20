@@ -11,11 +11,6 @@ export const Modal = () => {
   const modalWrapper = useRef();
   const navigate = useNavigate();
 
-  // hides scrollbar when modal is active
-  // useEffect(() => {
-  //   if (modalState.isActive) document.body.style.overflowY = 'hidden';
-  // }, [modalState]);
-
   const handleModalClose = () => {
     if (!modal.current || !modalWrapper.current) return;
 
@@ -25,9 +20,6 @@ export const Modal = () => {
     modalClasses.replace('animate-pop-in', 'animate-pop-out');
     modalWrapperClasses.replace('animate-fade-in', 'animate-fade-out');
     setTimeout(() => modalDispatch({ type: MODAL_ACTIONS.close }), 190);
-
-    // only re-show screen scrollbar when the screen width is >=1024px
-    // if (window.innerWidth >= 1024) document.body.style.overflowY = 'auto';
 
     // go back to '/chats' path if the onExitReturnToHome in the modal context is true
     modalState.onExitReturnToHome && navigate('/chats');
@@ -47,7 +39,7 @@ export const Modal = () => {
         >
           <div
             ref={modal}
-            className="h-full lg:h-3/4 lg:max-h-[800px] lg:aspect-square bg-white relative flex flex-col animate-pop-in z-100 lg:rounded-xl overflow-clip"
+            className="h-full lg:h-3/4 lg:max-h-[800px] bg-white relative flex flex-col animate-pop-in z-100 lg:rounded-xl overflow-clip"
           >
             <header className="flex justify-end items-center px-4 py-3">
               {/* close button */}

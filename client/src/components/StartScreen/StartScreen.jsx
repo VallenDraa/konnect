@@ -12,11 +12,11 @@ export const StartScreen = ({ handleGoToMenu }) => {
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
               onClick={handleGoToMenu}
-              className="block lg:hidden hover:text-blue-400 duration-200 text-2xl md:text-xl"
+              className="block lg:hidden hover:text-blue-400 duration-200 text-2xl"
             >
               <HiOutlineMenu />
             </button>
-            <div className="relative bottom-0.5 lg:bottom-0">
+            <div className="relative bottom-[1px] ">
               <Logo />
             </div>
           </div>

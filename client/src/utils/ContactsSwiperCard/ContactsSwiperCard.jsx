@@ -12,9 +12,6 @@ export default function ContactsSwiperCard({
   linkable = true,
   mini = false,
 }) {
-  // the object structure
-  // [{user: { initials, username, profilePicture }}]
-
   if (!contacts) return;
 
   // render the swiper slides if the user has contacts

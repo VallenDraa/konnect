@@ -99,7 +99,7 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
                 content: <MyProfileModalContent />,
               })
             }
-            className="flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-lg  grow w-3/4"
+            className="flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-lg grow w-2/3"
           >
             <img
               src="https://picsum.photos/200/200"
@@ -107,17 +107,17 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
               className="rounded-full h-8 w-8"
             />
             <div className="flex flex-col items-start overflow-hidden">
-              <span className="text-xs truncate">
+              <span className="text-sm truncate">
                 {userState.user.username}
               </span>
-              <span className="text-xxs text-gray-500 relative z-10 truncate">
+              <span className="text-xs text-gray-500 relative z-10 truncate">
                 {userState.user.status || 'unset'}
               </span>
             </div>
           </Link>
           <Pill
             onClick={handleLogout}
-            className="w-24 md:w-20 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white shadow-red-100 hover:shadow-red-200"
+            className="w-24 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white shadow-red-100 hover:shadow-red-200"
           >
             <BiLogOut />
             <span>Log Out</span>

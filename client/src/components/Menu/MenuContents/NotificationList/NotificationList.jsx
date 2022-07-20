@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState, Fragment, useMemo } from 'react';
+import { useEffect, useContext, useState, Fragment } from 'react';
 import { MdOutlineMoveToInbox, MdOutlineOutbox } from 'react-icons/md';
 import { NotificationsContext } from '../../../../context/notifications/notificationsContext';
 import { UserContext } from '../../../../context/user/userContext';
@@ -9,7 +9,6 @@ import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
 import NotifListItem from './NotifListItem/NotifListItem';
 import ContactNotif from './type/ContactNotif/ContactNotif';
 import nothing from '../../../../svg/notificationList/nothing.svg';
-import { useReducer } from 'react';
 import { useLocation } from 'react-router-dom';
 import USER_ACTIONS from '../../../../context/user/userAction';
 import { NotifContext } from '../../../../context/notifContext/NotifContext';
@@ -150,7 +149,6 @@ export default function NotificationList() {
               conditionIs={notifs?.content[activeBox.name]?.length !== 0}
             >
               {notifs?.content[activeBox.name]?.map((info) => {
-                console.log(info);
                 return (
                   <Fragment key={info._id}>
                     <RenderIf conditionIs={info.type === 'contact_request'}>

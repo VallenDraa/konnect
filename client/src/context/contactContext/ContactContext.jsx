@@ -9,7 +9,6 @@ import groupedContactsReducer, {
   GROUPED_CONTACTS_ACTIONS,
   GROUPED_CONTACTS_DEFAULT,
 } from '../../reducer/groupedContactsReducer/groupedContactsReducer';
-import api from '../../utils/apiAxios/apiAxios';
 import getUsersContactsPreview from '../../utils/apis/getUserContactsPreview';
 import { UserContext } from '../user/userContext';
 
@@ -35,18 +34,7 @@ export default function ContactsContextProvider({ children }) {
 
         if (data.contacts.length > 0) {
           for (const contact of data.contacts) {
-            const { username, initials, profilePicture, _id, status } =
-              contact.user;
-            // assemble the parsed data into a contact object
-
-            const parsedContact = {
-              _id,
-              username,
-              initials,
-              profilePicture,
-              status,
-            };
-            result.push(parsedContact);
+            result.push(contact);
           }
           setContacts(result);
         } else {
@@ -72,11 +60,12 @@ export default function ContactsContextProvider({ children }) {
 
       const temp = {};
       const sortedContacts = contacts.sort((a, b) =>
-        a.username < b.username ? -1 : 1
+        a.user.username < b.user.username ? -1 : 1
       );
 
       for (const contact of sortedContacts) {
-        const alphabet = contact.username.substring(0, 1);
+        console.log(contact);
+        const alphabet = contact.user.username.substring(0, 1);
 
         // setting the object keys
         if (!temp[alphabet]) temp[alphabet] = [];
