@@ -189,7 +189,6 @@ export const receiveContactRequestResponse = ({
   socket.on(
     'receive-contact-request-response',
     async ({ recipientId, senderId, success, type, answer }) => {
-      console.log('dsdsdsd');
       if (success) {
         const idToUse =
           recipientId !== userState.user._id ? recipientId : senderId;

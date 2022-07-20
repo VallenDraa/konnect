@@ -1,6 +1,5 @@
 import { useEffect, useContext, useState, Fragment } from 'react';
 import { MdOutlineMoveToInbox, MdOutlineOutbox } from 'react-icons/md';
-import { NotificationsContext } from '../../../../context/notifications/notificationsContext';
 import { UserContext } from '../../../../context/user/userContext';
 import RenderIf from '../../../../utils/React/RenderIf';
 import api from '../../../../utils/apiAxios/apiAxios';
@@ -20,7 +19,6 @@ export default function NotificationList() {
   ];
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
   const { notifs } = useContext(NotifContext);
-  const { notifications } = useContext(NotificationsContext);
   const { userState, userDispatch } = useContext(UserContext);
   const [userId] = useState(userState.user._id);
   const location = useLocation();
@@ -52,40 +50,40 @@ export default function NotificationList() {
   }, [activeLocation]);
 
   // if user selected one of the box, then set all the contents of that box to seen
-  useEffect(() => {
-    const updateNotifSeen = async (boxType) => {
-      try {
-        const { data } = await api.put(
-          '/notification/set_notif_to_seen',
-          { notifIds, boxType, userId },
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-            },
-          }
-        );
+  // useEffect(() => {
+  //   const updateNotifSeen = async (boxType) => {
+  //     try {
+  //       const { data } = await api.put(
+  //         '/notification/set_notif_to_seen',
+  //         { notifIds, boxType, userId },
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+  //           },
+  //         }
+  //       );
 
-        sessionStorage.setItem('token', data.token);
-        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
-      } catch (error) {
-        userDispatch({ type: USER_ACTIONS.updateFailure, payload: error });
-      }
-    };
+  //       sessionStorage.setItem('token', data.token);
+  //       userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
+  //     } catch (error) {
+  //       userDispatch({ type: USER_ACTIONS.updateFailure, payload: error });
+  //     }
+  //   };
 
-    const { name } = activeBox;
-    const notifIds = []; // the notif ids whose seen parameter will be changed to true
+  //   const { name } = activeBox;
+  //   const notifIds = []; // the notif ids whose seen parameter will be changed to true
 
-    // loop over the [NOTIF_TYPES]
-    for (const nt in notifications) {
-      // loop over notif contents to see if it has been seen
-      for (const { seen, _id } of notifications[nt][name]) {
-        !seen && notifIds.push(_id);
-      }
-    }
+  //   // loop over the [NOTIF_TYPES]
+  //   for (const nt in notifications) {
+  //     // loop over notif contents to see if it has been seen
+  //     for (const { seen, _id } of notifications[nt][name]) {
+  //       !seen && notifIds.push(_id);
+  //     }
+  //   }
 
-    // will reach for the api if the notifIds is not empty
-    notifIds.length !== 0 && updateNotifSeen(name);
-  }, [activeBox, userId]);
+  //   // will reach for the api if the notifIds is not empty
+  //   notifIds.length !== 0 && updateNotifSeen(name);
+  // }, [activeBox, userId]);
 
   return (
     <div className="p-3 space-y-3">

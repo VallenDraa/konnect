@@ -33,17 +33,17 @@ export default function SettingsMenu({ options, activeOptState }) {
         <RenderIf conditionIs={!isOnTop}>
           {options.map((opt, i) => {
             return (
-              <li
-                key={i}
-                onClick={() => setActiveOpt(opt.name)}
-                className={`${
-                  opt.name === activeOpt
-                    ? 'bg-white text-gray-800 font-semibold'
-                    : 'hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium'
-                } cursor-pointer p-2 capitalize duration-200 text-sm lg:text-base flex items-center gap-2 h-9`}
-              >
-                <span className="text-base lg:text-lg">{opt.icon}</span>
-                <span>{opt.name}</span>
+              <li key={i} onClick={() => setActiveOpt(opt.name)}>
+                <button
+                  className={`${
+                    opt.name === activeOpt
+                      ? 'bg-white text-gray-800 font-semibold'
+                      : 'hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium'
+                  } cursor-pointer p-2 capitalize duration-200 text-sm lg:text-base flex items-center gap-2 h-9 w-full`}
+                >
+                  <span className="text-base lg:text-lg">{opt.icon}</span>
+                  <span>{opt.name}</span>
+                </button>
               </li>
             );
           })}

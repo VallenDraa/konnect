@@ -22,7 +22,7 @@ import NOTIF_CONTEXT_ACTIONS from '../../context/notifContext/notifContextAction
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import locationForModal from '../../components/Modal/utils/locationForModal';
 import MiniModal from '../../components/MiniModal/MiniModal';
-import useUrlHistory from '../../utils/hooks/useUrlHistory/useUrlHistory';
+import useUrlHistory from '../../utils/React/hooks/useUrlHistory/useUrlHistory';
 import ChatboxContextProvider from '../../context/chatBoxState/chatBoxContext';
 import api from '../../utils/apiAxios/apiAxios';
 

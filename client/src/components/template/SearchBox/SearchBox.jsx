@@ -135,17 +135,19 @@ export default function SearchBox({
                   <li
                     key={i}
                     onClick={() => handleSelect(user)}
-                    className={`animate-fade-in cursor-pointer flex items-center gap-2 hover:bg-pink-100 p-2 mx-4 duration-200 rounded-sm`}
+                    className={`animate-fade-in cursor-pointer hover:bg-pink-100 duration-200 rounded-sm flex`}
                   >
-                    <img
-                      src="https://picsum.photos/200/200"
-                      alt=""
-                      className="rounded-full h-12 w-12"
-                    />
+                    <button className="flex items-center gap-2 py-2 px-4 grow">
+                      <img
+                        src="https://picsum.photos/200/200"
+                        alt=""
+                        className="rounded-full h-12 w-12"
+                      />
 
-                    <span className="font-semibold text-lg truncate">
-                      {user.username}
-                    </span>
+                      <span className="font-semibold text-lg truncate">
+                        {user.username}
+                      </span>
+                    </button>
                   </li>
                 );
               })}

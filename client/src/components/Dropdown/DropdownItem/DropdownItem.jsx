@@ -13,7 +13,7 @@ export default function DropdownItem({
 }) {
   const [defaultClasses, setDefaultClasses] = useState(`
   text-xs duration-200 cursor-pointer rounded
-  ${!to ? 'w-full px-2 py-3 flex items-center gap-x-1' : ''}
+  ${!to ? 'w-full flex items-center gap-x-1' : ''}
   ${isActive ? 'bg-gray-200' : 'active:bg-gray-200'}
   ${isActive ? 'shadow' : 'hover:shadow-sm'}
   ${isActive ? 'text-blue-400' : 'text-gray-400'}
@@ -30,11 +30,19 @@ export default function DropdownItem({
   }, []);
 
   return (
-    <li onClick={onClick} className={`${className} ${defaultClasses}`}>
-      <RenderIf conditionIs={!to}>{children}</RenderIf>
+    <li onClick={onClick}>
+      <RenderIf conditionIs={!to}>
+        <button className={`${className} ${defaultClasses}`}>
+          <span className="w-full px-2 py-3 flex items-center gap-x-1">
+            {children}
+          </span>
+        </button>
+      </RenderIf>
       <RenderIf conditionIs={to}>
-        <Link to={to} className="w-full px-2 py-3 flex items-center gap-x-1">
-          {children}
+        <Link to={to} className={`${className} ${defaultClasses}`}>
+          <span className="w-full px-2 py-3 flex items-center gap-x-1">
+            {children}
+          </span>
         </Link>
       </RenderIf>
     </li>

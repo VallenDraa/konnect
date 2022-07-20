@@ -54,6 +54,7 @@ export default function CTA({
     <div className={className}>
       {/* message */}
       <Pill
+        Link="/new/chat"
         className="bg-gray-200 hover:bg-slate-100 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
@@ -64,14 +65,15 @@ export default function CTA({
           })
         }
       >
-        <Link className="flex items-center gap-1" to="/new/chat">
+        <span className="flex items-center gap-1">
           <IoChatbubbles />
           New Chat
-        </Link>
+        </span>
       </Pill>
 
       {/* call */}
       <Pill
+        link="/new/call"
         className="bg-gray-200 hover:bg-slate-100 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
@@ -82,14 +84,15 @@ export default function CTA({
           })
         }
       >
-        <Link className="flex items-center gap-1" to="/new/call">
+        <span className="flex items-center gap-1">
           <IoCall />
           Start Call
-        </Link>
+        </span>
       </Pill>
 
       {/* group */}
       <Pill
+        link="/new/group"
         className="bg-gray-200 hover:bg-slate-100 active:bg-gray-300 max-w-[130px]"
         onClick={() =>
           modalDispatch({
@@ -100,10 +103,10 @@ export default function CTA({
           })
         }
       >
-        <Link className="flex items-center gap-1" to="/new/group">
+        <span className="flex items-center gap-1">
           <IoPeopleSharp />
           New Group
-        </Link>
+        </span>
       </Pill>
     </div>
   );

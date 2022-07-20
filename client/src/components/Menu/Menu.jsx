@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ModalContext } from '../../context/modal/modalContext';
 import { UserContext } from '../../context/user/userContext';
@@ -6,15 +6,15 @@ import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/My
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
 import NotifBadge from '../NotifBadge/NotifBadge';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
-import { NotificationsContext } from '../../context/notifications/notificationsContext';
 import RenderIf from '../../utils/React/RenderIf';
+import { NotifContext } from '../../context/notifContext/NotifContext';
 
 export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   const { activeMenu, setActiveMenu } = activeMenuState;
   const location = useLocation();
   const { modalDispatch } = useContext(ModalContext);
   const { userState } = useContext(UserContext);
-  const { notifications } = useContext(NotificationsContext);
+  const { notifs } = useContext(NotifContext);
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
@@ -58,35 +58,15 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
       case 'search':
         return;
       case 'notifications':
-        const totalNotifs = Object.entries(notifications).reduce(
-          (prev, [type, { inbox, outbox }], i) => {
-            let { inboxLen, outboxLen } = prev;
-
-            return {
-              inboxLen: inbox[i]
-                ? !inbox[i].seen
-                  ? inboxLen++
-                  : inboxLen
-                : inboxLen,
-              outboxLen: outbox[i]
-                ? !outbox[i].seen
-                  ? outboxLen++
-                  : outboxLen
-                : outboxLen,
-              total: inboxLen + outboxLen,
-            };
-          },
-          { inboxLen: 0, outboxLen: 0, total: 0 }
-        );
-        return (
-          <NotifBadge
-            isActive={
-              totalNotifs.total !== 0 && typeof totalNotifs.total === 'number'
-            }
-          >
-            {totalNotifs.total <= 99 ? totalNotifs.total : '99+'}
-          </NotifBadge>
-        );
+      // return (
+      //   <NotifBadge
+      //     isActive={
+      //       totalNotifs.total !== 0 && typeof totalNotifs.total === 'number'
+      //     }
+      //   >
+      //     {totalNotifs.total <= 99 ? totalNotifs.total : '99+'}
+      //   </NotifBadge>
+      // );
 
       default:
         break;
