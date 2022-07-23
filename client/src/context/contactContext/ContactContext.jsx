@@ -64,7 +64,6 @@ export default function ContactsContextProvider({ children }) {
       );
 
       for (const contact of sortedContacts) {
-        console.log(contact);
         const alphabet = contact.user.username.substring(0, 1);
 
         // setting the object keys

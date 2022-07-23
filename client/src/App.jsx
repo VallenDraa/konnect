@@ -13,8 +13,6 @@ export const App = () => {
 
   return (
     <div className="text-gray-800 antialiased">
-      {/* <LandscapeAlert /> */}
-
       <BrowserRouter>
         <Routes>
           <Route

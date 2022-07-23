@@ -147,9 +147,7 @@ export default function NotifContextProvider({ children }) {
     }
   }, [notifs]);
 
-  useEffect(() => {
-    console.log(notifs);
-  }, [notifs]);
+  // useEffect(() => console.log(notifs), [notifs]);
 
   return (
     <NotifContext.Provider

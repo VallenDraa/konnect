@@ -10,7 +10,6 @@ import socket from '../../../../../../utils/socketClient/socketClient';
 import RenderIf from '../../../../../../utils/React/RenderIf';
 
 export default function ContactNotif({ info, type }) {
-  // console.log(info, type);
   const { userState } = useContext(UserContext);
 
   const handleResponse = (answer, type) => {
@@ -88,6 +87,9 @@ export default function ContactNotif({ info, type }) {
               </RenderIf>
               <RenderIf conditionIs={info.answer === false}>
                 <RenderIf conditionIs={type === 'outbox'}>
+                  <span className="font-bold text-slate-800">
+                    {info.by?.username}
+                  </span>{' '}
                   rejected your contact request.
                 </RenderIf>
                 <RenderIf conditionIs={type === 'inbox'}>

@@ -5,6 +5,7 @@ import { Logo } from '../../components/Logo/Logo';
 import Input from '../../components/Input/Input';
 import api from '../../utils/apiAxios/apiAxios';
 import { useState } from 'react';
+import Pill from '../../components/Buttons/Pill';
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -86,9 +87,12 @@ export const Register = () => {
 
             {/* Register button */}
             <div className="w-full flex flex-col items-center gap-3">
-              <button className="w-full py-2 text-base max-w-xs mx-auto rounded-full duration-200 bg-blue-400 hover:bg-blue-500 focus:bg-blue-600 shadow focus:shadow-inner shadow-blue-500 font-semibold text-white">
+              <Pill
+                type="submit"
+                className="h-full text-base max-w-xs bg-blue-400 hover:bg-blue-300 text-gray-50  font-bold duration-200 border-0"
+              >
                 Register
-              </button>
+              </Pill>
               <span className="text-gray-500 text-xs">
                 Got an account ? click here to{' '}
                 <Link

@@ -4,6 +4,7 @@ import socket from '../../utils/socketClient/socketClient';
 import MESSAGE_LOGS_ACTIONS from './messageLogsActions';
 import { UserContext } from '../user/userContext';
 import getUsersPreview from '../../utils/apis/getusersPreview';
+import { ContactsContext } from '../contactContext/ContactContext';
 
 const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
@@ -28,6 +29,7 @@ export default function MessageLogsContextProvider({ children }) {
     MESSAGE_LOGS_DEFAULT
   );
   const { userState } = useContext(UserContext);
+  const { contacts } = useContext(ContactsContext);
 
   // fetch all the message log from the server
   useEffect(() => {
@@ -65,13 +67,12 @@ export default function MessageLogsContextProvider({ children }) {
   useEffect(() => {
     const refreshMsgLogs = () => {
       if (!userState.user || !userState) return;
-      if (userState.user.contacts.length === 0) return;
+      if (contacts.length === 0) return;
 
       msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
       const updatedMsgLogs = msgLogs;
 
-      const newUserId =
-        userState.user.contacts[userState.user.contacts.length - 1].user;
+      const newUserId = contacts[contacts.length - 1].user;
 
       // assemble the final result object
       getUsersPreview(sessionStorage.getItem('token'), [newUserId])

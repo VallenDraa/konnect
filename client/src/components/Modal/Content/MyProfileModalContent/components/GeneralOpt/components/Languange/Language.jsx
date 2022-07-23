@@ -10,7 +10,8 @@ export default function Language({ languageState }) {
       <Dropdown
         text={language}
         fontSize={14}
-        className="absolute right-[40px] lg:right-[30px]"
+        offset={8}
+        btnClassName="hover:shadow-sm hover:text-gray-800 hover:bg-gray-300"
         position={'origin-top-right right-0'}
       >
         {LANGUAGES.map((l) => {

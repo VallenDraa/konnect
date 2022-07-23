@@ -2,6 +2,7 @@ import noActiveChat from '../../svg/home/noActiveChat.svg';
 import { HiOutlineMenu } from 'react-icons/hi';
 import CTA from '../CTA/CTA';
 import { Logo } from '../Logo/Logo';
+import { Link } from 'react-router-dom';
 
 export const StartScreen = ({ handleGoToMenu }) => {
   return (
@@ -16,23 +17,14 @@ export const StartScreen = ({ handleGoToMenu }) => {
             >
               <HiOutlineMenu />
             </button>
-            <div className="relative bottom-[1px] ">
+            <Link to="/chats" className="relative bottom-[1px] ">
               <Logo />
-            </div>
+            </Link>
           </div>
 
-          <CTA className="flex justify-evenly gap-2 basis-full sm:basis-2/3 md:basis-1/2 xl:basis-[40%]" />
+          <CTA className="flex justify-evenly gap-2 basis-full sm:basis-96" />
         </div>
       </header>
-      {/* <img src={noActiveChat} className="w-2/3 md:w-1/3" />
-      <h1 className="font-bold text-2xl md:text-3xl text-gray-600">
-        Go Start a Chat !
-      </h1>
-      <span className="text-gray-500 font-light text-xs text-center md:text-sm">
-        Click one of the available messages or go start a new one by pressing
-        the <span className="font-semibold text-gray-600">New Chat</span>{' '}
-        button.
-      </span> */}
     </main>
   );
 };

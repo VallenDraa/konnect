@@ -12,7 +12,7 @@ export default function Pill({
   link,
 }) {
   const [defaultClasses] = useState(
-    'py-2 px-3 w-full shadow-md hover:shadow-lg active:shadow-inner rounded-full flex items-center gap-1 justify-center duration-200 text-xs'
+    'py-2 px-3 w-full shadow-md hover:shadow-lg active:shadow-md rounded-full flex items-center gap-1 justify-center duration-200 text-xs'
   );
 
   return (

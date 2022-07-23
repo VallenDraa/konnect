@@ -171,8 +171,8 @@ const ProfileOpt = () => {
                   className={`text-base px-4 py-1 font-bold flex items-center gap-x-2
                   ${
                     !isEditMode
-                      ? 'bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 active:bg-pink-500 text-white'
-                      : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100'
+                      ? 'bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 text-white'
+                      : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-200'
                   }`}
                 >
                   <RenderIf conditionIs={!isEditMode}>
@@ -195,7 +195,7 @@ const ProfileOpt = () => {
                     opacity: isEditMode ? '1' : '0',
                     width: isEditMode ? '50%' : '0%',
                   }}
-                  className="text-base font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-white flex items-center gap-x-2"
+                  className="text-base font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 active:shadow-blue-100 text-white flex items-center gap-x-2"
                 >
                   <FiSave />
                   Save
@@ -279,9 +279,14 @@ const ProfileOpt = () => {
                 <h2 className="text-lg font-medium text-gray-400 mx-5">
                   Contacts:
                 </h2>
-                {/* swiper */}
-                <RenderIf conditionIs={userState.user.contacts}>
+                <RenderIf conditionIs={contacts.length > 0}>
+                  {/* swiper */}
                   <ContactsSwiperCard contacts={contacts} />
+                </RenderIf>
+                <RenderIf conditionIs={contacts.length === 0}>
+                  <span className="font-semibold text-gray-500 text-center block">
+                    Contact is empty
+                  </span>
                 </RenderIf>
               </div>
             </main>

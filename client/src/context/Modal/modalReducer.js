@@ -2,7 +2,7 @@ import MODAL_ACTIONS from './modalActions';
 
 export default function modalReducer(
   state,
-  { type, onExitReturnToHome, content, prevUrl }
+  { type, onExitReturnToHome, content, prevUrl, title }
 ) {
   switch (type) {
     case MODAL_ACTIONS.show:
@@ -11,6 +11,7 @@ export default function modalReducer(
         onExitReturnToHome: onExitReturnToHome || false,
         prevUrl,
         content: content,
+        title,
       };
     case MODAL_ACTIONS.close:
       return {
@@ -18,6 +19,7 @@ export default function modalReducer(
         onExitReturnToHome: onExitReturnToHome || false,
         prevUrl,
         content: null,
+        title: null,
       };
     default:
       return state;

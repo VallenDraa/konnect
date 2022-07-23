@@ -16,15 +16,12 @@ export const MyProfileModalContent = () => {
       aria-label="settings"
       className="w-screen lg:w-[40rem] flex flex-col h-full"
     >
-      <header className="text-center">
-        <h1 className="font-semibold pb-3">Settings</h1>
-      </header>
-      <main className="flex flex-col lg:flex-row grow shadow-inner">
+      <div className="flex flex-col lg:flex-row grow shadow-inner">
         <SettingsMenu
           options={SETTINGS_MENU}
           activeOptState={{ activeOpt, setActiveOpt }}
         />
-        <main className="w-full grow lg:min-h-full h-0 bg-white overflow-y-auto">
+        <div className="w-full grow lg:min-h-full h-0 bg-white overflow-y-auto">
           <RenderIf conditionIs={activeOpt === 'profile'}>
             <ProfileOpt />
           </RenderIf>
@@ -40,8 +37,8 @@ export const MyProfileModalContent = () => {
           <RenderIf conditionIs={activeOpt === 'messages'}>
             <MessagesOpt />
           </RenderIf>
-        </main>
-      </main>
+        </div>
+      </div>
     </section>
   );
 };

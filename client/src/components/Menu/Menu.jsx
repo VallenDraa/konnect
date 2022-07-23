@@ -30,6 +30,7 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
           prevUrl: urlHistory?.current,
           onExitReturnToHome: false,
           content: <OthersProfileModalContent username={usernamePath} />,
+          title: `${usernamePath}'s Profile`,
         });
       } else {
         modalDispatch({
@@ -37,6 +38,7 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
           prevUrl: urlHistory?.current,
           onExitReturnToHome: false,
           content: <MyProfileModalContent />,
+          title: 'Settings',
         });
       }
     }

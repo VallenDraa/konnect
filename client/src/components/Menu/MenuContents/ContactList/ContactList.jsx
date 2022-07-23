@@ -1,6 +1,5 @@
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import RenderIf from '../../../../utils/React/RenderIf';
 import { ContactsContext } from '../../../../context/contactContext/ContactContext';
 
@@ -25,11 +24,6 @@ const ContactList = () => {
         }
       >
         <div className="text-center space-y-10 mt-10 p-3">
-          <img
-            src={emptyContactList}
-            alt=""
-            className="max-w-[300px] mx-auto"
-          />
           <span className="block font-semibold text-xl md:text-lg text-gray-500">
             Contact List Is Empty
           </span>

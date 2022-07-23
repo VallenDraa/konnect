@@ -9,6 +9,7 @@ import socket from '../../utils/socketClient/socketClient';
 import Input from '../../components/Input/Input';
 import { isInitialLoadingContext } from '../../context/isInitialLoading/isInitialLoading';
 import { IsLoginViaRefreshContext } from '../../context/isLoginViaRefresh/isLoginViaRefresh';
+import Pill from '../../components/Buttons/Pill';
 
 export const Login = ({ user }) => {
   const { userState, userDispatch } = user;
@@ -126,9 +127,12 @@ export const Login = ({ user }) => {
 
             {/* login button */}
             <div className="w-full flex flex-col items-center gap-3">
-              <button className="w-full py-2 text-sm md:text-base max-w-xs mx-auto rounded-full duration-200 bg-blue-400 hover:bg-blue-500 focus:bg-blue-600 shadow focus:shadow-inner shadow-blue-500 font-semibold text-white">
+              <Pill
+                type="submit"
+                className="h-full text-base max-w-xs bg-blue-400 hover:bg-blue-300 text-gray-50  font-bold duration-200 border-0"
+              >
                 Login
-              </button>
+              </Pill>
               <span className="text-gray-500 text-xs">
                 Not Registered ? click here to{' '}
                 <Link

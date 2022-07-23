@@ -1,15 +1,14 @@
 import { ChatPreview } from './ChatPreview/ChatPreview';
 import { useContext, useEffect, useState } from 'react';
 import RenderIf from '../../../../utils/React/RenderIf';
-import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
 } from '../../../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
-import MESSAGE_LOGS_ACTIONS from '../../../../context/messageLogs/messageLogsActions';
 import { useNavigate } from 'react-router-dom';
 import { chatPreviewTimeStatus } from '../../../../utils/dates/dates';
+import { useSwiper } from 'swiper/react';
 
 export default function ChatList({ setIsSidebarOn }) {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -17,7 +16,6 @@ export default function ChatList({ setIsSidebarOn }) {
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
   );
-  const navigate = useNavigate();
 
   // refresh the entries everytime the msgLogs is updated
   useEffect(() => {
@@ -59,7 +57,6 @@ export default function ChatList({ setIsSidebarOn }) {
   const EmptyPlaceholder = () => {
     return (
       <div className="text-center space-y-10 mt-10 p-3">
-        <img src={emptyContactList} alt="" className="max-w-[300px] mx-auto" />
         <span className="block font-semibold text-xl md:text-lg text-gray-500">
           Chat List Is Empty
         </span>

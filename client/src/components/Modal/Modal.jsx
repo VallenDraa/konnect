@@ -41,14 +41,20 @@ export const Modal = () => {
             ref={modal}
             className="h-full lg:h-3/4 lg:max-h-[800px] bg-white relative flex flex-col animate-pop-in z-100 lg:rounded-xl overflow-clip"
           >
-            <header className="flex justify-end items-center px-4 py-3">
+            <header className="flex justify-between items-center px-4 py-3 h-16 relative">
+              <h1 className="font-semibold left-1/2 -translate-x-1/2 absolute text-lg">
+                {modalState.title}
+              </h1>
+
               {/* close button */}
-              <button
-                className="text-2xl lg:text-xl hover:text-blue-400  rounded-full flex items-center justify-center duration-200"
-                onClick={handleModalClose}
-              >
-                <IoClose />
-              </button>
+              <div className="grow flex items-center justify-end">
+                <button
+                  className="text-xl hover:text-blue-400 rounded-full duration-200 p-1 "
+                  onClick={handleModalClose}
+                >
+                  <IoClose />
+                </button>
+              </div>
             </header>
             <main className="grow">{modalState.content}</main>
           </div>

@@ -12,27 +12,30 @@ import ActiveChatContextProvider from './context/activeChat/ActiveChatContext';
 import MessageLogsContextProvider from './context/messageLogs/MessageLogsContext';
 import ContactsContextProvider from './context/contactContext/ContactContext';
 import NotifContextProvider from './context/notifContext/NotifContext';
+import SettingsContextProvider from './context/settingsContext/SettingsContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <IsLoginViaRefreshContextProvider>
     <UserContextProvider>
-      <ContactsContextProvider>
-        <NotifContextProvider>
-          <IsAuthorizedContextProvider>
-            <IsLoadingContextProvider>
-              <ModalContextProvider>
-                <MiniModalContextProvider>
-                  <MessageLogsContextProvider>
-                    <ActiveChatContextProvider>
-                      <App />
-                    </ActiveChatContextProvider>
-                  </MessageLogsContextProvider>
-                </MiniModalContextProvider>
-              </ModalContextProvider>
-            </IsLoadingContextProvider>
-          </IsAuthorizedContextProvider>
-        </NotifContextProvider>
-      </ContactsContextProvider>
+      <SettingsContextProvider>
+        <ContactsContextProvider>
+          <NotifContextProvider>
+            <IsAuthorizedContextProvider>
+              <IsLoadingContextProvider>
+                <ModalContextProvider>
+                  <MiniModalContextProvider>
+                    <MessageLogsContextProvider>
+                      <ActiveChatContextProvider>
+                        <App />
+                      </ActiveChatContextProvider>
+                    </MessageLogsContextProvider>
+                  </MiniModalContextProvider>
+                </ModalContextProvider>
+              </IsLoadingContextProvider>
+            </IsAuthorizedContextProvider>
+          </NotifContextProvider>
+        </ContactsContextProvider>
+      </SettingsContextProvider>
     </UserContextProvider>
   </IsLoginViaRefreshContextProvider>
 );

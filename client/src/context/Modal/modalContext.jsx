@@ -6,6 +6,7 @@ const modalInitialValue = {
   prevUrl: null,
   onExitReturnToHome: true,
   content: null,
+  title: null,
 };
 export const ModalContext = createContext(modalInitialValue);
 

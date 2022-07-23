@@ -4,11 +4,13 @@ import {
   editAccount,
   editProfile,
   editSettings,
+  getSettings,
   unfriend,
 } from '../controller/user/userEditController.js';
 const router = express.Router();
 
 // to find all user that matches the query
+router.get('/get_settings', verifyToken, getSettings);
 router.put('/edit_profile', verifyToken, editProfile);
 router.put('/edit_account', verifyToken, editAccount);
 router.put('/edit_settings', verifyToken, editSettings);

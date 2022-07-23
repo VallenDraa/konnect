@@ -260,12 +260,7 @@ export const OthersProfileModalContent = ({ username }) => {
       aria-label="Profile"
       className="w-screen lg:w-[40rem] flex flex-col h-full"
     >
-      <header className="text-center">
-        <h1 className="font-semibold pb-3">
-          {username.replace('%20', ' ')}'s Profile
-        </h1>
-      </header>
-      <main className="grow shadow-inner">
+      <div className="grow shadow-inner">
         <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col">
           {/* profile pic */}
           <header>
@@ -360,7 +355,7 @@ export const OthersProfileModalContent = ({ username }) => {
             </main>
           </footer>
         </div>
-      </main>
+      </div>
     </section>
   );
 };

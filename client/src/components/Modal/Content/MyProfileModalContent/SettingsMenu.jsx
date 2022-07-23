@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import throttle from '../../../../utils/performance/throttle';
 import RenderIf from '../../../../utils/React/RenderIf';
+import LogoutBtn from '../../../Buttons/LogoutBtn';
 import Dropdown from '../../../Dropdown/Dropdown';
 import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
 
@@ -39,14 +40,18 @@ export default function SettingsMenu({ options, activeOptState }) {
                     opt.name === activeOpt
                       ? 'bg-white text-gray-800 font-semibold'
                       : 'hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium'
-                  } cursor-pointer p-2 capitalize duration-200 text-sm lg:text-base flex items-center gap-2 h-9 w-full`}
+                  } cursor-pointer p-2 capitalize duration-200 flex items-center gap-2 h-9 w-full`}
                 >
-                  <span className="text-base lg:text-lg">{opt.icon}</span>
+                  <span className="text-base">{opt.icon}</span>
                   <span>{opt.name}</span>
                 </button>
               </li>
             );
           })}
+          {/* logout button */}
+          <li className="w-5/6 mx-auto mt-4">
+            <LogoutBtn />
+          </li>
         </RenderIf>
         <RenderIf conditionIs={isOnTop}>
           <Dropdown
@@ -72,6 +77,9 @@ export default function SettingsMenu({ options, activeOptState }) {
                 </span>
               </DropdownItem>
             ))}
+            <li className="w-full sm:w-3/4 md:w-2/3 mx-auto my-3">
+              <LogoutBtn />
+            </li>
           </Dropdown>
         </RenderIf>
       </ul>

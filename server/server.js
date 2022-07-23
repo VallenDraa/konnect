@@ -28,7 +28,13 @@ const io = new Server(httpServer, {
 });
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
-global.exemptedUserInfos = ['-contacts.chat', '-__v'];
+global.exemptedUserInfos = [
+  '-contacts',
+  '-__v',
+  '-requests',
+  '-notifications',
+  '-chats',
+];
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();

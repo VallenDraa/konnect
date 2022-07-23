@@ -45,7 +45,7 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
           Cancel
         </Pill>
         <Pill
-          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-xl hover:shadow-blue-100 font-bold duration-200 border-0"
+          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold duration-200 border-0"
           type="submit"
         >
           Change

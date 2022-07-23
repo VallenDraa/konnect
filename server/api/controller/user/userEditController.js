@@ -1,15 +1,26 @@
 import createError from '../../../utils/createError.js';
 import { renewToken } from '../auth/tokenController.js';
 import User from '../../../model/User.js';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import emojiTest from '../../../utils/emojiTest.js';
+
+export const getSettings = async (req, res, next) => {
+  const { _id } = res.locals.tokenData;
+
+  try {
+    const { settings } = await User.findById(_id).select('settings').lean();
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const editProfile = async (req, res, next) => {
   const isUsingEmoji = emojiTest(Object.values(req.body));
   if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
 
-  const { firstName, lastName, status, token, password } = req.body;
+  const { firstName, lastName, status, password } = req.body;
 
   try {
     // decode token
@@ -39,7 +50,7 @@ export const editAccount = async (req, res, next) => {
   const isUsingEmoji = emojiTest(Object.values(req.body));
   if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
 
-  const { password, username, token } = req.body;
+  const { password, username } = req.body;
 
   try {
     // check if the username is already taken
@@ -79,7 +90,7 @@ export const editAccount = async (req, res, next) => {
 };
 
 export const editSettings = async (req, res, next) => {
-  const { settings, type, token } = req.body;
+  const { settings, type } = req.body;
 
   try {
     // decode the token to get the user id
@@ -88,18 +99,13 @@ export const editSettings = async (req, res, next) => {
     const user = await User.findById(_id);
 
     for (const key in settings) {
-      // console.log(user.settings[type][key], settings[key]);
       user.settings[type][key] = settings[key];
     }
-
-    // console.log(user.settings[type]);
 
     user.markModified('settings.general');
     await user.save();
 
-    const newToken = renewToken(user._doc, process.env.JWT_SECRET);
-
-    res.json({ user: user._doc, token: newToken, success: true });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

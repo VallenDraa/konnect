@@ -41,10 +41,9 @@ export default function Dropdown({
     'gap-x-1',
     'bg-gray-200',
     'hover:bg-gray-100',
-    'active:bg-gray-300',
-    'shadow-md',
+    'shadow',
     'hover:shadow-lg',
-    'active:shadow-inner',
+    'active:shadow-md',
   ]);
   const [listDefaultClasses, setListDefaultClasses] = useState([
     'z-30',

@@ -7,7 +7,6 @@ import Dropdown from '../../../Dropdown/Dropdown';
 import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
 import NotifListItem from './NotifListItem/NotifListItem';
 import ContactNotif from './type/ContactNotif/ContactNotif';
-import nothing from '../../../../svg/notificationList/nothing.svg';
 import { useLocation } from 'react-router-dom';
 import { NotifContext } from '../../../../context/notifContext/NotifContext';
 import NOTIF_CONTEXT_ACTIONS from '../../../../context/notifContext/notifContextActions';
@@ -130,13 +129,20 @@ export default function NotificationList() {
 
         {/* if notifs are fine */}
         <RenderIf conditionIs={!notifs.isLoading && !notifs.error}>
-          <ul className="border-y-2 divide-y-2">
+          <ul
+            className={` 
+                      ${
+                        notifs?.content[activeBox.name]?.length === 0
+                          ? ''
+                          : 'border-y-2 divide-y-2'
+                      }
+                      `}
+          >
             {/* if there are no notifications */}
             <RenderIf
               conditionIs={notifs?.content[activeBox.name]?.length === 0}
             >
               <li className="text-center space-y-10 mt-10 py-4">
-                <img src={nothing} alt="" className="max-w-[300px] mx-auto" />
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
                   <RenderIf conditionIs={activeBox.name === 'inbox'}>
                     Inbox is empty

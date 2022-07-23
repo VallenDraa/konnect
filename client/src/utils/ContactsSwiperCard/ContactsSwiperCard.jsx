@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import PicturelessProfile from '../../components/PicturelessProfile/PicturelessProfile';
 import charToRGB from '../charToRGB/charToRGB';
-import welcome from '../../svg/othersProfile/welcome.svg';
 import RenderIf from '../React/RenderIf';
 
 export default function ContactsSwiperCard({
@@ -92,13 +91,9 @@ export default function ContactsSwiperCard({
     return (
       <RenderIf conditionIs={!mini}>
         <div className="text-center space-y-3">
-          <img src={welcome} alt="" className="w-1/5 max-w-[160px] mx-auto" />
-          <div className="flex flex-col gap-y-1">
+          <div className="flex flex-col gap-y-1 mt-5">
             <span className="font-semibold text-gray-500">
-              Oops No One Here....
-            </span>
-            <span className="text-gray-400 text-xs">
-              Be the first one here by adding this person to your contact !
+              Contact is empty
             </span>
           </div>
         </div>

@@ -1,47 +1,43 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { BiLogOut } from 'react-icons/bi';
 import { Menu } from '../Menu/Menu';
 import { ModalContext } from '../../context/modal/modalContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context/user/userContext';
 import ChatList from '../Menu/MenuContents/ChatList/ChatList';
 import ContactList from '../Menu/MenuContents/ContactList/ContactList';
 import SearchList from '../Menu/MenuContents/SearchList/SearchList';
 import MODAL_ACTIONS from '../../context/modal/modalActions';
 import CTA from '../CTA/CTA';
-import Pill from '../Buttons/Pill';
-import USER_ACTIONS from '../../context/user/userAction';
-import socket from '../../utils/socketClient/socketClient';
-import RenderIf from '../../utils/React/RenderIf';
 import MENUS from '../Menu/MENUS';
 import SIDEBAR_APPEARANCE from './SidebarAppearance/SidebarAppearance';
 import NotificationList from '../Menu/MenuContents/NotificationList/NotificationList';
-import {
-  ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
-} from '../../context/activeChat/ActiveChatContext';
 import throttle from '../../utils/performance/throttle';
+import { Swiper, SwiperSlide, useSwiper } from 'swiper/react';
+import { SettingsContext } from '../../context/settingsContext/SettingsContext';
 
 export const Sidebar = ({ sidebarState, urlHistory }) => {
   const Navigate = useNavigate();
   const { isSidebarOn, setIsSidebarOn } = sidebarState;
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
-  const { setActiveChat } = useContext(ActiveChatContext);
   const { userState, userDispatch } = useContext(UserContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
   const sidebar = useRef();
+  const { settings, setSettings } = useContext(SettingsContext);
+  const { pathname } = useLocation();
+  const swiperRef = useRef();
 
-  const handleLogout = () => {
-    socket.emit('logout', userState.user._id, (success, message) => {
-      // deactivate chat
-      setActiveChat(ACTIVE_CHAT_DEFAULT);
-
-      userDispatch({ type: USER_ACTIONS.logout });
-      sessionStorage.removeItem('token');
-      Navigate('/login');
-    });
-  };
+  useEffect(() => {
+    if (pathname.includes('/chats')) {
+      swiperRef.current.slideTo(0);
+    } else if (pathname.includes('/contacts')) {
+      swiperRef.current.slideTo(1);
+    } else if (pathname.includes('/search')) {
+      swiperRef.current.slideTo(2);
+    } else if (pathname.includes('/notifications')) {
+      swiperRef.current.slideTo(3);
+    }
+  }, [pathname]);
 
   // for handling close and open through button press
   useEffect(() => {
@@ -49,18 +45,8 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
 
     if (isSidebarOn) {
       sidebar.current.className = SIDEBAR_APPEARANCE.OPEN;
-
-      // disable body scrolling if window size is less than 1024
-      // if (window.innerWidth <= 1024) {
-      //   document.body.style.overflowY = 'hidden';
-      // }
     } else {
       sidebar.current.className = SIDEBAR_APPEARANCE.CLOSED;
-
-      // only enable scrolling when the modal is not active
-      // if (!modalState.isActive) {
-      //   document.body.style.overflowY = 'auto';
-      // }
 
       // remove slide out animation if window size is larger than 1024
       if (window.innerWidth >= 1024) {
@@ -80,12 +66,25 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
     return () => window.removeEventListener('resize', closeSidebar);
   }, [setIsSidebarOn, isSidebarOn]);
 
+  // when swiper active index change
+  const navigateMenu = (i) => {
+    switch (i) {
+      case 0:
+        return Navigate('/chats');
+      case 1:
+        return Navigate('/contacts');
+      case 2:
+        return Navigate('/search');
+      case 3:
+        return Navigate('/notifications?box=inbox');
+      default:
+        return Navigate('/chats');
+    }
+  };
+
   return (
     <aside ref={sidebar}>
-      <header
-        className="space-y-5 basis-1/6 p-3"
-        style={{ borderBottom: '1px solid #e5e7eb' }}
-      >
+      <header className="space-y-5 basis-1/6 p-3 border-b-4 border-slate-200">
         {/* profile and more menu */}
         <div className="flex justify-between items-center gap-2">
           {/* profile  */}
@@ -115,13 +114,6 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
               </span>
             </div>
           </Link>
-          <Pill
-            onClick={handleLogout}
-            className="w-24 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-600 text-red-500 hover:text-white shadow-red-100 hover:shadow-red-200"
-          >
-            <BiLogOut />
-            <span>Log Out</span>
-          </Pill>
         </div>
         {/* menus */}
         <Menu
@@ -131,26 +123,37 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
         />
         {/* cta */}
         <section className="lg:hidden" aria-label="action-buttons">
-          <CTA urlHistory={urlHistory} />
+          <CTA enableSlide={true} urlHistory={urlHistory} />
         </section>
       </header>
       {/* menu contents */}
-      <main className="basis-5/6 overflow-y-auto overflow-x-auto">
-        <RenderIf conditionIs={activeMenu === 'chats'}>
-          <ChatList
-            contacts={userState.user.contacts}
-            setIsSidebarOn={setIsSidebarOn}
-          />
-        </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'contacts'}>
-          <ContactList setIsSidebarOn={setIsSidebarOn} />
-        </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'search'}>
-          <SearchList />
-        </RenderIf>
-        <RenderIf conditionIs={activeMenu === 'notifications'}>
-          <NotificationList />
-        </RenderIf>
+      <main className="basis-5/6 overflow-y-auto overflow-x-auto relative">
+        <Swiper
+          onSwiper={(swiper) => (swiperRef.current = swiper)}
+          noSwiping={!settings.general.menuSwiping}
+          noSwipingClass="no-swipe"
+          spaceBetween={0}
+          slidesPerView={'auto'}
+          className={`absolute inset-0 
+                    ${settings.general.menuSwiping ? 'cursor-grab' : ''}`}
+          onActiveIndexChange={({ activeIndex }) => navigateMenu(activeIndex)}
+        >
+          <SwiperSlide className="no-swipe">
+            <ChatList
+              contacts={userState.user.contacts}
+              setIsSidebarOn={setIsSidebarOn}
+            />
+          </SwiperSlide>
+          <SwiperSlide className="no-swipe">
+            <ContactList setIsSidebarOn={setIsSidebarOn} />
+          </SwiperSlide>
+          <SwiperSlide className="no-swipe">
+            <SearchList />
+          </SwiperSlide>
+          <SwiperSlide className="no-swipe">
+            <NotificationList />
+          </SwiperSlide>
+        </Swiper>
       </main>
     </aside>
   );

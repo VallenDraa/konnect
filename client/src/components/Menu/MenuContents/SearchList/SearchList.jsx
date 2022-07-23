@@ -101,11 +101,6 @@ export default function SearchList() {
             {/* this svg will appear when the query is empty */}
             <RenderIf conditionIs={query === ''}>
               <div className="text-center space-y-10 mt-10 overflow-x-hidden">
-                <img
-                  src={initialSvg}
-                  alt=""
-                  className="max-w-[300px] mx-auto"
-                />
                 <span className="block font-semibold text-xl md:text-lg text-gray-500">
                   Find others and Konnect !
                 </span>
