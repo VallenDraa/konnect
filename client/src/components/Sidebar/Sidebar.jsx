@@ -26,9 +26,11 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
   const { settings, setSettings } = useContext(SettingsContext);
   const { pathname } = useLocation();
   const swiperRef = useRef();
+  const isMenuNavigateWithBtn = useRef(false);
 
   useEffect(() => {
-    if (pathname.includes('/chats')) {
+    isMenuNavigateWithBtn.current = true;
+    if (pathname.includes('/chats') || pathname === '/') {
       swiperRef.current.slideTo(0);
     } else if (pathname.includes('/contacts')) {
       swiperRef.current.slideTo(1);
@@ -68,17 +70,19 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
 
   // when swiper active index change
   const navigateMenu = (i) => {
-    switch (i) {
-      case 0:
-        return Navigate('/chats');
-      case 1:
-        return Navigate('/contacts');
-      case 2:
-        return Navigate('/search');
-      case 3:
-        return Navigate('/notifications?box=inbox');
-      default:
-        return Navigate('/chats');
+    if (!isMenuNavigateWithBtn.current) {
+      switch (i) {
+        case 0:
+          Navigate('/chats');
+        case 1:
+          Navigate('/contacts');
+        case 2:
+          Navigate('/search');
+        case 3:
+          Navigate('/notifications?box=inbox');
+        default:
+          Navigate('/chats');
+      }
     }
   };
 
@@ -129,6 +133,10 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
       {/* menu contents */}
       <main className="basis-5/6 overflow-y-auto overflow-x-auto relative">
         <Swiper
+          onTap={() => {
+            if (isMenuNavigateWithBtn.current)
+              isMenuNavigateWithBtn.current = false;
+          }}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
           noSwiping={!settings.general.menuSwiping}
           noSwipingClass="no-swipe"

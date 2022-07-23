@@ -44,8 +44,6 @@ export const ChatBox = ({ sidebarState }) => {
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
     if (location.pathname === '/chats') {
-      // if (location.pathname + location.search === urlHistory.prev) return;
-
       const search = Object.fromEntries(
         location.search
           .slice(1, location.search.length)

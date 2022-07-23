@@ -44,11 +44,16 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
     }
   }, [location]);
 
+  useEffect(() => {
+    console.log(location);
+  }, [location]);
+
   // to change the active menu according to the current URL path
   useEffect(() => {
     const newActiveMenu = location.pathname.split('/')[1];
-
-    setActiveMenu(newActiveMenu || 'chats');
+    if (newActiveMenu !== activeMenu) {
+      setActiveMenu(newActiveMenu || 'chats');
+    }
   }, [location]);
 
   const NotifBadgeSwitcher = ({ menuName }) => {
@@ -88,7 +93,9 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
         return (
           <Fragment key={i}>
             <li
-              onClick={() => setActiveMenu(menu.name)}
+              onClick={() => {
+                setActiveMenu(menu.name);
+              }}
               className={`basis-1/4 text-xxs w-full p-1 rounded-lg duration-200 cursor-pointer
               ${
                 activeMenu === menu.name

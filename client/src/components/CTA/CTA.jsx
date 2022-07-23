@@ -59,25 +59,6 @@ export default function CTA({
   const CtaButtons = () => {
     return (
       <>
-        {/* message */}
-        <Pill
-          Link="/new/chat"
-          className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
-          onClick={() =>
-            modalDispatch({
-              type: MODAL_ACTIONS.show,
-              prevUrl: urlHistory?.current,
-              onExitReturnToHome: false,
-              content: <NewChat />,
-            })
-          }
-        >
-          <span className="flex items-center gap-1">
-            <IoChatbubbles />
-            New Chat
-          </span>
-        </Pill>
-
         {/* call */}
         <Pill
           link="/new/call"
@@ -94,6 +75,25 @@ export default function CTA({
           <span className="flex items-center gap-1">
             <IoCall />
             Start Call
+          </span>
+        </Pill>
+
+        {/* message */}
+        <Pill
+          link="/new/chat"
+          className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
+          onClick={() =>
+            modalDispatch({
+              type: MODAL_ACTIONS.show,
+              prevUrl: urlHistory?.current,
+              onExitReturnToHome: false,
+              content: <NewChat />,
+            })
+          }
+        >
+          <span className="flex items-center gap-1">
+            <IoChatbubbles />
+            New Chat
           </span>
         </Pill>
 
@@ -119,32 +119,39 @@ export default function CTA({
     );
   };
 
+  // function for when the user is moving the CTA button swiper
+  const handleSwiping = throttle(() => {
+    if (swipeBall.current.style.width !== '36px') return;
+    swipeBall.current.style.width = '100px';
+    swipeBall.current.classList.add('mr-3');
+  }, 1000);
+
+  // function for when the user stop moving the CTA button swiper
+  const handleSwipingStop = () => {
+    swipeBall.current.style.width = '36px';
+    swipeBall.current.classList.remove('mr-3');
+  };
+
   return (
     <>
       <RenderIf conditionIs={enableSlide}>
         <Swiper
           spaceBetween={15}
-          onSliderMove={throttle(() => {
-            if (swipeBall.current.style.width !== '36px') return;
-            swipeBall.current.style.width = '100px';
-            swipeBall.current.classList.add('mr-3');
-          }, 1000)}
-          onTouchEnd={() => {
-            swipeBall.current.style.width = '36px';
-            swipeBall.current.classList.remove('mr-3');
-          }}
+          onSliderMove={handleSwiping}
+          onTouchEnd={handleSwipingStop}
           className="lg:hidden"
           slidesPerView={'auto'}
         >
-          <SwiperSlide className="text-sm flex justify-end rounded-full relative group cursor-grab font-light">
+          <SwiperSlide className="text-sm flex justify-end rounded-full relative group cursor-grab">
             <div
               ref={swipeBall}
               style={{ height: '36px', width: '36px' }}
               className="rounded-full bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 duration-200"
             >
+              {/* floating text */}
               <div className="absolute flex items-center gap-x-2 inset-y-0 right-3 transition duration-200 group-hover:-translate-x-1">
                 <BsArrowLeft className="group-hover:translate-x-0 translate-x-1 transition duration-200" />
-                Swipe For More
+                <span>Swipe For More</span>
               </div>
             </div>
           </SwiperSlide>
