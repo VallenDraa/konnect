@@ -1,32 +1,36 @@
-import { useContext, useEffect, useReducer } from 'react';
-import { useState } from 'react';
-import { BiHappyHeartEyes } from 'react-icons/bi';
-import 'swiper/css';
-import api from '../../../../utils/apiAxios/apiAxios';
-import RenderIf from '../../../../utils/React/RenderIf';
-import PicturelessProfile from '../../../PicturelessProfile/PicturelessProfile';
-import Pill from '../../../Buttons/Pill';
-import socket from '../../../../utils/socketClient/socketClient';
-import generateRgb from '../../../../utils/generateRgb/generateRgb';
-import USER_ACTIONS from '../../../../context/user/userAction';
-import SendRequestBtn from './SendRequestBtn/SendRequestBtn';
-import NOTIF_CONTEXT_ACTIONS from '../../../../context/notifContext/notifContextActions';
-import ContactsSwiperCard from '../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
+import { useContext, useEffect, useReducer } from "react";
+import { useState } from "react";
+import { BiHappyHeartEyes } from "react-icons/bi";
+import "swiper/css";
+import api from "../../../../utils/apiAxios/apiAxios";
+import RenderIf from "../../../../utils/React/RenderIf";
+import PicturelessProfile from "../../../PicturelessProfile/PicturelessProfile";
+import Pill from "../../../Buttons/Pill";
+import socket from "../../../../utils/socketClient/socketClient";
+import generateRgb from "../../../../utils/generateRgb/generateRgb";
+import USER_ACTIONS from "../../../../context/user/userAction";
+import SendRequestBtn from "./SendRequestBtn/SendRequestBtn";
+import NOTIF_CONTEXT_ACTIONS from "../../../../context/notifContext/notifContextActions";
+import ContactsSwiperCard from "../../../../utils/ContactsSwiperCard/ContactsSwiperCard";
 import addRequestSentReducer, {
   ADD_REQUEST_SENT_DEFAULT,
   ADD_REQUEST_SENT_ACTIONS,
-} from '../../../../reducer/contactRequestSent/contactRequestSentReducer';
-import { FaPaperPlane } from 'react-icons/fa';
-import { UserContext } from '../../../../context/user/userContext';
-import { useNavigate } from 'react-router-dom';
-import { ImProfile } from 'react-icons/im';
-import { ContactsContext } from '../../../../context/contactContext/ContactContext';
+} from "../../../../reducer/contactRequestSent/contactRequestSentReducer";
+import { FaPaperPlane } from "react-icons/fa";
+import { UserContext } from "../../../../context/user/userContext";
+import {
+  ActiveChatContext,
+  ACTIVE_CHAT_DEFAULT,
+} from "../../../../context/activeChat/ActiveChatContext";
+import { useNavigate } from "react-router-dom";
+import { ImProfile } from "react-icons/im";
+import { ContactsContext } from "../../../../context/contactContext/ContactContext";
 import {
   NotifContext,
   receiveCancelAddContact,
   receiveContactRequestResponse,
   receiveSendAddContact,
-} from '../../../../context/notifContext/NotifContext';
+} from "../../../../context/notifContext/NotifContext";
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -36,10 +40,11 @@ export const OthersProfileModalContent = ({ username }) => {
     ADD_REQUEST_SENT_DEFAULT
   );
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
-  const [rgb, setRgb] = useState('');
+  const [rgb, setRgb] = useState("");
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
+  const { setActiveChat } = useContext(ActiveChatContext);
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
@@ -52,10 +57,10 @@ export const OthersProfileModalContent = ({ username }) => {
     const payload = {
       recipientId: otherUserData._id,
       senderId: userState.user._id,
-      token: sessionStorage.getItem('token'),
+      token: sessionStorage.getItem("token"),
     };
 
-    socket.emit('send-add-contact', payload);
+    socket.emit("send-add-contact", payload);
   };
   const handleCancelContactRequest = () => {
     requestDispatch({ type: Start });
@@ -63,20 +68,20 @@ export const OthersProfileModalContent = ({ username }) => {
     const payload = {
       recipientId: otherUserData._id,
       senderId: userState.user._id,
-      token: sessionStorage.getItem('token'),
+      token: sessionStorage.getItem("token"),
     };
 
-    socket.emit('cancel-add-contact', payload);
+    socket.emit("cancel-add-contact", payload);
   };
 
   // for removing a contact from the user data
   const handleRemoveContact = () => {
     // console.log('remove');
     requestDispatch({ type: Start });
-    const senderToken = sessionStorage.getItem('token');
+    const senderToken = sessionStorage.getItem("token");
     requestDispatch({ type: Loading });
     socket.emit(
-      'remove-contact',
+      "remove-contact",
       userState.user._id,
       otherUserData?._id,
       senderToken
@@ -85,7 +90,7 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // for handling incoming contact request
   const handleIncomingContactRequest = () => {
-    navigate('/notifications?box=inbox');
+    navigate("/notifications?box=inbox");
   };
 
   // to determine which contact function to be executed
@@ -100,7 +105,7 @@ export const OthersProfileModalContent = ({ username }) => {
   useEffect(() => {
     receiveSendAddContact({
       cb: ({ type }) => {
-        type === 'inbox' ? setIsRequested(true) : setIsRequesting(true);
+        type === "inbox" ? setIsRequested(true) : setIsRequesting(true);
         requestDispatch({ type: Sent });
       },
       notifs,
@@ -110,14 +115,14 @@ export const OthersProfileModalContent = ({ username }) => {
       notifActions: NOTIF_CONTEXT_ACTIONS,
     });
 
-    return () => socket.off('receive-send-add-contact');
+    return () => socket.off("receive-send-add-contact");
   }, [notifs, notifUnseen]);
 
   // when a contact request is cancelled
   useEffect(() => {
     receiveCancelAddContact({
       cb: ({ type }) => {
-        type === 'inbox' ? setIsRequested(false) : setIsRequesting(false);
+        type === "inbox" ? setIsRequested(false) : setIsRequesting(false);
         requestDispatch({ type: Sent });
       },
       notifs,
@@ -128,14 +133,14 @@ export const OthersProfileModalContent = ({ username }) => {
       userState,
     });
 
-    return () => socket.off('receive-cancel-add-contact');
+    return () => socket.off("receive-cancel-add-contact");
   }, [userState, notifs, notifUnseen]);
 
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {
     receiveContactRequestResponse({
       cb: (answer, type) => {
-        type === 'inbox' ? setIsRequested(false) : setIsRequesting(false);
+        type === "inbox" ? setIsRequested(false) : setIsRequesting(false);
         setIsAFriend(answer);
       },
       contacts,
@@ -143,11 +148,11 @@ export const OthersProfileModalContent = ({ username }) => {
       notifs,
       notifsDispatch,
       notifActions: NOTIF_CONTEXT_ACTIONS,
-      token: sessionStorage.getItem('token'),
+      token: sessionStorage.getItem("token"),
       userState,
     });
 
-    return () => socket.off('receive-contact-request-response');
+    return () => socket.off("receive-contact-request-response");
   }, [userState, contacts, notifs]);
 
   // fetch other user detail from the server
@@ -158,12 +163,12 @@ export const OthersProfileModalContent = ({ username }) => {
           `/query/user/get_user_detail?username=${username}`,
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           }
         );
 
-        if (data === null) navigate('/chats');
+        if (data === null) navigate("/chats");
 
         setOtherUserData(data);
       } catch (error) {
@@ -184,15 +189,15 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // refresh userState after sending an add contact request
   useEffect(() => {
-    socket.off('update-client-data');
+    socket.off("update-client-data");
 
-    socket.on('update-client-data', (response, ...args) => {
+    socket.on("update-client-data", (response, ...args) => {
       // console.log(args, response);
       if (response.success) {
         const { user, token } = response;
 
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-        sessionStorage.setItem('token', token);
+        sessionStorage.setItem("token", token);
         requestDispatch({ type: Sent });
         setIsRequesting(false);
         setIsRequested(false);
@@ -207,7 +212,7 @@ export const OthersProfileModalContent = ({ username }) => {
       }
     });
 
-    return () => socket.off('update-client-data');
+    return () => socket.off("update-client-data");
   }, []);
 
   // gets the other user data and determine the state of the action button next to the msg button
@@ -254,13 +259,15 @@ export const OthersProfileModalContent = ({ username }) => {
     }
   }, [contacts, notifs, otherUserData]);
 
+  // useEffect(() => console.log(otherUserData), [otherUserData]);
+
   return (
     <section
       aria-label="Profile"
       className="w-screen lg:w-[40rem] flex flex-col h-full"
     >
-      <div className="grow shadow-inner">
-        <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col">
+      <div className="grow shadow-md lg:shadow-inner">
+        <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col container max-w-screen-sm mx-auto">
           {/* profile pic */}
           <header>
             <RenderIf conditionIs={!otherUserData?.profilePic}>
@@ -304,6 +311,7 @@ export const OthersProfileModalContent = ({ username }) => {
                 </Pill>
 
                 <Pill
+                  onClick={() => setActiveChat(ACTIVE_CHAT_DEFAULT)}
                   link={`/chats?id=${otherUserData._id}&type=user`}
                   className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
                 >
@@ -316,8 +324,8 @@ export const OthersProfileModalContent = ({ username }) => {
               {/* fullname */}
               <RenderIf
                 conditionIs={
-                  otherUserData?.firstName !== '' ||
-                  otherUserData?.lastName !== ''
+                  otherUserData?.firstName !== "" ||
+                  otherUserData?.lastName !== ""
                 }
               >
                 <div className="px-5">
@@ -338,7 +346,7 @@ export const OthersProfileModalContent = ({ username }) => {
                   Status :
                 </h3>
                 <span className="text-base text-gray-600 font-semibold px-2">
-                  {otherUserData?.status || 'unset'}
+                  {otherUserData?.status || "unset"}
                 </span>
               </div>
 

@@ -4,13 +4,13 @@ import {
   useReducer,
   useEffect,
   useContext,
-} from 'react';
-import messageLogsReducer from './messageLogsReducer';
-import socket from '../../utils/socketClient/socketClient';
-import MESSAGE_LOGS_ACTIONS from './messageLogsActions';
-import { UserContext } from '../user/userContext';
-import getUsersPreview from '../../utils/apis/getusersPreview';
-import { ContactsContext } from '../contactContext/ContactContext';
+} from "react";
+import messageLogsReducer from "./messageLogsReducer";
+import socket from "../../utils/socketClient/socketClient";
+import MESSAGE_LOGS_ACTIONS from "./messageLogsActions";
+import { UserContext } from "../user/userContext";
+import getUsersPreview from "../../utils/apis/getusersPreview";
+import { ContactsContext } from "../contactContext/ContactContext";
 
 const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
@@ -18,15 +18,8 @@ const MESSAGE_LOGS_DEFAULT = {
   isLoaded: false,
   isStartingUpdate: false,
   error: null,
-  content: {
-    // 1234: {
-    //   activeChat: false,
-    //   _id: "62c7a79be0bb1bb1e7f12007",
-    //   chat: Array(5) [ {…}, {…}, {…}, … ]
-    // },
-  },
+  content: {},
 };
-const MESSAGE_UNREAD_DEFAULT = { detail: {}, total: 0 };
 
 export const MessageLogsContext = createContext(MESSAGE_LOGS_DEFAULT);
 
@@ -37,14 +30,14 @@ export default function MessageLogsContextProvider({ children }) {
   );
   const { userState } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
-  const [msgUnread, setMsgUnread] = useState(MESSAGE_UNREAD_DEFAULT);
+  const [msgUnread, setMsgUnread] = useState({ detail: {}, total: 0 });
 
   // fetch all the message log from the server
   useEffect(() => {
     if (msgLogs.length > 0) return;
 
     msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
-    socket.on('download-all-chats', (data) => {
+    socket.on("download-all-chats", (data) => {
       // assign the incoming chat data to an object
       const payload = {};
 
@@ -64,11 +57,11 @@ export default function MessageLogsContextProvider({ children }) {
           payload: data.message,
         });
         console.error(error);
-        socket.emit('error', data);
+        socket.emit("error", data);
       }
     });
 
-    return () => socket.off('download-all-chats');
+    return () => socket.off("download-all-chats");
   }, []);
 
   // refresh messageLog
@@ -83,7 +76,7 @@ export default function MessageLogsContextProvider({ children }) {
       const newUserId = contacts[contacts.length - 1].user;
 
       // assemble the final result object
-      getUsersPreview(sessionStorage.getItem('token'), [newUserId])
+      getUsersPreview(sessionStorage.getItem("token"), [newUserId])
         .then(([user]) => {
           const newMessageLogContent = {
             user, //this'll get the last user (new user) in the contact array
@@ -106,9 +99,9 @@ export default function MessageLogsContextProvider({ children }) {
           });
         });
     };
-    socket.on('refresh-msg-log', refreshMsgLogs);
+    socket.on("refresh-msg-log", refreshMsgLogs);
 
-    return () => socket.off('refresh-msg-log');
+    return () => socket.off("refresh-msg-log");
   }, [userState, contacts, msgLogs]);
 
   // count unread messages
@@ -116,7 +109,7 @@ export default function MessageLogsContextProvider({ children }) {
     if (Object.keys(msgLogs.content).length === 0) return;
     const msgEntries = msgLogs.content;
     const userId = userState.user._id;
-    const result = MESSAGE_UNREAD_DEFAULT;
+    const result = { detail: {}, total: 0 };
 
     const hasBeenReadOrMine = (chat, userId) => {
       if (chat.readAt !== null) return true;
@@ -149,11 +142,12 @@ export default function MessageLogsContextProvider({ children }) {
         }
       }
     }
+
     setMsgUnread(result);
   }, [msgLogs]);
 
-  useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  // useEffect(() => console.log(msgUnread), [msgUnread]);
+  // useEffect(() => console.log(msgLogs), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider

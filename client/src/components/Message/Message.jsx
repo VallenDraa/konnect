@@ -1,6 +1,6 @@
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { BiCheck, BiCheckDouble } from 'react-icons/bi';
-import RenderIf from '../../utils/React/RenderIf';
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { BiCheck, BiCheckDouble } from "react-icons/bi";
+import RenderIf from "../../utils/React/RenderIf";
 
 export const Message = ({
   state,
@@ -11,31 +11,31 @@ export const Message = ({
 }) => {
   const formattedTime = time
     .toTimeString()
-    .slice(0, time.toTimeString().lastIndexOf(':'));
+    .slice(0, time.toTimeString().lastIndexOf(":"));
 
   return (
     <li
       aria-label="message"
       className={`h-max flex items-center mt-5 animate-pop-in
-                     ${isSentByMe ? 'justify-end' : ''}
-                     ${isSentByMe ? 'pr-5 lg:pr-8' : 'pl-5 lg:pl-8'}`}
+                     ${isSentByMe ? "justify-end" : ""}
+                     ${isSentByMe ? "pr-5 lg:pr-8" : "pl-5 lg:pl-8"}`}
     >
       <div
         className={`max-w-[75%] rounded-lg shadow p-3 space-y-2 min-w-[100px]
-                      ${isSentByMe ? 'bg-white' : ' bg-gray-300'}`}
+                      ${isSentByMe ? "bg-white" : " bg-gray-300"}`}
       >
-        <span className={`text-gray-800 leading-5 md:leading-6  self-start`}>
+        <span className={`text-gray-800 leading-5 lg:leading-6  self-start`}>
           {msg}
         </span>
 
         <div
           className={`text-xxs flex items-center gap-2 self-end
-                    ${isSentByMe ? 'justify-between' : 'justify-start'}
+                    ${isSentByMe ? "justify-between" : "justify-start"}
         `}
         >
           <time
             className={`font-light
-                       ${isSentByMe ? 'text-gray-400' : 'text-gray-600'}`}
+                       ${isSentByMe ? "text-gray-400" : "text-gray-600"}`}
           >
             {formattedTime}
           </time>
@@ -50,7 +50,7 @@ export const Message = ({
             <RenderIf conditionIs={state.isSent}>
               <BiCheckDouble
                 className={`text-xl self-start animate-fade-in 
-                          ${state.readAt ? 'text-pink-300' : 'text-gray-400'}
+                          ${state.readAt ? "text-blue-300" : "text-gray-400"}
               `}
               />
             </RenderIf>

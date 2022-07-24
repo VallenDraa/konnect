@@ -1,17 +1,17 @@
-import { useReducer } from 'react';
-import { useEffect, useState } from 'react';
-import { IoSearch } from 'react-icons/io5';
-import emptySearchResults from '../../../svg/searchList/emptySearchResults.svg';
+import { useReducer } from "react";
+import { useEffect, useState } from "react";
+import { IoSearch } from "react-icons/io5";
+import emptySearchResults from "../../../svg/searchList/emptySearchResults.svg";
 import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
-} from '../../../reducer/searchResultsReducer/searchResultsReducer';
+} from "../../../reducer/searchResultsReducer/searchResultsReducer";
 
-import ContactsSwiperCard from '../../../utils/ContactsSwiperCard/ContactsSwiperCard';
-import RenderIf from '../../../utils/React/RenderIf';
+import ContactsSwiperCard from "../../../utils/ContactsSwiperCard/ContactsSwiperCard";
+import RenderIf from "../../../utils/React/RenderIf";
 
-import Pill from '../../Buttons/Pill';
-import Input from '../../Input/Input';
+import Pill from "../../Buttons/Pill";
+import Input from "../../Input/Input";
 
 export default function SearchBox({
   multipleSelect = false,
@@ -29,7 +29,7 @@ export default function SearchBox({
     searchResultsReducer,
     SEARCH_RESULTS_DEFAULT
   );
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 

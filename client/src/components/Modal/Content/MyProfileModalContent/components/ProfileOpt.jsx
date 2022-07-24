@@ -1,28 +1,28 @@
-import { useContext, useEffect, useId, useState } from 'react';
-import { UserContext } from '../../../../../context/user/userContext';
-import { ContactsContext } from '../../../../../context/contactContext/ContactContext';
-import { BiHappyHeartEyes } from 'react-icons/bi';
-import { FaCamera } from 'react-icons/fa';
-import { FiSave } from 'react-icons/fi';
-import { ImProfile, ImBlocked, ImPencil } from 'react-icons/im';
-import Pill from '../../../../Buttons/Pill';
-import Input from '../../../../Input/Input';
-import RenderIf from '../../../../../utils/React/RenderIf';
-import ContactsSwiperCard from '../../../../../utils/ContactsSwiperCard/ContactsSwiperCard';
-import api from '../../../../../utils/apiAxios/apiAxios';
-import USER_ACTIONS from '../../../../../context/user/userAction';
-import { MiniModalContext } from '../../../../../context/miniModal/miniModalContext';
-import MINI_MODAL_ACTIONS from '../../../../../context/miniModal/miniModalActions';
-import PasswordConfirmation from '../../../../MiniModal/content/AccountOpt/PasswordConfirmation';
+import { useContext, useEffect, useId, useState } from "react";
+import { UserContext } from "../../../../../context/user/userContext";
+import { ContactsContext } from "../../../../../context/contactContext/ContactContext";
+import { BiHappyHeartEyes } from "react-icons/bi";
+import { FaCamera } from "react-icons/fa";
+import { FiSave } from "react-icons/fi";
+import { ImProfile, ImBlocked, ImPencil } from "react-icons/im";
+import Pill from "../../../../Buttons/Pill";
+import Input from "../../../../Input/Input";
+import RenderIf from "../../../../../utils/React/RenderIf";
+import ContactsSwiperCard from "../../../../../utils/ContactsSwiperCard/ContactsSwiperCard";
+import api from "../../../../../utils/apiAxios/apiAxios";
+import USER_ACTIONS from "../../../../../context/user/userAction";
+import { MiniModalContext } from "../../../../../context/miniModal/miniModalContext";
+import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalActions";
+import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 
 const ProfileOpt = () => {
   const imageId = useId();
   const { userState, userDispatch } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [firstName, setFirstName] = useState(userState.user.firstName || '');
-  const [lastName, setLastName] = useState(userState.user.lastName || '');
-  const [status, setStatus] = useState(userState.user.status || 'unset');
+  const [firstName, setFirstName] = useState(userState.user.firstName || "");
+  const [lastName, setLastName] = useState(userState.user.lastName || "");
+  const [status, setStatus] = useState(userState.user.status || "unset");
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
 
   // get contacts preview
@@ -51,11 +51,11 @@ const ProfileOpt = () => {
 
   useEffect(() => {
     if (isEditMode) {
-      status === 'unset' && setStatus('');
+      status === "unset" && setStatus("");
     } else {
-      userState.user.status === '' && setStatus('unset');
-      if (firstName !== '' && userState.user.firstName === '') setFirstName('');
-      if (lastName !== '' && userState.user.lastName === '') setLastName('');
+      userState.user.status === "" && setStatus("unset");
+      if (firstName !== "" && userState.user.firstName === "") setFirstName("");
+      if (lastName !== "" && userState.user.lastName === "") setLastName("");
     }
   }, [isEditMode]);
 
@@ -63,17 +63,17 @@ const ProfileOpt = () => {
     try {
       userDispatch({ type: USER_ACTIONS.updateStart });
       const { data } = await api.put(
-        '/user/edit_profile',
+        "/user/edit_profile",
         { password, ...payload },
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         }
       );
 
       if (data.success) {
-        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem("token", data.token);
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
         setIsEditMode(false);
         miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
@@ -88,12 +88,13 @@ const ProfileOpt = () => {
 
   const handleMiniModalPwConfirm = (e) => {
     e.preventDefault();
+    if (!isEditMode) return;
 
     const payload = {
       firstName,
       lastName,
       status,
-      token: sessionStorage.getItem('token'),
+      token: sessionStorage.getItem("token"),
     };
 
     if (!miniModalState.isActive) {
@@ -143,12 +144,12 @@ const ProfileOpt = () => {
           {/* user data */}
           <footer className="py-3 space-y-8">
             <header
-              style={{ flexWrap: isEditMode ? 'wrap-reverse' : 'nowrap' }}
-              className="flex  justify-between items-center gap-1 px-5"
+              style={{ flexDirection: isEditMode ? "column-reverse" : "row" }}
+              className="flex justify-between items-center gap-3 px-5 flex-wrap-reverse"
             >
               {/* username and date joined */}
-              <div className="flex grow flex-wrap-reverse items-center">
-                <h2 className="text-4xl md:text-3xl font-semibold mt-2 min-w-[70px] max-w-[99%]">
+              <div className="flex grow flex-wrap-reverse items-center gap-x-2 overflow-hidden max-w-full">
+                <h2 className="text-4xl lg:text-3xl font-semibold mt-2">
                   {userState.user.username}
                 </h2>
                 {/* date joined */}
@@ -160,19 +161,19 @@ const ProfileOpt = () => {
               {/* buttons */}
               <div
                 style={{
-                  gap: isEditMode ? '0.5rem' : '0',
-                  width: isEditMode ? '100%' : '50%',
+                  gap: isEditMode ? "0.5rem" : "0",
+                  width: isEditMode ? "100%" : "50%",
                 }}
-                className="flex h-full justify-end"
+                className="flex h-full justify-end grow"
               >
                 <Pill
                   onClick={() => setIsEditMode(!isEditMode)}
-                  style={{ width: isEditMode ? '50%' : '100px' }}
+                  style={{ width: isEditMode ? "50%" : "100px" }}
                   className={`text-base px-4 py-1 font-bold flex items-center gap-x-2
                   ${
                     !isEditMode
-                      ? 'bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 text-white'
-                      : 'bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-200'
+                      ? "bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 text-white"
+                      : "bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-200"
                   }`}
                 >
                   <RenderIf conditionIs={!isEditMode}>
@@ -190,10 +191,10 @@ const ProfileOpt = () => {
                   type="submit"
                   disabled={!isEditMode}
                   style={{
-                    cursor: isEditMode ? 'pointer' : 'default',
-                    padding: isEditMode ? '0.25rem 1rem' : '0',
-                    opacity: isEditMode ? '1' : '0',
-                    width: isEditMode ? '50%' : '0%',
+                    cursor: isEditMode ? "pointer" : "default",
+                    padding: isEditMode ? "0.25rem 1rem" : "0",
+                    opacity: isEditMode ? "1" : "0",
+                    width: isEditMode ? "50%" : "0%",
                   }}
                   className="text-base font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 active:shadow-blue-100 text-white flex items-center gap-x-2"
                 >
@@ -215,17 +216,17 @@ const ProfileOpt = () => {
                     <Input
                       required={false}
                       customState={[firstName, setFirstName]}
-                      className="basis-1/2 text-base md:text-sm"
+                      className="basis-1/2 text-base lg:text-sm"
                       type="text"
-                      placeholder={'Edit First Name'}
+                      placeholder={"Edit First Name"}
                     />
                     {/* last name */}
                     <Input
                       required={false}
                       customState={[lastName, setLastName]}
-                      className="basis-1/2 text-base md:text-sm"
+                      className="basis-1/2 text-base lg:text-sm"
                       type="text"
-                      placeholder={'Edit Last Name'}
+                      placeholder={"Edit Last Name"}
                     />
                   </div>
                 </RenderIf>
@@ -234,8 +235,8 @@ const ProfileOpt = () => {
                 <RenderIf conditionIs={!isEditMode}>
                   <RenderIf
                     conditionIs={
-                      userState.user.firstName !== '' ||
-                      userState.user.lastName !== ''
+                      userState.user.firstName !== "" ||
+                      userState.user.lastName !== ""
                     }
                   >
                     <h3 className="flex items-center gap-x-1 mb-2 text-xs font-semibold text-gray-400">
@@ -254,12 +255,12 @@ const ProfileOpt = () => {
                 <RenderIf conditionIs={isEditMode}>
                   <Input
                     labelActive={true}
-                    placeholder={'Edit Status'}
+                    placeholder={"Edit Status"}
                     required={false}
                     label="Status"
                     type="text"
                     customState={[status, setStatus]}
-                    style={{ fontSize: '24px' }}
+                    style={{ fontSize: "24px" }}
                     icon={<BiHappyHeartEyes className="text-lg" />}
                   />
                 </RenderIf>

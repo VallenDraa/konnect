@@ -1,19 +1,20 @@
-import { useContext, useEffect, useRef } from 'react';
-import { IoPeopleSharp, IoCall, IoChatbubbles } from 'react-icons/io5';
-import MODAL_ACTIONS from '../../context/modal/modalActions';
-import { ModalContext } from '../../context/modal/modalContext';
-import Pill from '../Buttons/Pill';
-import NewChat from './contents/NewChat/NewChat';
-import NewGroup from './contents/NewGroup/NewGroup';
-import StartCall from './contents/StartCall/StartCall';
-import { useLocation } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { BsArrowLeft } from 'react-icons/bs';
-import throttle from '../../utils/performance/throttle';
-import RenderIf from '../../utils/React/RenderIf';
+import { useContext, useEffect, useRef } from "react";
+import { IoPeopleSharp, IoCall, IoChatbubbles } from "react-icons/io5";
+import MODAL_ACTIONS from "../../context/modal/modalActions";
+import { ModalContext } from "../../context/modal/modalContext";
+import Pill from "../Buttons/Pill";
+import NewChat from "./contents/NewChat/NewChat";
+import NewGroup from "./contents/NewGroup/NewGroup";
+import StartCall from "./contents/StartCall/StartCall";
+import { useLocation } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import throttle from "../../utils/performance/throttle";
+import RenderIf from "../../utils/React/RenderIf";
+import { Logo } from "../Logo/Logo";
+import { FaLongArrowAltLeft } from "react-icons/fa";
 
 export default function CTA({
-  className = 'flex justify-evenly gap-2',
+  className = "flex justify-evenly gap-2",
   urlHistory,
   enableSlide,
 }) {
@@ -22,18 +23,18 @@ export default function CTA({
   const swipeBall = useRef();
 
   useEffect(() => {
-    const [route, subroute] = location.pathname.split('/').slice(1, 3);
-    if (route !== 'new') return;
+    const [route, subroute] = location.pathname.split("/").slice(1, 3);
+    if (route !== "new") return;
 
     const switchContent = (subroute) => {
       switch (subroute) {
-        case 'chat':
+        case "chat":
           return <NewChat />;
 
-        case 'call':
+        case "call":
           return <StartCall />;
 
-        case 'group':
+        case "group":
           return <NewGroup />;
 
         default:
@@ -121,15 +122,15 @@ export default function CTA({
 
   // function for when the user is moving the CTA button swiper
   const handleSwiping = throttle(() => {
-    if (swipeBall.current.style.width !== '36px') return;
-    swipeBall.current.style.width = '100px';
-    swipeBall.current.classList.add('mr-3');
+    if (swipeBall.current.style.width !== "36px") return;
+    swipeBall.current.style.width = "100px";
+    swipeBall.current.classList.add("mr-5");
   }, 1000);
 
   // function for when the user stop moving the CTA button swiper
   const handleSwipingStop = () => {
-    swipeBall.current.style.width = '36px';
-    swipeBall.current.classList.remove('mr-3');
+    swipeBall.current.style.width = "36px";
+    swipeBall.current.classList.remove("mr-5");
   };
 
   return (
@@ -140,19 +141,19 @@ export default function CTA({
           onSliderMove={handleSwiping}
           onTouchEnd={handleSwipingStop}
           className="lg:hidden"
-          slidesPerView={'auto'}
+          slidesPerView={"auto"}
         >
           <SwiperSlide className="text-sm flex justify-end rounded-full relative group cursor-grab">
             <div
               ref={swipeBall}
-              style={{ height: '36px', width: '36px' }}
-              className="rounded-full bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 duration-200"
+              style={{ height: "36px", width: "36px" }}
+              className="rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-pink-300 duration-200 flex items-center"
             >
               {/* floating text */}
-              <div className="absolute flex items-center gap-x-2 inset-y-0 right-3 transition duration-200 group-hover:-translate-x-1">
-                <BsArrowLeft className="group-hover:translate-x-0 translate-x-1 transition duration-200" />
-                <span>Swipe For More</span>
-              </div>
+              <span className="inset-y-0 absolute flex items-center gap-x-2 right-3 transition duration-200 group-hover:-translate-x-1">
+                <FaLongArrowAltLeft className="group-hover:translate-x-0 translate-x-1 transition duration-200 text-lg text-blue-400 h-[28px]" />
+                <Logo />
+              </span>
             </div>
           </SwiperSlide>
           <SwiperSlide className={className}>
@@ -162,7 +163,7 @@ export default function CTA({
       </RenderIf>
       <div
         className={`${className}
-                  ${enableSlide ? 'hidden lg:flex' : ''}`}
+                  ${enableSlide ? "hidden lg:flex" : ""}`}
       >
         <CtaButtons />
       </div>

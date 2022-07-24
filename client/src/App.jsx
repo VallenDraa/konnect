@@ -1,15 +1,29 @@
-import { useContext, useEffect } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { UserContext } from './context/user/userContext';
-import { Login } from './pages/Login/Login';
-import { Register } from './pages/Register/Register';
-import Home from './pages/Home/Home';
-import RenderIf from './utils/React/RenderIf';
-// import LandscapeAlert from "./components/LandscapeAlert/LandscapeAlert";
+import { useContext, useEffect } from "react";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { UserContext } from "./context/user/userContext";
+import { Login } from "./pages/Login/Login";
+import { Register } from "./pages/Register/Register";
+import Home from "./pages/Home/Home";
+import RenderIf from "./utils/React/RenderIf";
+import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
+import { NotifContext } from "./context/notifContext/NotifContext";
+import { TitleContext } from "./context/titleContext/TitleContext";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
-  // console.log(userState);
+  const { msgUnread } = useContext(MessageLogsContext);
+  const { notifUnseen } = useContext(NotifContext);
+  const { setTitle } = useContext(TitleContext);
+
+  // change the page title according to the number of notifications
+  useEffect(() => {
+    const notifTotal = notifUnseen.total + msgUnread.total;
+
+    setTitle((prev) => ({
+      ...prev,
+      prefix: notifTotal > 0 ? `(${notifTotal}) ` : "",
+    }));
+  }, [notifUnseen, msgUnread]);
 
   return (
     <div className="text-gray-800 antialiased">

@@ -4,16 +4,16 @@ import {
   useCallback,
   useContext,
   useReducer,
-} from 'react';
-import { ContactsContext } from '../../../../context/contacts/contacts';
-import { UserContext } from '../../../../context/user/userContext';
+} from "react";
+import { ContactsContext } from "../../../../context/contacts/contacts";
+import { UserContext } from "../../../../context/user/userContext";
 import groupedContactsReducer, {
   GROUPED_CONTACTS_DEFAULT,
   GROUPED_CONTACTS_ACTIONS,
-} from '../../../../reducer/groupedContactsReducer/groupedContactsReducer';
-import emptyContactList from '../../../../svg/searchList/contactList/InitialSvg.svg';
-import api from '../../../../utils/apiAxios/apiAxios';
-import RenderIf from '../../../../utils/React/RenderIf';
+} from "../../../../reducer/groupedContactsReducer/groupedContactsReducer";
+import emptyContactList from "../../../../svg/searchList/contactList/InitialSvg.svg";
+import api from "../../../../utils/apiAxios/apiAxios";
+import RenderIf from "../../../../utils/React/RenderIf";
 
 const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
   const { contacts, setContacts } = useContext(ContactsContext);
@@ -92,7 +92,7 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
             alt=""
             className="max-w-[300px] mx-auto"
           />
-          <span className="block font-semibold text-xl md:text-lg text-gray-500">
+          <span className="block font-semibold text-xl lg:text-lg text-gray-500">
             Your contacts list is still empty
           </span>
           <span className="font-light text-gray-400 text-xs">
@@ -121,8 +121,8 @@ const ContactList = ({ setActiveChat, setIsSidebarOn }) => {
                   onClick={() => handleActiveContact(contact)}
                   className={`pl-3 cursor-pointer flex items-center gap-2 ${
                     contact.activeChat
-                      ? 'bg-pink-100 font-semibold'
-                      : 'hover:bg-pink-100'
+                      ? "bg-pink-100 font-semibold"
+                      : "hover:bg-pink-100"
                   } p-2 duration-200 rounded-md`}
                 >
                   <img

@@ -1,12 +1,12 @@
-import { ChatPreview } from './ChatPreview/ChatPreview';
-import { useContext, useEffect, useState } from 'react';
-import RenderIf from '../../../../utils/React/RenderIf';
+import { ChatPreview } from "./ChatPreview/ChatPreview";
+import { useContext, useEffect, useState } from "react";
+import RenderIf from "../../../../utils/React/RenderIf";
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
-} from '../../../../context/activeChat/ActiveChatContext';
-import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
-import { chatPreviewTimeStatus } from '../../../../utils/dates/dates';
+} from "../../../../context/activeChat/ActiveChatContext";
+import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
+import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 
 export default function ChatList({ setIsSidebarOn }) {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -55,11 +55,11 @@ export default function ChatList({ setIsSidebarOn }) {
   const EmptyPlaceholder = () => {
     return (
       <div className="text-center space-y-10 mt-10 p-3">
-        <span className="block font-semibold text-xl md:text-lg text-gray-500">
+        <span className="block font-semibold text-xl lg:text-lg text-gray-500">
           Chat List Is Empty
         </span>
         <span className="text-gray-400 text-xs">
-          Go start a chat by pressing{' '}
+          Go start a chat by pressing{" "}
           <span className="font-semibold text-gray-500">New Chat !</span>
         </span>
       </div>
@@ -91,7 +91,7 @@ export default function ChatList({ setIsSidebarOn }) {
                     new Date(chat[chat.length - 1].time)
                   )}
                   user={user}
-                  isActive={_id === activeChat._id}
+                  isActive={_id === activeChat?._id}
                   handleActiveChat={handleActiveChat}
                 />
               );

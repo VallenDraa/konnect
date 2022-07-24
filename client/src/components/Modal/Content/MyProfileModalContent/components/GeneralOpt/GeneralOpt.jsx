@@ -3,20 +3,20 @@ import {
   IoSparklesSharp,
   IoAccessibilitySharp,
   IoLanguageSharp,
-} from 'react-icons/io5';
-import { BsFillSunFill, BsFillMoonFill } from 'react-icons/bs';
-import SwitchBtn from '../../../../../Buttons/SwitchBtn';
-import { UserContext } from '../../../../../../context/user/userContext';
-import { useContext, useRef, useState } from 'react';
-import { useEffect } from 'react';
-import Language, { LANGUAGES } from './components/Languange/Language';
-import api from '../../../../../../utils/apiAxios/apiAxios';
-import USER_ACTIONS from '../../../../../../context/User/userAction';
+} from "react-icons/io5";
+import { BsFillSunFill, BsFillMoonFill } from "react-icons/bs";
+import SwitchBtn from "../../../../../Buttons/SwitchBtn";
+import { UserContext } from "../../../../../../context/user/userContext";
+import { useContext, useRef, useState } from "react";
+import { useEffect } from "react";
+import Language, { LANGUAGES } from "./components/Languange/Language";
+import api from "../../../../../../utils/apiAxios/apiAxios";
+import USER_ACTIONS from "../../../../../../context/User/userAction";
 import {
   SettingsContext,
   updateSettings,
-} from '../../../../../../context/settingsContext/SettingsContext';
-import { MdSwipe } from 'react-icons/md';
+} from "../../../../../../context/settingsContext/SettingsContext";
+import { MdSwipe } from "react-icons/md";
 
 const GeneralOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -24,7 +24,7 @@ const GeneralOpt = () => {
   const { general } = settings;
   const newGeneral = useRef({});
   const [language, setLanguage] = useState(general.language || LANGUAGES[0]);
-  const [theme, setTheme] = useState(general.theme || 'light');
+  const [theme, setTheme] = useState(general.theme || "light");
   const [menuSwiping, setMenuSwiping] = useState(general.menuSwiping || false);
 
   // for updating user settings in the database
@@ -38,7 +38,7 @@ const GeneralOpt = () => {
       if (!isAllOptsSame) {
         updateSettings({
           newSettings: newGeneral.current,
-          type: 'general',
+          type: "general",
           oldSettings: settings,
           setSettings,
         });
@@ -72,8 +72,8 @@ const GeneralOpt = () => {
               Theme
             </span>
             <SwitchBtn
-              on={theme === 'dark' && true}
-              onClick={(isLight) => setTheme(isLight ? 'light' : 'dark')}
+              on={theme === "dark" && true}
+              onClick={(isLight) => setTheme(isLight ? "light" : "dark")}
               icon1={<BsFillSunFill className="text-sm" />}
               icon2={<BsFillMoonFill className="text-sm" />}
             />
@@ -82,7 +82,7 @@ const GeneralOpt = () => {
       </li>
 
       {/* accessibility options*/}
-      <li className="border-b-2">
+      <li className="border-b-2 relative">
         <h2 className="font-semibold flex items-center gap-2 text-gray-500 text-xs mb-2">
           <IoAccessibilitySharp />
           Accessibility
@@ -94,7 +94,7 @@ const GeneralOpt = () => {
               <IoLanguageSharp />
               Language
             </span>
-            <div className="absolute right-8 lg:right-6">
+            <div className="absolute right-3">
               <Language languageState={{ language, setLanguage }} />
             </div>
           </li>

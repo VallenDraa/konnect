@@ -1,24 +1,24 @@
-import { useEffect, useReducer, useState } from 'react';
-import { IoSearch } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
-import emptySearchResults from '../../../../svg/searchList/emptySearchResults.svg';
-import initialSvg from '../../../../svg/searchList/contactList/InitialSvg.svg';
-import api from '../../../../utils/apiAxios/apiAxios';
-import RenderIf from '../../../../utils/React/RenderIf';
-import Input from '../../../Input/Input';
+import { useEffect, useReducer, useState } from "react";
+import { IoSearch } from "react-icons/io5";
+import { Link } from "react-router-dom";
+import emptySearchResults from "../../../../svg/searchList/emptySearchResults.svg";
+import initialSvg from "../../../../svg/searchList/contactList/InitialSvg.svg";
+import api from "../../../../utils/apiAxios/apiAxios";
+import RenderIf from "../../../../utils/React/RenderIf";
+import Input from "../../../Input/Input";
 import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
-} from '../../../../reducer/searchResultsReducer/searchResultsReducer';
-import { FaUserAlt } from 'react-icons/fa';
+} from "../../../../reducer/searchResultsReducer/searchResultsReducer";
+import { FaUserAlt } from "react-icons/fa";
 
 export default function SearchList() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [searchResults, searchResultsDispatch] = useReducer(
     searchResultsReducer,
     SEARCH_RESULTS_DEFAULT
   );
-  const [SVPreview, setSVPreview] = useState('');
+  const [SVPreview, setSVPreview] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function SearchList() {
       setIsTyping(false);
       searchResultsDispatch({ type: SEARCH_RESULTS_ACTIONS.start });
 
-      if (query === '')
+      if (query === "")
         return searchResultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload: [],
@@ -40,7 +40,7 @@ export default function SearchList() {
           `/query/user/find_users?query=${query}`,
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           }
         );
@@ -69,7 +69,7 @@ export default function SearchList() {
 
   return (
     <section aria-label="searchList" className="py-1.5 px-3 space-y-5">
-      <header className="sticky top-0 space-y-3 bg-gray-50 pt-2">
+      <header className="sticky top-0 space-y-3  pt-2">
         <Input
           labelActive={true}
           customState={[query, setQuery]}
@@ -87,7 +87,7 @@ export default function SearchList() {
         <RenderIf conditionIs={!isTyping && !searchResults.loading}>
           <div>
             {/* this will appear when the user is done typing and the search value is not empty */}
-            <RenderIf conditionIs={SVPreview !== ''}>
+            <RenderIf conditionIs={SVPreview !== ""}>
               <div className="flex flex-col gap-1">
                 <span className="font-semibold text-gray-700 max-w-full truncate">
                   Results for <span className="italic ">{SVPreview}</span>
@@ -99,9 +99,9 @@ export default function SearchList() {
             </RenderIf>
 
             {/* this svg will appear when the query is empty */}
-            <RenderIf conditionIs={query === ''}>
+            <RenderIf conditionIs={query === ""}>
               <div className="text-center space-y-10 mt-10 overflow-x-hidden">
-                <span className="block font-semibold text-xl md:text-lg text-gray-500">
+                <span className="block font-semibold text-xl lg:text-lg text-gray-500">
                   Find others and Konnect !
                 </span>
                 <span className="font-light text-gray-400 text-xs">
@@ -134,11 +134,11 @@ export default function SearchList() {
                           className="rounded-full h-12 w-12"
                         />
 
-                        <span className="text-lg truncate font-medium">
+                        <span className="text-lg truncate font-medium group-hover:text-pink-700">
                           {username}
                         </span>
                       </div>
-                      <FaUserAlt className="ml-auto mr-1 text-gray-500 group-hover:text-pink-600" />
+                      <FaUserAlt className="ml-auto mr-1 text-gray-500 group-hover:text-pink-500" />
                     </Link>
                   </li>
                 );
@@ -150,20 +150,15 @@ export default function SearchList() {
               conditionIs={
                 !searchResults.loading &&
                 searchResults.content?.length === 0 &&
-                query !== ''
+                query !== ""
               }
             >
               <li className="text-center space-y-10 mt-10">
-                <img
-                  src={emptySearchResults}
-                  alt=""
-                  className="max-w-[300px] mx-auto"
-                />
-                <span className="block font-semibold text-xl md:text-lg text-gray-600">
+                <span className="block font-semibold text-xl lg:text-lg text-gray-600">
                   Welp nothing here :(
                 </span>
                 <span className="font-light text-gray-400 text-xs">
-                  Try other keywords and maybe we can find something for you
+                  Try other keywords...
                 </span>
               </li>
             </RenderIf>

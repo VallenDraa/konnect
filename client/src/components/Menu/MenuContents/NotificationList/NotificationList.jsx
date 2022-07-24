@@ -1,20 +1,20 @@
-import { useEffect, useContext, useState, Fragment } from 'react';
-import { MdOutlineMoveToInbox, MdOutlineOutbox } from 'react-icons/md';
-import { UserContext } from '../../../../context/user/userContext';
-import RenderIf from '../../../../utils/React/RenderIf';
-import api from '../../../../utils/apiAxios/apiAxios';
-import Dropdown from '../../../Dropdown/Dropdown';
-import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
-import NotifListItem from './NotifListItem/NotifListItem';
-import ContactNotif from './type/ContactNotif/ContactNotif';
-import { useLocation } from 'react-router-dom';
-import { NotifContext } from '../../../../context/notifContext/NotifContext';
-import NOTIF_CONTEXT_ACTIONS from '../../../../context/notifContext/notifContextActions';
+import { useEffect, useContext, useState, Fragment } from "react";
+import { MdOutlineMoveToInbox, MdOutlineOutbox } from "react-icons/md";
+import { UserContext } from "../../../../context/user/userContext";
+import RenderIf from "../../../../utils/React/RenderIf";
+import api from "../../../../utils/apiAxios/apiAxios";
+import Dropdown from "../../../Dropdown/Dropdown";
+import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
+import NotifListItem from "./NotifListItem/NotifListItem";
+import ContactNotif from "./type/ContactNotif/ContactNotif";
+import { useLocation } from "react-router-dom";
+import { NotifContext } from "../../../../context/notifContext/NotifContext";
+import NOTIF_CONTEXT_ACTIONS from "../../../../context/notifContext/notifContextActions";
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
-    { name: 'inbox', icon: MdOutlineMoveToInbox },
-    { name: 'outbox', icon: MdOutlineOutbox },
+    { name: "inbox", icon: MdOutlineMoveToInbox },
+    { name: "outbox", icon: MdOutlineOutbox },
   ];
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
   const { notifs, notifsDispatch } = useContext(NotifContext);
@@ -33,13 +33,13 @@ export default function NotificationList() {
   // change the activebox according to the box url
   useEffect(() => {
     // parse the query url
-    if (activeLocation.pathname !== '/notifications') return;
+    if (activeLocation.pathname !== "/notifications") return;
 
     const search = Object.fromEntries(
       activeLocation.search
-        .replace('?', '')
-        .split('&')
-        .map((s) => s.split('='))
+        .replace("?", "")
+        .split("&")
+        .map((s) => s.split("="))
     );
 
     const targetBox = NOTIFICATION_TABS.find((n) => n.name === search.box);
@@ -50,17 +50,17 @@ export default function NotificationList() {
   // if user selected one of the box, then set all the contents of that box to seen
   useEffect(() => {
     const currentUrl = location.pathname + location.search;
-    if (!currentUrl.includes('notifications')) return;
+    if (!currentUrl.includes("notifications")) return;
     if (!currentUrl.includes(activeBox.name)) return;
 
     const updateNotifSeen = async ({ boxType, notifIds, userId }) => {
       // update the seen status to the database
       const { data } = await api.put(
-        '/notification/set_notif_to_seen',
+        "/notification/set_notif_to_seen",
         { notifIds, boxType, userId },
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         }
       );
@@ -105,7 +105,7 @@ export default function NotificationList() {
             fontSize={14}
             icon={activeBox.icon()}
             text={activeBox.name}
-            position={'origin-top-left left-0'}
+            position={"origin-top-left left-0"}
           >
             {NOTIFICATION_TABS.map((tab) => (
               <DropdownItem
@@ -115,7 +115,7 @@ export default function NotificationList() {
                 isActive={tab.name === activeBox.name}
                 className="flex items-center gap-x-1"
               >
-                {tab.icon({ className: 'text-sm' })}
+                {tab.icon({ className: "text-sm" })}
                 <span className="text-xs capitalize">{tab.name}</span>
               </DropdownItem>
             ))}
@@ -137,8 +137,8 @@ export default function NotificationList() {
             className={` 
                       ${
                         notifs?.content[activeBox.name]?.length === 0
-                          ? ''
-                          : 'border-y-2 divide-y-2'
+                          ? ""
+                          : "border-t-2"
                       }
                       `}
           >
@@ -147,16 +147,16 @@ export default function NotificationList() {
               conditionIs={notifs?.content[activeBox.name]?.length === 0}
             >
               <li className="text-center space-y-10 mt-10 py-4">
-                <span className="block font-semibold text-xl md:text-lg text-gray-500">
-                  <RenderIf conditionIs={activeBox.name === 'inbox'}>
+                <span className="block font-semibold text-xl lg:text-lg text-gray-500">
+                  <RenderIf conditionIs={activeBox.name === "inbox"}>
                     Inbox is empty
                   </RenderIf>
-                  <RenderIf conditionIs={activeBox.name === 'outbox'}>
+                  <RenderIf conditionIs={activeBox.name === "outbox"}>
                     Outbox is empty
                   </RenderIf>
                 </span>
                 <span className="font-light text-gray-400 text-xs">
-                  Something will show up here eventually ...
+                  Something will show up eventually ...
                 </span>
               </li>
             </RenderIf>
@@ -167,7 +167,7 @@ export default function NotificationList() {
               {notifs?.content[activeBox.name]?.map((info) => {
                 return (
                   <Fragment key={info._id}>
-                    <RenderIf conditionIs={info.type === 'contact_request'}>
+                    <RenderIf conditionIs={info.type === "contact_request"}>
                       <NotifListItem>
                         <ContactNotif info={info} type={activeBox.name} />
                       </NotifListItem>

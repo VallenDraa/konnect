@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
-import throttle from '../../../../utils/performance/throttle';
-import RenderIf from '../../../../utils/React/RenderIf';
-import LogoutBtn from '../../../Buttons/LogoutBtn';
-import Dropdown from '../../../Dropdown/Dropdown';
-import DropdownItem from '../../../Dropdown/DropdownItem/DropdownItem';
+import { useState } from "react";
+import { useEffect } from "react";
+import throttle from "../../../../utils/performance/throttle";
+import RenderIf from "../../../../utils/React/RenderIf";
+import LogoutBtn from "../../../Buttons/LogoutBtn";
+import Dropdown from "../../../Dropdown/Dropdown";
+import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
 
 export default function SettingsMenu({ options, activeOptState }) {
   const { activeOpt, setActiveOpt } = activeOptState;
@@ -18,9 +18,9 @@ export default function SettingsMenu({ options, activeOptState }) {
       setIsOnTop(window.innerWidth <= 1024);
     }, 60);
 
-    window.addEventListener('resize', moveMenuToTop);
+    window.addEventListener("resize", moveMenuToTop);
 
-    return () => window.removeEventListener('resize', moveMenuToTop);
+    return () => window.removeEventListener("resize", moveMenuToTop);
   }, []);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function SettingsMenu({ options, activeOptState }) {
   }, [activeOpt]);
 
   return (
-    <aside className="bg-gray-100 basis-auto lg:basis-1/3">
+    <aside className="bg-gray-100 basis-auto lg:basis-1/3 sticky top-0 lg:static z-30">
       <ul>
         <RenderIf conditionIs={!isOnTop}>
           {options.map((opt, i) => {
@@ -38,8 +38,8 @@ export default function SettingsMenu({ options, activeOptState }) {
                 <button
                   className={`${
                     opt.name === activeOpt
-                      ? 'bg-white text-gray-800 font-semibold'
-                      : 'hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium'
+                      ? "bg-white text-gray-800 font-semibold"
+                      : "hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium"
                   } cursor-pointer p-2 capitalize duration-200 flex items-center gap-2 h-9 w-full`}
                 >
                   <span className="text-base">{opt.icon}</span>
@@ -58,10 +58,10 @@ export default function SettingsMenu({ options, activeOptState }) {
             // fontSize={14}
             icon={Icon}
             text={activeOpt}
-            position={'origin-top'}
+            position={"origin-top"}
             className="border-y-2 bg-gray-200 hover:bg-gray-100 duration-200 text-black"
             btnClassName="border-0 shadow-none w-full flex justify-center py-1 text-lg rounded-none"
-            listStyle={{ width: '100%', borderRadius: '0px' }}
+            listStyle={{ width: "100%", borderRadius: "0px" }}
             listClassName="shadow-xl"
           >
             {options.map((opt) => (
@@ -77,7 +77,7 @@ export default function SettingsMenu({ options, activeOptState }) {
                 </span>
               </DropdownItem>
             ))}
-            <li className="w-full sm:w-3/4 md:w-2/3 mx-auto my-3">
+            <li className="w-full sm:w-3/4 lg:w-2/3 mx-auto my-3">
               <LogoutBtn />
             </li>
           </Dropdown>
