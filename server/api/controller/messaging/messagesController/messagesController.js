@@ -66,7 +66,7 @@ export const readMessage = async (req, res, next) => {
     const { chat } = chatLog;
 
     // set the latest unread message to read
-    for (let i = chat.length - 1; i > 0; i--) {
+    for (let i = chat.length - 1; i >= 0; i--) {
       if (chat[i].readAt !== null) break;
 
       chatLog.chat[i].readAt = time;

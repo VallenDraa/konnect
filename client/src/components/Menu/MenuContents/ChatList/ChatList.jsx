@@ -6,9 +6,7 @@ import {
   ACTIVE_CHAT_DEFAULT,
 } from '../../../../context/activeChat/ActiveChatContext';
 import { MessageLogsContext } from '../../../../context/messageLogs/MessageLogsContext';
-import { useNavigate } from 'react-router-dom';
 import { chatPreviewTimeStatus } from '../../../../utils/dates/dates';
-import { useSwiper } from 'swiper/react';
 
 export default function ChatList({ setIsSidebarOn }) {
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
@@ -80,7 +78,7 @@ export default function ChatList({ setIsSidebarOn }) {
       return <EmptyPlaceholder />;
     } else {
       return (
-        <ul className="p-3 space-y-2">
+        <ul className="p-3 flex flex-col gap-y-4">
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, { user, chat }]) => {

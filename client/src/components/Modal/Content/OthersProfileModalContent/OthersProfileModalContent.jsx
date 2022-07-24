@@ -38,7 +38,7 @@ export const OthersProfileModalContent = ({ username }) => {
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState('');
   const { contacts, setContacts } = useContext(ContactsContext);
-  const { notifs, notifsDispatch, unseen, setUnseen } =
+  const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
@@ -105,13 +105,13 @@ export const OthersProfileModalContent = ({ username }) => {
       },
       notifs,
       notifsDispatch,
-      unseen,
-      setUnseen,
+      notifUnseen,
+      setNotifUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
     });
 
     return () => socket.off('receive-send-add-contact');
-  }, [notifs, unseen]);
+  }, [notifs, notifUnseen]);
 
   // when a contact request is cancelled
   useEffect(() => {
@@ -122,14 +122,14 @@ export const OthersProfileModalContent = ({ username }) => {
       },
       notifs,
       notifsDispatch,
-      unseen,
-      setUnseen,
+      notifUnseen,
+      setNotifUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
       userState,
     });
 
     return () => socket.off('receive-cancel-add-contact');
-  }, [userState, notifs, unseen]);
+  }, [userState, notifs, notifUnseen]);
 
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {
@@ -219,7 +219,6 @@ export const OthersProfileModalContent = ({ username }) => {
     if (contacts.length > 0) {
       for (const { user } of contacts) {
         if (otherUserId === user._id) {
-          console.log(otherUserId, user);
           setIsAFriend(true);
           break;
         }

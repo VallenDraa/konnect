@@ -222,7 +222,7 @@ export const ChatBox = ({ sidebarState }) => {
         const { chat } = updatedMsgLogs.content[activeChat._id];
 
         // set the readAt time for messages
-        for (let i = chat.length - 1; i > 0; i--) {
+        for (let i = chat.length - 1; i >= 0; i--) {
           // it will break when the loop encounters a message that has been read
           if (chat[i].readAt !== null) break;
 

@@ -69,7 +69,7 @@ export const NotifContext = createContext(NOTIF_DEFAULT);
 
 export default function NotifContextProvider({ children }) {
   const [notifs, notifsDispatch] = useReducer(notifReducer, NOTIF_DEFAULT);
-  const [unseen, setUnseen] = useState({
+  const [notifUnseen, setNotifUnseen] = useState({
     inbox: 0,
     outbox: 0,
     total: 0,
@@ -124,21 +124,21 @@ export default function NotifContextProvider({ children }) {
         inbox.length >= outbox.length ? inbox.length : outbox.length;
 
       if (largestBoxLen === 0) {
-        setUnseen({ inbox: 0, outbox: 0, total: 0 });
+        setNotifUnseen({ inbox: 0, outbox: 0, total: 0 });
       } else {
         for (let i = 0; i < largestBoxLen; i++) {
-          // determine the unseen for inbox
+          // determine the notifUnseen for inbox
           if (inbox[i]) {
-            if (!inbox[i].seen) inboxUnseen++;
+            !inbox[i].seen && inboxUnseen++;
           }
 
-          // determine the unseen for outbox
+          // determine the notifUnseen for outbox
           if (outbox[i]) {
-            if (!outbox[i].seen) outboxUnseen++;
+            !outbox[i].seen && outboxUnseen++;
           }
         }
 
-        setUnseen({
+        setNotifUnseen({
           inbox: inboxUnseen,
           outbox: outboxUnseen,
           total: inboxUnseen + outboxUnseen,
@@ -147,11 +147,9 @@ export default function NotifContextProvider({ children }) {
     }
   }, [notifs]);
 
-  // useEffect(() => console.log(notifs), [notifs]);
-
   return (
     <NotifContext.Provider
-      value={{ notifs, notifsDispatch, unseen, setUnseen }}
+      value={{ notifs, notifsDispatch, notifUnseen, setNotifUnseen }}
     >
       {children}
     </NotifContext.Provider>
@@ -266,10 +264,10 @@ export const receiveContactRequestResponse = ({
         const updatedNotifs = notifs.content;
         for (let i = updatedNotifs[type].length - 1; i >= 0; i--) {
           if (updatedNotifs[type][i].type === 'contact_request') {
-            if (updatedNotifs[type][i].by._id === idToUse) {
-              updatedNotifs[type][i].answer = answer;
-              break;
-            }
+            if (updatedNotifs[type][i].by._id !== idToUse) continue;
+
+            updatedNotifs[type][i].answer = answer;
+            break;
           }
         }
         notifsDispatch({

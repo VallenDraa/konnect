@@ -138,12 +138,12 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
               isMenuNavigateWithBtn.current = false;
           }}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          noSwiping={!settings.general.menuSwiping}
+          noSwiping={!settings?.general?.menuSwiping}
           noSwipingClass="no-swipe"
           spaceBetween={0}
           slidesPerView={'auto'}
           className={`absolute inset-0 
-                    ${settings.general.menuSwiping ? 'cursor-grab' : ''}`}
+                    ${settings?.general?.menuSwiping ? 'cursor-grab' : ''}`}
           onActiveIndexChange={({ activeIndex }) => navigateMenu(activeIndex)}
         >
           <SwiperSlide className="no-swipe">

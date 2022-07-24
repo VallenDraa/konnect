@@ -49,6 +49,10 @@ export default function NotificationList() {
 
   // if user selected one of the box, then set all the contents of that box to seen
   useEffect(() => {
+    const currentUrl = location.pathname + location.search;
+    if (!currentUrl.includes('notifications')) return;
+    if (!currentUrl.includes(activeBox.name)) return;
+
     const updateNotifSeen = async ({ boxType, notifIds, userId }) => {
       // update the seen status to the database
       const { data } = await api.put(
@@ -90,7 +94,7 @@ export default function NotificationList() {
         notifsDispatch({ type: NOTIF_CONTEXT_ACTIONS.error, payload: error });
       }
     }
-  }, [activeBox, userState, notifs]);
+  }, [activeBox, userState, notifs, location]);
 
   return (
     <div className="p-3 space-y-3">

@@ -26,7 +26,7 @@ export default function SettingsContextProvider({ children }) {
             },
           });
 
-          setSettings(data.settings);
+          setSettings(data.settings || SETTINGS_DEFAULT);
           hasFetched.current = true;
         } catch (error) {
           console.error(error);

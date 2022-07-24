@@ -2,6 +2,7 @@ import { Fragment, useContext, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ModalContext } from '../../context/modal/modalContext';
 import { UserContext } from '../../context/user/userContext';
+import { MessageLogsContext } from '../../context/messageLogs/MessageLogsContext';
 import { MyProfileModalContent } from '../Modal/Content/MyProfileModalContent/MyProfileModalContent';
 import { OthersProfileModalContent } from '../Modal/Content/OthersProfileModalContent/OthersProfileModalContent';
 import NotifBadge from '../NotifBadge/NotifBadge';
@@ -14,7 +15,8 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   const location = useLocation();
   const { modalDispatch } = useContext(ModalContext);
   const { userState } = useContext(UserContext);
-  const { notifs, unseen } = useContext(NotifContext);
+  const { notifs, notifUnseen } = useContext(NotifContext);
+  const { msgUnread } = useContext(MessageLogsContext);
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
@@ -44,10 +46,6 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
     }
   }, [location]);
 
-  useEffect(() => {
-    console.log(location);
-  }, [location]);
-
   // to change the active menu according to the current URL path
   useEffect(() => {
     const newActiveMenu = location.pathname.split('/')[1];
@@ -59,18 +57,31 @@ export const Menu = ({ menus, activeMenuState, urlHistory }) => {
   const NotifBadgeSwitcher = ({ menuName }) => {
     switch (menuName) {
       case 'chats':
+        if (msgUnread) {
+          return (
+            <NotifBadge
+              isActive={
+                msgUnread.total !== 0 && typeof msgUnread.total === 'number'
+              }
+            >
+              {msgUnread.total <= 99 ? msgUnread.total : '99+'}
+            </NotifBadge>
+          );
+        }
         return;
       case 'contacts':
         return;
       case 'search':
         return;
       case 'notifications':
-        if (unseen) {
+        if (notifUnseen) {
           return (
             <NotifBadge
-              isActive={unseen.total !== 0 && typeof unseen.total === 'number'}
+              isActive={
+                notifUnseen.total !== 0 && typeof notifUnseen.total === 'number'
+              }
             >
-              {unseen.total <= 99 ? unseen.total : '99+'}
+              {notifUnseen.total <= 99 ? notifUnseen.total : '99+'}
             </NotifBadge>
           );
         }

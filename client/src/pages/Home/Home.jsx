@@ -38,7 +38,7 @@ export default function Home() {
   // const {}
   const [urlHistory, urlHistoryError] = useUrlHistory();
   const { contacts, setContacts } = useContext(ContactsContext);
-  const { notifs, notifsDispatch, unseen, setUnseen } =
+  const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
 
   useEffect(() => {
@@ -66,27 +66,27 @@ export default function Home() {
     receiveSendAddContact({
       notifs,
       notifsDispatch,
-      unseen,
-      setUnseen,
+      notifUnseen,
+      setNotifUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
     });
 
     return () => socket.off('receive-send-add-contact');
-  }, [notifs, unseen]);
+  }, [notifs, notifUnseen]);
 
   // when a contact request is cancelled
   useEffect(() => {
     receiveCancelAddContact({
       notifs,
       notifsDispatch,
-      unseen,
-      setUnseen,
+      notifUnseen,
+      setNotifUnseen,
       notifActions: NOTIF_CONTEXT_ACTIONS,
       userState,
     });
 
     return () => socket.off('receive-cancel-add-contact');
-  }, [userState, notifs, unseen]);
+  }, [userState, notifs, notifUnseen]);
 
   // update sender data when the recipient accepts or rejects a contact request
   useEffect(() => {

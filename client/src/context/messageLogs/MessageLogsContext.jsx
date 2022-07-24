@@ -1,4 +1,10 @@
-import { createContext, useReducer, useEffect, useContext } from 'react';
+import {
+  useState,
+  createContext,
+  useReducer,
+  useEffect,
+  useContext,
+} from 'react';
 import messageLogsReducer from './messageLogsReducer';
 import socket from '../../utils/socketClient/socketClient';
 import MESSAGE_LOGS_ACTIONS from './messageLogsActions';
@@ -20,6 +26,7 @@ const MESSAGE_LOGS_DEFAULT = {
     // },
   },
 };
+const MESSAGE_UNREAD_DEFAULT = { detail: {}, total: 0 };
 
 export const MessageLogsContext = createContext(MESSAGE_LOGS_DEFAULT);
 
@@ -30,6 +37,7 @@ export default function MessageLogsContextProvider({ children }) {
   );
   const { userState } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
+  const [msgUnread, setMsgUnread] = useState(MESSAGE_UNREAD_DEFAULT);
 
   // fetch all the message log from the server
   useEffect(() => {
@@ -101,12 +109,56 @@ export default function MessageLogsContextProvider({ children }) {
     socket.on('refresh-msg-log', refreshMsgLogs);
 
     return () => socket.off('refresh-msg-log');
-  }, []);
+  }, [userState, contacts, msgLogs]);
 
-  // useEffect(() => console.log(msgLogs), [msgLogs]);
+  // count unread messages
+  useEffect(() => {
+    if (Object.keys(msgLogs.content).length === 0) return;
+    const msgEntries = msgLogs.content;
+    const userId = userState.user._id;
+    const result = MESSAGE_UNREAD_DEFAULT;
+
+    const hasBeenReadOrMine = (chat, userId) => {
+      if (chat.readAt !== null) return true;
+      if (chat.by === userId) return true;
+    };
+
+    // only increments the Unread value if the last message sent by a user is Unread
+    for (const by in msgEntries) {
+      const lastMsg = msgEntries[by].chat.length - 1; //last index of the message log
+
+      // check if the user has sent any messages
+      if (lastMsg !== -1) {
+        const chatLog = msgEntries[by].chat;
+        const isLastMsgInvalid = hasBeenReadOrMine(chatLog[lastMsg], userId);
+
+        // if the last message has been read or is not by this user then continue
+        if (isLastMsgInvalid) continue;
+
+        // loop over to see how many messages are Unread
+        for (let i = chatLog.length - 1; i >= 0; i--) {
+          const isMsgInvalid = hasBeenReadOrMine(chatLog[i], userId);
+
+          // if the current message has been read or is not by this user then continue
+          if (isMsgInvalid) continue;
+
+          // increment the the unread value
+          const currValue = result.detail[by] || 0;
+          result.detail[by] = currValue + 1;
+          result.total = result.total + 1;
+        }
+      }
+    }
+    setMsgUnread(result);
+  }, [msgLogs]);
+
+  useEffect(() => console.log(msgUnread), [msgUnread]);
+  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
-    <MessageLogsContext.Provider value={{ msgLogs, msgLogsDispatch }}>
+    <MessageLogsContext.Provider
+      value={{ msgLogs, msgLogsDispatch, msgUnread, setMsgUnread }}
+    >
       {children}
     </MessageLogsContext.Provider>
   );
