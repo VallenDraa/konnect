@@ -12,12 +12,15 @@ import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalAction
 import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 import api from "../../../../../utils/apiAxios/apiAxios";
 import USER_ACTIONS from "../../../../../context/user/userAction";
+import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 const AccountOpt = () => {
   const { userState, userDispatch } = useContext(UserContext);
   const [email, setEmail] = useState(userState.user.email);
   const [username, setUsername] = useState(userState.user.username);
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   const submitChanges = async (password, payload) => {
     try {
@@ -74,7 +77,11 @@ const AccountOpt = () => {
           </h2>
           <ul className="w-full overflow-y-hidden flex flex-col divide-y-2">
             {/* email */}
-            <li className="flex flex-col justify-between w-full hover:bg-gray-100 p-3 duration-200">
+            <li
+              className={`flex flex-col justify-between w-full hover:bg-gray-100 p-3 ${
+                general?.animation ? "duration-200" : ""
+              }`}
+            >
               <span className="flex items-center gap-2 font-semibold text-sm">
                 <HiOutlineMail />
                 Email
@@ -98,7 +105,11 @@ const AccountOpt = () => {
           </h2>
           <ul className="w-full overflow-y-hidden flex flex-col divide-y-2">
             {/* username */}
-            <li className="flex flex-col justify-between w-full hover:bg-gray-100 p-3 duration-200">
+            <li
+              className={`flex flex-col justify-between w-full hover:bg-gray-100 p-3
+              ${general?.animation ? "duration-200" : ""}
+            `}
+            >
               <span className="flex items-center gap-2 font-semibold text-sm">
                 <BiRename />
                 Username

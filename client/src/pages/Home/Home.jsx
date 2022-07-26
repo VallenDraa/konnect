@@ -27,6 +27,7 @@ import ChatboxContextProvider from "../../context/chatBoxState/chatBoxContext";
 
 // url history context
 export const UrlHistoryContext = createContext(null);
+export const SidebarContext = createContext(null);
 
 export default function Home() {
   const { activeChat } = useContext(ActiveChatContext);
@@ -35,7 +36,6 @@ export default function Home() {
   const { userState, userDispatch } = useContext(UserContext);
   const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
   const location = useLocation();
-  // const {}
   const [urlHistory, urlHistoryError] = useUrlHistory();
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
@@ -140,28 +140,30 @@ export default function Home() {
 
   return (
     <>
-      <UrlHistoryContext.Provider value={urlHistory}>
-        <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
-          <MiniModal />
-          <Modal />
-          <InitialLoadingScreen />
-          <div
-            className={`flex duration-200
-                       ${modalState.isActive ? "lg:blur-sm" : ""}`}
-          >
-            <ChatboxContextProvider>
-              <Sidebar
-                urlHistory={urlHistory}
-                sidebarState={{ isSidebarOn, setIsSidebarOn }}
-              />
-              <ChatBox
-                activeChat={activeChat}
-                sidebarState={{ isSidebarOn, setIsSidebarOn }}
-              />
-            </ChatboxContextProvider>
+      <SidebarContext.Provider value={{ isSidebarOn, setIsSidebarOn }}>
+        <UrlHistoryContext.Provider value={urlHistory}>
+          <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
+            <MiniModal />
+            <Modal />
+            <InitialLoadingScreen />
+            <div
+              className={`flex duration-200
+                       ${
+                         modalState.isActive
+                           ? //  lg:blur-sm
+                             ""
+                           : ""
+                       }
+                        `}
+            >
+              <ChatboxContextProvider>
+                <Sidebar urlHistory={urlHistory} />
+                <ChatBox activeChat={activeChat} />
+              </ChatboxContextProvider>
+            </div>
           </div>
-        </div>
-      </UrlHistoryContext.Provider>
+        </UrlHistoryContext.Provider>
+      </SidebarContext.Provider>
     </>
   );
 }

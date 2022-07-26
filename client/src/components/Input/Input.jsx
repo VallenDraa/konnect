@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import RenderIf from '../../utils/React/RenderIf';
-import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
+import { useContext, useEffect, useId, useRef, useState } from "react";
+import RenderIf from "../../utils/React/RenderIf";
+import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 
 export default function Input({
   labelActive,
@@ -11,25 +12,48 @@ export default function Input({
   type,
   value,
   customState,
-  className = '',
+  className = "",
   style,
   placeholder,
 }) {
   const labelRef = useRef();
   const inputRef = useRef();
   const inputId = useId();
-  const [content, setContent] = customState || useState(value || '');
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
+  const [content, setContent] = customState || useState(value || "");
   const [isPwPeeked, setIsPwPeeked] = useState(false);
 
-  const emptyClasses =
-    'text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0 duration-200 cursor-text';
-  const notEmptyClasses = 'text-xxs text-gray-500 duration-200 cursor-text';
+  const [emptyClasses, setEmptyClasses] = useState(
+    `text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0 cursor-text
+     ${general?.animation ? "duration-200 " : ""} `
+  );
+
+  const [notEmptyClasses, setNotEmptyClasses] =
+    useState(`text-xxs text-gray-500 cursor-text
+   ${general?.animation ? "duration-200 " : ""} `);
+
+  // for handling animation
+  useEffect(() => {
+    setEmptyClasses((prev) =>
+      prev.replace(
+        general?.animation ? "" : "duration-200 ",
+        general?.animation ? "duration-200 " : ""
+      )
+    );
+    setNotEmptyClasses((prev) =>
+      prev.replace(
+        general?.animation ? "" : "duration-200 ",
+        general?.animation ? "duration-200 " : ""
+      )
+    );
+  }, [general]);
 
   // for peeking password
   useEffect(() => {
     if (!inputRef) return;
-    if (type === 'password') {
-      inputRef.current.type = isPwPeeked ? 'text' : 'password';
+    if (type === "password") {
+      inputRef.current.type = isPwPeeked ? "text" : "password";
     }
   }, [isPwPeeked]);
 
@@ -37,10 +61,10 @@ export default function Input({
   useEffect(() => {
     if (!labelRef.current) return;
     const cl = labelRef.current;
-    const currentClasses = [...cl.classList].join(' ');
+    const currentClasses = [...cl.classList].join(" ");
 
     if (!labelActive) {
-      if (content !== '') {
+      if (content !== "") {
         if (currentClasses !== notEmptyClasses) cl.className = notEmptyClasses;
       } else {
         if (currentClasses !== emptyClasses) cl.className = emptyClasses;
@@ -52,14 +76,17 @@ export default function Input({
 
   return (
     <div className="flex flex-col-reverse w-full">
-      <RenderIf conditionIs={type === 'text' || type === 'email'}>
+      <RenderIf conditionIs={type === "text" || type === "email"}>
         <input
           autoComplete="new-password"
           style={style}
           required={required}
           ref={inputRef}
           placeholder={placeholder}
-          className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 ${className}`}
+          className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400  
+                    ${className}
+                    ${general?.animation ? "duration-200 " : ""}
+          `}
           type={type}
           onChange={(e) => setContent(e.target.value)}
           disabled={disabled}
@@ -67,7 +94,7 @@ export default function Input({
           id={inputId}
         />
       </RenderIf>
-      <RenderIf conditionIs={type === 'password'}>
+      <RenderIf conditionIs={type === "password"}>
         <div className="relative flex flex-col-reverse w-full">
           <button
             type="button"
@@ -87,15 +114,19 @@ export default function Input({
             required={true}
             ref={inputRef}
             placeholder={placeholder}
-            className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400 duration-200 w-full pr-10 ${className}`}
+            className={`text-gray-800 disabled:text-gray-500 bg-transparent mt-1 outline-none border-b-2 peer border-slate-400 focus:border-pink-400  w-full pr-10 
+                      ${className}
+                      ${general?.animation ? "duration-200 " : ""}
+            `}
             type="password"
             onChange={(e) => setContent(e.target.value)}
             disabled={disabled}
             id={inputId}
           />
           <label
-            className="text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0 duration-200 cursor-text gap"
-            style={{ display: 'flex', alignItems: 'center', gap: '.25rem' }}
+            className={`text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0  cursor-text gap-1
+                      ${general?.animation ? "duration-200 " : ""}`}
+            style={{ display: "flex", alignItems: "center", gap: ".25rem" }}
             htmlFor={inputId}
             ref={labelRef}
           >
@@ -105,7 +136,7 @@ export default function Input({
         </div>
       </RenderIf>
       <RenderIf
-        conditionIs={type !== 'email' && type !== 'password' && type !== 'text'}
+        conditionIs={type !== "email" && type !== "password" && type !== "text"}
       >
         <input
           autoComplete="new-password"
@@ -123,10 +154,11 @@ export default function Input({
       </RenderIf>
 
       {/* render label */}
-      <RenderIf conditionIs={!type || type !== 'password'}>
+      <RenderIf conditionIs={!type || type !== "password"}>
         <label
-          className="text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0 duration-200 cursor-text gap"
-          style={{ display: 'flex', alignItems: 'center', gap: '.25rem' }}
+          className={`text-xs peer-focus:text-xxs text-gray-700 peer-focus:text-gray-500 translate-y-full peer-focus:translate-y-0  cursor-text gap-1
+                    ${general?.animation ? "duration-200 " : ""}`}
+          style={{ display: "flex", alignItems: "center", gap: ".25rem" }}
           htmlFor={inputId}
           ref={labelRef}
         >

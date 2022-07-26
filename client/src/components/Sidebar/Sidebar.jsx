@@ -10,23 +10,50 @@ import SearchList from "../Menu/MenuContents/SearchList/SearchList";
 import MODAL_ACTIONS from "../../context/modal/modalActions";
 import CTA from "../CTA/CTA";
 import MENUS from "../Menu/MENUS";
-import SIDEBAR_APPEARANCE from "./SidebarAppearance/SidebarAppearance";
 import NotificationList from "../Menu/MenuContents/NotificationList/NotificationList";
 import throttle from "../../utils/performance/throttle";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import {
+  replaceCss,
+  SettingsContext,
+} from "../../context/settingsContext/SettingsContext";
+import { SidebarContext } from "../../pages/Home/Home";
 
-export const Sidebar = ({ sidebarState, urlHistory }) => {
+export const Sidebar = ({ urlHistory }) => {
   const Navigate = useNavigate();
-  const { isSidebarOn, setIsSidebarOn } = sidebarState;
+  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
   const { userState } = useContext(UserContext);
   const { modalDispatch } = useContext(ModalContext);
   const sidebar = useRef();
   const { settings } = useContext(SettingsContext);
+  const { general } = settings;
   const { pathname } = useLocation();
   const swiperRef = useRef();
   const isMenuNavigateWithBtn = useRef(false);
+  const [sidebarCss, setSidebarCss] = useState({
+    OPEN: [`${general?.animation ? "animate-sidebar-in" : "in"}`],
+    CLOSED: [
+      "transform",
+      "translate-y-full",
+      "lg:translate-y-0",
+      `${general?.animation ? "animate-sidebar-out" : "out"}`,
+    ],
+    BASE: [
+      "inset-0",
+      "z-20",
+      "fixed",
+      "lg:sticky",
+      "top-0",
+      "h-screen",
+      "lg:basis-1/4",
+      "lg:min-w-[350px]",
+      "bg-gray-100",
+      "lg:bg-gray-50",
+      "shadow-lg",
+      "lg:shadow-none",
+    ],
+  });
 
   useEffect(() => {
     if (isMenuNavigateWithBtn) {
@@ -47,9 +74,13 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
     if (!sidebar.current) return;
 
     if (isSidebarOn) {
-      sidebar.current.className = SIDEBAR_APPEARANCE.OPEN;
+      sidebar.current.className = `${sidebarCss.OPEN.join(
+        " "
+      )} ${sidebarCss.BASE.join(" ")}`;
     } else {
-      sidebar.current.className = SIDEBAR_APPEARANCE.CLOSED;
+      sidebar.current.className = `${sidebarCss.CLOSED.join(
+        " "
+      )} ${sidebarCss.BASE.join(" ")}`;
 
       // remove slide out animation if window size is larger than 1024
       if (window.innerWidth >= 1024) {
@@ -57,6 +88,21 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
       }
     }
   }, [isSidebarOn]);
+
+  // for handling animation setting when it's active and disabled
+  useEffect(() => {
+    setSidebarCss((prev) => ({
+      BASE: prev.BASE,
+      CLOSED: replaceCss(
+        prev.CLOSED,
+        general?.animation ? "animate-sidebar-out" : "out"
+      ),
+      OPEN: replaceCss(
+        prev.OPEN,
+        general?.animation ? "animate-sidebar-in" : "in"
+      ),
+    }));
+  }, [general]);
 
   // for handling close and open through screen size
   useEffect(() => {
@@ -109,7 +155,9 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
                   content: <MyProfileModalContent />,
                 })
               }
-              className="flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 duration-200 rounded-lg grow w-2/3"
+              className={`flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 rounded-lg grow w-2/3
+                        ${general?.animation ? "duration-200" : ""}
+              `}
             >
               <img
                 src="https://picsum.photos/200/200"
@@ -133,13 +181,18 @@ export const Sidebar = ({ sidebarState, urlHistory }) => {
             menus={MENUS}
             activeMenuState={{ activeMenu, setActiveMenu }}
           />
-          {/* cta */}
-          <section className="lg:hidden" aria-label="action-buttons">
-            <CTA enableSlide={true} urlHistory={urlHistory} />
-          </section>
         </header>
         {/* menu contents */}
         <main className="grow overflow-y-auto overflow-x-auto relative">
+          {/* cta */}
+          <section
+            className="lg:hidden absolute z-30 bottom-5 inset-x-5"
+            aria-label="action-buttons"
+          >
+            <CTA enableSlide={true} urlHistory={urlHistory} />
+          </section>
+
+          {/* the content */}
           <Swiper
             onTouchMove={throttle(() => {
               if (isMenuNavigateWithBtn.current) {

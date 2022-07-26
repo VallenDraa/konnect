@@ -1,6 +1,8 @@
-import { AiOutlineLoading3Quarters, AiFillHourglass } from 'react-icons/ai';
-import { BiBlock } from 'react-icons/bi';
-import { IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
+import { useContext } from "react";
+import { AiOutlineLoading3Quarters, AiFillHourglass } from "react-icons/ai";
+import { BiBlock } from "react-icons/bi";
+import { IoPersonAdd, IoPersonRemove } from "react-icons/io5";
+import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 export default function SendRequestBtn({
   Loading,
@@ -10,6 +12,8 @@ export default function SendRequestBtn({
   isRequesting,
   isRequested,
 }) {
+  const { settings } = useContext(SettingsContext);
+
   // the button initial state
   if ((!Loading && !error) || Sent) {
     if (isAFriend) {
@@ -50,7 +54,10 @@ export default function SendRequestBtn({
     );
   } else if (Loading) {
     return (
-      <span className="animate-pulse flex items-center gap-x-1">
+      <span
+        className={`flex items-center gap-x-1
+                  ${settings.general?.animation ? "animate-pulse" : ""}`}
+      >
         <AiOutlineLoading3Quarters className="animate-spin" />
         <span>Loading</span>
       </span>

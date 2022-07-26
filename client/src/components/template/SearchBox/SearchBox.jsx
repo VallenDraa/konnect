@@ -1,7 +1,7 @@
-import { useReducer } from "react";
+import { useContext, useReducer } from "react";
 import { useEffect, useState } from "react";
 import { IoSearch } from "react-icons/io5";
-import emptySearchResults from "../../../svg/searchList/emptySearchResults.svg";
+import { SettingsContext } from "../../../context/settingsContext/SettingsContext";
 import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
@@ -32,6 +32,8 @@ export default function SearchBox({
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // will perform search callback
   useEffect(() => {
@@ -95,7 +97,7 @@ export default function SearchBox({
   };
 
   return (
-    <div className="w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2">
+    <div className="w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2 bg-white max-w-screen-sm">
       <header className="px-4 flex flex-col gap-y-2">
         <div className="flex flex-wrap justify-between items-center">
           <h2 className="font-semibold text-xl">Search For People</h2>
@@ -135,7 +137,13 @@ export default function SearchBox({
                   <li
                     key={i}
                     onClick={() => handleSelect(user)}
-                    className={`animate-fade-in cursor-pointer hover:bg-pink-100 duration-200 rounded-sm flex`}
+                    className={`cursor-pointer hover:bg-pink-100 rounded-sm flex
+                              ${
+                                general?.animation
+                                  ? "animate-fade-in duration-200"
+                                  : ""
+                              }
+                              `}
                   >
                     <button className="flex items-center gap-2 py-2 px-4 grow">
                       <img
@@ -158,11 +166,6 @@ export default function SearchBox({
               conditionIs={!results.loading && results.content?.length === 0}
             >
               <li className="text-center space-y-10 mt-10">
-                <img
-                  src={emptySearchResults}
-                  alt=""
-                  className="w-[200px] mx-auto"
-                />
                 <span className="block font-semibold text-xl lg:text-lg text-gray-600">
                   Welp nothing here :(
                 </span>
@@ -176,7 +179,7 @@ export default function SearchBox({
       </main>
 
       {/* where the selected would go */}
-      <footer className="basis-1/6 w-full py-2 px-4 bg-gray-50 shadow-inner shadow-gray-100 mt-auto">
+      <footer className="basis-1/6 w-full py-2 px-4 bg-gray-200 shadow-inner shadow-gray-100 mt-auto">
         <h3 className="font-bold text-sm">Selected:</h3>
         <div className="mt-1">
           <ContactsSwiperCard

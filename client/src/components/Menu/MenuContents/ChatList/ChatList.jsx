@@ -3,14 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import RenderIf from "../../../../utils/React/RenderIf";
 import {
   ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
+  handleActiveChat,
 } from "../../../../context/activeChat/ActiveChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 
 export default function ChatList({ setIsSidebarOn }) {
-  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
-  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
+  const { activeChat } = useContext(ActiveChatContext);
+  const { msgLogs } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
   );
@@ -33,25 +33,6 @@ export default function ChatList({ setIsSidebarOn }) {
   //   console.log(logsEntries);
   // }, [logsEntries]);
 
-  const handleActiveChat = (target) => {
-    // changing the active chat
-    if (!target) return;
-
-    // check if target id is the same as the current one, if so deactivate it
-    if (target._id !== activeChat._id) {
-      const { chat } = msgLogs.content[target._id];
-
-      setActiveChat({
-        ...target,
-        lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
-      });
-    } else {
-      setActiveChat(ACTIVE_CHAT_DEFAULT);
-    }
-
-    // close sidebar for smaller screen
-    setIsSidebarOn(false);
-  };
   const EmptyPlaceholder = () => {
     return (
       <div className="text-center space-y-10 mt-10 p-3">
@@ -84,6 +65,7 @@ export default function ChatList({ setIsSidebarOn }) {
             {logsEntries.map(([_id, { user, chat }]) => {
               return (
                 <ChatPreview
+                  setIsSidebarOn={setIsSidebarOn}
                   key={_id}
                   lastMessage={chat[chat.length - 1]}
                   timeSentArg={chatPreviewTimeStatus(

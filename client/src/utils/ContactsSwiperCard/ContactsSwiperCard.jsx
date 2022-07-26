@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import PicturelessProfile from '../../components/PicturelessProfile/PicturelessProfile';
-import charToRGB from '../charToRGB/charToRGB';
-import RenderIf from '../React/RenderIf';
+import { useContext } from "react";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import PicturelessProfile from "../../components/PicturelessProfile/PicturelessProfile";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import charToRGB from "../charToRGB/charToRGB";
+import RenderIf from "../React/RenderIf";
 
 export default function ContactsSwiperCard({
   onItemClicked = null,
@@ -12,6 +14,8 @@ export default function ContactsSwiperCard({
   mini = false,
 }) {
   if (!contacts) return;
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // render the swiper slides if the user has contacts
   if (contacts.length !== 0) {
@@ -21,10 +25,10 @@ export default function ContactsSwiperCard({
         slidesPerView="auto"
         navigation
         className="relative"
-        style={{ cursor: contacts.length >= 4 ? 'grab' : 'default' }}
+        style={{ cursor: contacts.length >= 4 ? "grab" : "default" }}
       >
         {contacts.map(({ user }, i) => {
-          const rgb = charToRGB(user.initials.split(''));
+          const rgb = charToRGB(user.initials.split(""));
 
           const result = {
             r: rgb[0],
@@ -35,12 +39,16 @@ export default function ContactsSwiperCard({
           return (
             <SwiperSlide
               key={i}
-              className="w-[125px] overflow-hidden hover:bg-gray-100 duration-200 cursor-pointer p-3 mx-5 flex justify-center"
+              className={`w-[125px] overflow-hidden hover:bg-gray-100 cursor-pointer p-3 mx-5 flex justify-center
+                        ${general?.animation ? "duration-200" : ""}
+                        `}
             >
               <RenderIf conditionIs={linkable}>
                 <Link
                   to={`/user/${user.username}`}
-                  className="flex flex-col items-center gap-y-1.5"
+                  className={`flex flex-col items-center gap-y-1.5
+                            ${general?.animation ? "animate-fade-in" : ""}   
+                  `}
                 >
                   <RenderIf conditionIs={!user.profilePicture}>
                     <PicturelessProfile
@@ -60,7 +68,11 @@ export default function ContactsSwiperCard({
               <RenderIf conditionIs={!linkable}>
                 <button
                   onClick={() => onItemClicked && onItemClicked(user)}
-                  className="flex flex-col items-center gap-y-1.5"
+                  className={`flex flex-col items-center gap-y-1.5
+                            ${
+                              general?.animation ? "animate-fade-in" : ""
+                            }          
+                  `}
                 >
                   <RenderIf conditionIs={!user.profilePicture}>
                     <PicturelessProfile

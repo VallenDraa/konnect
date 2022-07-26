@@ -14,6 +14,7 @@ import USER_ACTIONS from "../../../../../context/user/userAction";
 import { MiniModalContext } from "../../../../../context/miniModal/miniModalContext";
 import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalActions";
 import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
+import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 const ProfileOpt = () => {
   const imageId = useId();
@@ -24,30 +25,8 @@ const ProfileOpt = () => {
   const [lastName, setLastName] = useState(userState.user.lastName || "");
   const [status, setStatus] = useState(userState.user.status || "unset");
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
-
-  // get contacts preview
-  // useEffect(() => {
-  //   const getContactsPreview = async () => {
-  //     const contactIds = contacts.map(({ _id }) => _id);
-
-  //     try {
-  //       const { data } = await getUsersPreview(
-  //         sessionStorage.getItem('token'),
-  //         contactIds
-  //       );
-  //       const result = data.map(({ profilePicture, initials, username }) => ({
-  //         user: { initials, username, profilePicture },
-  //       }));
-
-  //       // console.log(result);
-  //       setContactsPreview(result);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-
-  //   getContactsPreview();
-  // }, [userState]);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   useEffect(() => {
     if (isEditMode) {
@@ -125,7 +104,9 @@ const ProfileOpt = () => {
               <RenderIf conditionIs={isEditMode}>
                 <label
                   htmlFor={imageId}
-                  className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-gray-100 gap-1 duration-200 cursor-pointer"
+                  className={`absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-gray-100 gap-1 cursor-pointer
+                  ${general?.animation ? "duration-200" : ""}
+                  `}
                 >
                   <FaCamera className="text-2xl" />
                   <span className="text-xs font-semibold">Change Picture</span>

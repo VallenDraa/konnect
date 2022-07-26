@@ -27,19 +27,23 @@ import Picker from "emoji-picker-react";
 import EmojiBarToggle from "./components/EmojiBarToggle/EmojiBarToggle";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
+import { SidebarContext } from "../../pages/Home/Home";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 
-export const ChatBox = ({ sidebarState }) => {
+export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
-  const { isSidebarOn, setIsSidebarOn } = sidebarState;
+  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
   const [newMessage, setnewMessage] = useState("");
   const location = useLocation();
   const [willGoToBottom, setWillGoToBottom] = useState(false);
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
   const inputRef = useRef();
   const messageLogRef = useRef();
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
@@ -84,8 +88,6 @@ export const ChatBox = ({ sidebarState }) => {
             default:
               break;
           }
-        } else {
-          console.log(activeChat);
         }
       }
     }
@@ -351,7 +353,9 @@ export const ChatBox = ({ sidebarState }) => {
                 <Link
                   to="/chats"
                   onClick={handleGoToMenu}
-                  className="block lg:hidden hover:text-blue-400 duration-200 text-3xl"
+                  className={`block lg:hidden hover:text-blue-400 text-3xl
+                            ${general?.animation ? "duration-200" : ""}
+                            `}
                 >
                   <BsArrowLeftShort />
                 </Link>
@@ -444,9 +448,11 @@ export const ChatBox = ({ sidebarState }) => {
               {/* the send msg btn */}
               <RenderIf conditionIs={newMessage !== ""}>
                 <button
-                  className="w-8 h-8 rounded-full bg-blue-300 text-white
+                  className={`w-8 h-8 rounded-full bg-blue-300 text-white
                           hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
-                          flex items-center justify-center shadow aspect-square text-xs animate-pop-in"
+                          flex items-center justify-center shadow aspect-square text-xs 
+                          ${general?.animation ? `animate-pop-in` : ``}
+                          `}
                 >
                   <FaPaperPlane className="relative right-[1px]" />
                 </button>

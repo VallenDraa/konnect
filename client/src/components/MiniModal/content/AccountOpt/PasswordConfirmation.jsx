@@ -1,9 +1,10 @@
-import Input from '../../../Input/Input';
-import { useContext } from 'react';
-import { MiniModalContext } from '../../../../context/miniModal/miniModalContext';
-import MINI_MODAL_ACTIONS from '../../../../context/miniModal/miniModalActions';
-import { useState } from 'react';
-import Pill from '../../../Buttons/Pill';
+import Input from "../../../Input/Input";
+import { useContext } from "react";
+import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
+import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
+import { useState } from "react";
+import Pill from "../../../Buttons/Pill";
+import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
 /**
  *
@@ -12,7 +13,9 @@ import Pill from '../../../Buttons/Pill';
  */
 export default function PasswordConfirmation({ cb, title, caption, payload }) {
   const { miniModalDispatch } = useContext(MiniModalContext);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   const handleAccountEdits = (e) => {
     e.preventDefault();
@@ -36,7 +39,8 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
       </header>
       <footer className="flex w-full gap-x-2 h-10 grow-[1] pt-3">
         <Pill
-          className="h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold duration-200 border-0"
+          className={`h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0
+                    ${general?.animation ? "duration-200" : ""}`}
           type="button"
           onClick={() =>
             miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing })

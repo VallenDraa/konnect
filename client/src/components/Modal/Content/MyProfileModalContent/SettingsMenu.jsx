@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useEffect } from "react";
+import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import throttle from "../../../../utils/performance/throttle";
 import RenderIf from "../../../../utils/React/RenderIf";
 import LogoutBtn from "../../../Buttons/LogoutBtn";
@@ -9,11 +10,12 @@ import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
 export default function SettingsMenu({ options, activeOptState }) {
   const { activeOpt, setActiveOpt } = activeOptState;
   const [Icon, setIcon] = useState(null);
-  const [isOnTop, setIsOnTop] = useState(false);
+  const [isOnTop, setIsOnTop] = useState(window.innerWidth <= 1024);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   //   check if the settings menu would be on top of the screen or the side
   useEffect(() => {
-    setIsOnTop(window.innerWidth <= 1024);
     const moveMenuToTop = throttle(() => {
       setIsOnTop(window.innerWidth <= 1024);
     }, 60);
@@ -36,11 +38,13 @@ export default function SettingsMenu({ options, activeOptState }) {
             return (
               <li key={i} onClick={() => setActiveOpt(opt.name)}>
                 <button
-                  className={`${
+                  className={`
+                  ${general?.animation ? "duration-200" : ""}
+                  ${
                     opt.name === activeOpt
                       ? "bg-white text-gray-800 font-semibold"
                       : "hover:bg-gray-200 text-gray-500 hover:text-gray-600 font-medium"
-                  } cursor-pointer p-2 capitalize duration-200 flex items-center gap-2 h-9 w-full`}
+                  } cursor-pointer p-2 capitalize flex items-center gap-2 h-9 w-full`}
                 >
                   <span className="text-base">{opt.icon}</span>
                   <span>{opt.name}</span>

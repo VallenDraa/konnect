@@ -1,8 +1,6 @@
-import { useEffect, useReducer, useState } from "react";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import emptySearchResults from "../../../../svg/searchList/emptySearchResults.svg";
-import initialSvg from "../../../../svg/searchList/contactList/InitialSvg.svg";
 import api from "../../../../utils/apiAxios/apiAxios";
 import RenderIf from "../../../../utils/React/RenderIf";
 import Input from "../../../Input/Input";
@@ -11,6 +9,7 @@ import searchResultsReducer, {
   SEARCH_RESULTS_DEFAULT,
 } from "../../../../reducer/searchResultsReducer/searchResultsReducer";
 import { FaUserAlt } from "react-icons/fa";
+import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
 export default function SearchList() {
   const [query, setQuery] = useState("");
@@ -20,6 +19,8 @@ export default function SearchList() {
   );
   const [SVPreview, setSVPreview] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   useEffect(() => {
     const searchDebounce = setTimeout(async () => {
@@ -125,7 +126,8 @@ export default function SearchList() {
                       // this link will open a modal containing info of the user (code is ini Menu.jsx)
                       title={`Go To ${username}'s Profile`}
                       to={`user/${username}`}
-                      className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 duration-200 rounded-lg shadow`}
+                      className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 rounded-lg shadow            
+                                ${general?.animation ? "duration-200" : ""}`}
                     >
                       <div className="flex items-center gap-2 grow border-r-2 group-hover:border-pink-200">
                         <img

@@ -1,5 +1,5 @@
-import User from '../../../../model/User.js';
-import jwt from 'jsonwebtoken';
+import User from "../../../../model/User.js";
+import jwt from "jsonwebtoken";
 
 export const findUsers = async (req, res, next) => {
   const { query } = req.query;
@@ -7,7 +7,7 @@ export const findUsers = async (req, res, next) => {
   try {
     const result = await User.where({ username: { $regex: query } })
       .lean()
-      .select(['status', 'username', 'initials', 'profilePicture']);
+      .select(["status", "username", "initials", "profilePicture"]);
     res.json(result);
   } catch (error) {
     next(error);
@@ -15,13 +15,13 @@ export const findUsers = async (req, res, next) => {
 };
 
 export const getUsersPreview = async (req, res, next) => {
-  const userIds = req.query.userIds.split(',');
+  const userIds = req.query.userIds.split(",");
   console.log(userIds);
 
   try {
     const users = await User.find({ _id: { $in: userIds } })
       .lean()
-      .select(['status', 'username', 'initials', 'profilePicture']);
+      .select(["status", "username", "initials", "profilePicture"]);
 
     res.json(users);
   } catch (error) {
@@ -35,10 +35,19 @@ export const getUserDetail = async (req, res, next) => {
   try {
     const result = await User.findOne({ username })
       .lean()
-      .select(['-password', '-settings'])
+      .select([
+        "-password",
+        "-settings",
+        "-notifications",
+        "-requests",
+        "-chats",
+        "-updatedAt",
+        "-__v",
+        "-email",
+      ])
       .populate({
-        path: 'contacts.user',
-        select: ['username', 'initials', 'profilePicture'],
+        path: "contacts.user",
+        select: ["username", "initials", "profilePicture"],
       });
 
     res.json(result);

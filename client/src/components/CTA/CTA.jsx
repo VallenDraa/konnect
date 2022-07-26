@@ -12,16 +12,23 @@ import throttle from "../../utils/performance/throttle";
 import RenderIf from "../../utils/React/RenderIf";
 import { Logo } from "../Logo/Logo";
 import { FaLongArrowAltLeft } from "react-icons/fa";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import { SidebarContext } from "../../pages/Home/Home";
 
 export default function CTA({
   className = "flex justify-evenly gap-2",
   urlHistory,
   enableSlide,
 }) {
+  const { isSidebarOn } = useContext(SidebarContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
   const location = useLocation();
   const swipeBall = useRef();
+  const swiper = useRef();
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
+  // to determine which action modal to open
   useEffect(() => {
     const [route, subroute] = location.pathname.split("/").slice(1, 3);
     if (route !== "new") return;
@@ -57,6 +64,13 @@ export default function CTA({
     });
   }, [location]);
 
+  // auto close the CTA buttons for smaller screen when sidebar is not open
+  useEffect(() => {
+    if (!isSidebarOn) {
+      if (swiper.current?.activeIndex) swiper.current.slideTo(0);
+    }
+  }, [isSidebarOn]);
+
   const CtaButtons = () => {
     return (
       <>
@@ -64,14 +78,15 @@ export default function CTA({
         <Pill
           link="/new/call"
           className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
-          onClick={() =>
+          onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
               prevUrl: urlHistory?.current,
               onExitReturnToHome: false,
               content: <StartCall />,
-            })
-          }
+            });
+            swiper?.current?.slideTo(0);
+          }}
         >
           <span className="flex items-center gap-1">
             <IoCall />
@@ -83,14 +98,15 @@ export default function CTA({
         <Pill
           link="/new/chat"
           className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
-          onClick={() =>
+          onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
               prevUrl: urlHistory?.current,
               onExitReturnToHome: false,
               content: <NewChat />,
-            })
-          }
+            });
+            swiper?.current?.slideTo(0);
+          }}
         >
           <span className="flex items-center gap-1">
             <IoChatbubbles />
@@ -102,14 +118,15 @@ export default function CTA({
         <Pill
           link="/new/group"
           className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
-          onClick={() =>
+          onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
               prevUrl: urlHistory?.current,
               onExitReturnToHome: false,
               content: <NewGroup />,
-            })
-          }
+            });
+            swiper?.current?.slideTo(0);
+          }}
         >
           <span className="flex items-center gap-1">
             <IoPeopleSharp />
@@ -137,6 +154,7 @@ export default function CTA({
     <>
       <RenderIf conditionIs={enableSlide}>
         <Swiper
+          onSwiper={(instance) => (swiper.current = instance)}
           spaceBetween={15}
           onSliderMove={handleSwiping}
           onTouchEnd={handleSwipingStop}
@@ -147,11 +165,18 @@ export default function CTA({
             <div
               ref={swipeBall}
               style={{ height: "36px", width: "36px" }}
-              className="rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-pink-300 duration-200 flex items-center"
+              className={`rounded-full bg-gradient-to-br from-pink-300 via-blue-200 to-blue-100 flex items-center
+                        ${general?.animation ? "duration-200" : ""}`}
             >
               {/* floating text */}
-              <span className="inset-y-0 absolute flex items-center gap-x-2 right-3 transition duration-200 group-hover:-translate-x-1">
-                <FaLongArrowAltLeft className="group-hover:translate-x-0 translate-x-1 transition duration-200 text-lg text-blue-400 h-[28px]" />
+              <span
+                className={`inset-y-0 absolute flex items-center gap-x-2 right-3 transition group-hover:-translate-x-1
+                        ${general?.animation ? "duration-200" : ""}`}
+              >
+                <FaLongArrowAltLeft
+                  className={`group-hover:translate-x-0 translate-x-1 transition text-lg text-blue-400 h-[28px]
+                        ${general?.animation ? "duration-200" : ""}`}
+                />
                 <Logo />
               </span>
             </div>

@@ -1,24 +1,29 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import RenderIf from '../../../utils/React/RenderIf';
-import checkInjectedClasses from '../../../utils/tailwindClasses/checkInjectedClasses';
+import { useContext, useState } from "react";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { SettingsContext } from "../../../context/settingsContext/SettingsContext";
+import RenderIf from "../../../utils/React/RenderIf";
+import checkInjectedClasses from "../../../utils/tailwindClasses/checkInjectedClasses";
 
 export default function DropdownItem({
   children,
-  className = '',
+  className = "",
   isActive,
   onClick,
   to,
 }) {
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
+
   const [defaultClasses, setDefaultClasses] = useState(`
-  text-xs duration-200 cursor-pointer rounded
-  ${!to ? 'w-full flex items-center gap-x-1' : ''}
-  ${isActive ? 'bg-gray-200' : 'active:bg-gray-200'}
-  ${isActive ? 'shadow' : 'hover:shadow-sm'}
-  ${isActive ? 'text-blue-400' : 'text-gray-400'}
-  ${isActive ? 'font-semibold' : ''}
-  ${isActive ? '' : 'hover:bg-gray-100'}
+  text-xs cursor-pointer rounded
+  ${!to ? "w-full flex items-center gap-x-1" : ""}
+  ${isActive ? "bg-gray-200" : "active:bg-gray-200"}
+  ${isActive ? "shadow" : "hover:shadow-sm"}
+  ${isActive ? "text-blue-400" : "text-gray-400"}
+  ${isActive ? "font-semibold" : ""}
+  ${isActive ? "" : "hover:bg-gray-100"}
+  ${general?.animation ? "duration-200" : ""}
   `);
 
   useEffect(() => {
@@ -28,6 +33,15 @@ export default function DropdownItem({
       defClassSetter: setDefaultClasses,
     });
   }, []);
+
+  useEffect(() => {
+    setDefaultClasses((prev) =>
+      prev.replace(
+        general?.animation ? "" : "duration-200",
+        general?.animation ? "duration-200" : ""
+      )
+    );
+  }, [general]);
 
   return (
     <li onClick={onClick}>

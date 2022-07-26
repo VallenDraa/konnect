@@ -9,6 +9,7 @@ import NotifBadge from "../NotifBadge/NotifBadge";
 import MODAL_ACTIONS from "../../context/modal/modalActions";
 import RenderIf from "../../utils/React/RenderIf";
 import { NotifContext } from "../../context/notifContext/NotifContext";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 
 export const Menu = ({
   menus,
@@ -22,16 +23,16 @@ export const Menu = ({
   const { userState } = useContext(UserContext);
   const { notifs, notifUnseen } = useContext(NotifContext);
   const { msgUnread } = useContext(MessageLogsContext);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
     const { pathname, search } = location;
     if (pathname.includes("/user")) {
       const usernamePath = pathname.split("/")[2];
-
       // check if the target user is the current logged in user
       if (usernamePath !== userState.user.username) {
-        setActiveMenu("search");
         modalDispatch({
           type: MODAL_ACTIONS.show,
           prevUrl: urlHistory?.current,
@@ -113,12 +114,13 @@ export const Menu = ({
                 setActiveMenu(menu.name);
                 isMenuNavigateWithBtn.current = true;
               }}
-              className={`basis-1/4 text-xxs w-full p-1 rounded-lg duration-200 cursor-pointer
+              className={`basis-1/4 text-xxs w-full p-1 rounded-lg  cursor-pointer
               ${
                 activeMenu === menu.name
                   ? "text-blue-400"
                   : "text-gray-500 hover:text-blue-400"
-              }`}
+              }
+              ${general?.animation ? "duration-200" : ""}`}
             >
               <Link
                 to={`${linkSwitcher(menu.name)}`}

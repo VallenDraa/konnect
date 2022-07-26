@@ -2,10 +2,12 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import RenderIf from "../../../../utils/React/RenderIf";
 import { ContactsContext } from "../../../../context/contactContext/ContactContext";
+import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
 const ContactList = () => {
   const { groupedContacts } = useContext(ContactsContext);
-
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
   return (
     <>
       {/* if the contacts are still loading */}
@@ -51,7 +53,8 @@ const ContactList = () => {
                 <Link
                   to={`/user/${contact.user.username}`}
                   key={contact}
-                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 duration-200 rounded-lg shadow`}
+                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 rounded-lg shadow
+                            ${general?.animation ? "duration-200" : ""}`}
                 >
                   <img
                     src="https://picsum.photos/200/200"

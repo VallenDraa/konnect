@@ -21,8 +21,9 @@ import { UserContext } from "../../../../context/user/userContext";
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
+  handleActiveChat,
 } from "../../../../context/activeChat/ActiveChatContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ImProfile } from "react-icons/im";
 import { ContactsContext } from "../../../../context/contactContext/ContactContext";
 import {
@@ -31,6 +32,8 @@ import {
   receiveContactRequestResponse,
   receiveSendAddContact,
 } from "../../../../context/notifContext/NotifContext";
+import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
+import { SidebarContext } from "../../../../pages/Home/Home";
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -42,12 +45,15 @@ export const OthersProfileModalContent = ({ username }) => {
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState("");
   const { contacts, setContacts } = useContext(ContactsContext);
+  const { msgLogs } = useContext(MessageLogsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
-  const { setActiveChat } = useContext(ActiveChatContext);
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
+  const { setIsSidebarOn } = useContext(SidebarContext);
+  const location = useLocation();
   const navigate = useNavigate();
 
   //for both sending and cancelling a contact request
@@ -157,6 +163,8 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // fetch other user detail from the server
   useEffect(() => {
+    setOtherUserData({});
+
     const getOtherUserDetail = async () => {
       try {
         const { data } = await api.get(
@@ -177,7 +185,9 @@ export const OthersProfileModalContent = ({ username }) => {
     };
 
     setTimeout(getOtherUserDetail, 500);
-  }, [userState]);
+  }, [username]);
+
+  // useEffect(() => console.log(otherUserData), [otherUserData]);
 
   // turn initials to rgb
   useEffect(() => {
@@ -294,31 +304,42 @@ export const OthersProfileModalContent = ({ username }) => {
                 </span>
               </div>
               {/* buttons */}
-              <div className="flex h-full grow sm:flex-grow-0 gap-x-2 items-center">
-                <Pill
-                  disabled={addRequestSent.Loading}
-                  onClick={handleAction}
-                  className="text-base px-4 py-1 font-bold bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 active:bg-pink-500 text-white flex items-center gap-x-2 disabled:cursor-not-allowed disabled:hover:bg-gray-100  disabled:hover:text-gray-700 disabled:shadow disabled:bg-gray-100"
-                >
-                  <SendRequestBtn
-                    Loading={addRequestSent.Loading}
-                    Sent={addRequestSent.Sent}
-                    error={addRequestSent.error}
-                    isAFriend={isAFriend}
-                    isRequested={isRequested}
-                    isRequesting={isRequesting}
-                  />
-                </Pill>
+              <RenderIf conditionIs={Object.keys(otherUserData).length > 0}>
+                <div className="flex h-full grow sm:flex-grow-0 gap-x-2 items-center">
+                  <Pill
+                    disabled={addRequestSent.Loading}
+                    onClick={handleAction}
+                    className="text-base px-4 py-1 font-bold bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 active:bg-pink-500 text-white flex items-center gap-x-2 disabled:cursor-not-allowed disabled:hover:bg-gray-100  disabled:hover:text-gray-700 disabled:shadow disabled:bg-gray-100"
+                  >
+                    <SendRequestBtn
+                      Loading={addRequestSent.Loading}
+                      Sent={addRequestSent.Sent}
+                      error={addRequestSent.error}
+                      isAFriend={isAFriend}
+                      isRequested={isRequested}
+                      isRequesting={isRequesting}
+                    />
+                  </Pill>
 
-                <Pill
-                  onClick={() => setActiveChat(ACTIVE_CHAT_DEFAULT)}
-                  link={`/chats?id=${otherUserData._id}&type=user`}
-                  className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
-                >
-                  <FaPaperPlane />
-                  Message
-                </Pill>
-              </div>
+                  <Pill
+                    onClick={() =>
+                      handleActiveChat({
+                        target: otherUserData,
+                        activeChat,
+                        msgLogs,
+                        setActiveChat,
+                        setIsSidebarOn,
+                        ACTIVE_CHAT_DEFAULT,
+                      })
+                    }
+                    link={`/chats?id=${otherUserData._id}&type=user`}
+                    className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
+                  >
+                    <FaPaperPlane />
+                    Message
+                  </Pill>
+                </div>
+              </RenderIf>
             </header>
             <main className="space-y-5">
               {/* fullname */}

@@ -2,10 +2,14 @@ import { ImFileVideo } from "react-icons/im";
 import { BsFileEarmarkImage } from "react-icons/bs";
 import { IoCall } from "react-icons/io5";
 import { Link } from "react-router-dom";
-import NotifBadge from "../../../../NotifBadge/NotifBadge";
 import { useContext } from "react";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
 import RenderIf from "../../../../../utils/React/RenderIf";
+import {
+  ActiveChatContext,
+  ACTIVE_CHAT_DEFAULT,
+} from "../../../../../context/activeChat/ActiveChatContext";
+import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 export const ChatPreview = ({
   user,
@@ -13,20 +17,37 @@ export const ChatPreview = ({
   handleActiveChat,
   timeSentArg,
   isActive,
+  setIsSidebarOn,
 }) => {
   if (!lastMessage || !timeSentArg) return;
-  const { msgUnread } = useContext(MessageLogsContext);
+  const { msgUnread, msgLogs } = useContext(MessageLogsContext);
+  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   return (
-    <li onClick={() => handleActiveChat(user)}>
+    <li
+      onClick={() =>
+        handleActiveChat({
+          target: user,
+          activeChat,
+          setActiveChat,
+          msgLogs,
+          setIsSidebarOn,
+          ACTIVE_CHAT_DEFAULT,
+        })
+      }
+    >
       <Link
         to={isActive ? "/chats" : `/chats?id=${user._id}&type=user`}
-        className={`flex items-center p-2 cursor-pointer duration-200 rounded-lg shadow group
+        className={`flex items-center p-2 cursor-pointer rounded-lg shadow group
               ${
                 isActive
                   ? "bg-blue-100 font-semibold"
                   : "hover:bg-pink-100 bg-gray-100"
-              } `}
+              } 
+              ${general?.animation ? "duration-200" : ""}
+              `}
       >
         <div className="flex overflow-hidden grow">
           <div className="flex gap-2 overflow-hidden grow">
@@ -38,7 +59,11 @@ export const ChatPreview = ({
               />
               {/* notifications*/}
               <RenderIf conditionIs={msgUnread.detail[user._id]}>
-                <div className="inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 animate-fade-in duration-200">
+                <div
+                  className={`inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 
+                  ${general?.animation ? "animate-fade-in duration-200" : ""}
+                `}
+                >
                   {msgUnread.detail[user._id] <= 99
                     ? msgUnread.detail[user._id]
                     : "99+"}
@@ -46,10 +71,33 @@ export const ChatPreview = ({
               </RenderIf>
             </div>
             <div className="flex flex-col gap-1 overflow-hidden">
-              <span className="truncate font-medium group-hover:text-pink-700">
+              <span
+                className={`truncate font-medium
+                          ${
+                            isActive
+                              ? "group-hover:text-blue-500"
+                              : "group-hover:text-pink-700"
+                          }
+                          ${general?.animation ? "duration-200" : ""}
+                `}
+              >
                 {user.username}
               </span>
-              <span className="text-sm truncate text-gray-500 group-hover:text-pink-700 relative z-10 flex items-center gap-1">
+              <span
+                className={`text-sm truncate text-gray-500 relative z-10 flex items-center gap-1
+                          ${
+                            isActive
+                              ? "group-hover:text-blue-500"
+                              : "group-hover:text-pink-700"
+                          }
+                          ${
+                            general?.animation
+                              ? "duration-200 transition-all"
+                              : ""
+                          }
+
+              `}
+              >
                 {lastMessage.msgType === "image" && (
                   <>
                     <BsFileEarmarkImage />
@@ -73,7 +121,20 @@ export const ChatPreview = ({
             </div>
           </div>
           <div className="flex flex-col items-center basis-10 gap-y-2">
-            <time className="text-xxs self-center text-right basis-1/12 relative top-0.5 group-hover:text-pink-400">
+            <time
+              className={`text-xxs self-center text-right basis-1/12 relative top-0.5
+                          ${
+                            isActive
+                              ? "group-hover:text-blue-400"
+                              : "group-hover:text-pink-400"
+                          }
+                          ${
+                            general?.animation
+                              ? "duration-200 transition-all"
+                              : ""
+                          }
+                      `}
+            >
               {timeSentArg}
             </time>
           </div>

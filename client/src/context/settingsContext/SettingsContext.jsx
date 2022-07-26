@@ -1,7 +1,7 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import { createContext } from 'react';
-import api from '../../utils/apiAxios/apiAxios';
-import { UserContext } from '../user/userContext';
+import { useContext, useEffect, useRef, useState } from "react";
+import { createContext } from "react";
+import api from "../../utils/apiAxios/apiAxios";
+import { UserContext } from "../user/userContext";
 
 export const SETTINGS_DEFAULT = {
   calls: {},
@@ -20,9 +20,9 @@ export default function SettingsContextProvider({ children }) {
     if (userState.user && !hasFetched.current) {
       const getSettings = async () => {
         try {
-          const { data } = await api.get('/user/get_settings', {
+          const { data } = await api.get("/user/get_settings", {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           });
 
@@ -46,21 +46,30 @@ export default function SettingsContextProvider({ children }) {
   );
 }
 
-export const updateSettings = async ({
-  newSettings,
-  type,
-  setSettings,
-  oldSettings,
-}) => {
+export const updateSettings = async ({ newSettings, type, setSettings }) => {
   const payload = { type, settings: newSettings };
 
   try {
-    await api.put('/user/edit_settings', payload, {
-      headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` },
+    await api.put("/user/edit_settings", payload, {
+      headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
     });
 
-    setSettings({ ...oldSettings, [type]: newSettings });
+    setSettings((oldSettings) => ({
+      ...oldSettings,
+      [type]: newSettings,
+    }));
   } catch (error) {
     throw error;
   }
+};
+
+export const replaceCss = (classList, replacement) => {
+  if (!classList) return;
+  return classList.map((item, i) => {
+    if (i !== classList.length - 1) {
+      return item;
+    } else {
+      return replacement;
+    }
+  });
 };

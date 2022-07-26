@@ -1,12 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import throttle from '../../utils/performance/throttle';
-import checkInjectedClasses from '../../utils/tailwindClasses/checkInjectedClasses';
-import NotifBadge from '../NotifBadge/NotifBadge';
+import { useContext } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  replaceCss,
+  SettingsContext,
+} from "../../context/settingsContext/SettingsContext";
+import throttle from "../../utils/performance/throttle";
+import checkInjectedClasses from "../../utils/tailwindClasses/checkInjectedClasses";
+import NotifBadge from "../NotifBadge/NotifBadge";
 
 export default function Dropdown({
-  className = '',
-  btnClassName = '',
-  listClassName = '',
+  className = "",
+  btnClassName = "",
+  listClassName = "",
   offset = 0,
   listStyle = {},
   children,
@@ -16,52 +21,54 @@ export default function Dropdown({
   position,
   fontSize,
 }) {
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
   const [open, setOpen] = useState(false);
   const dropDownWrapper = useRef();
   const dropDown = useRef();
   const btn = useRef();
   const [btnOffsetHeight, setBtnOffsetHeight] = useState(0);
   const [defaultClasses, setDefaultClasses] = useState([
-    'relative',
-    'flex',
-    'justify-center',
-    'items-center',
+    "relative",
+    "flex",
+    "justify-center",
+    "items-center",
   ]);
   const [btnDefaultClasses, setBtnDefaultClasses] = useState([
-    'relative',
-    'font-medium',
-    'py-1',
-    'px-3',
-    'capitalize',
-    'hover:text-pink-400',
-    'duration-200',
-    'rounded-full',
-    'flex',
-    'items-center',
-    'gap-x-1',
-    'bg-gray-200',
-    'hover:bg-gray-100',
-    'shadow',
-    'hover:shadow-lg',
-    'active:shadow-md',
+    "relative",
+    "font-medium",
+    "py-1",
+    "px-3",
+    "capitalize",
+    "hover:text-pink-400",
+    "rounded-full",
+    "flex",
+    "items-center",
+    "gap-x-1",
+    "bg-gray-200",
+    "hover:bg-gray-100",
+    "shadow",
+    "hover:shadow-lg",
+    "active:shadow-md",
+    `${general?.animation ? `duration-200` : ``}`,
   ]);
   const [listDefaultClasses, setListDefaultClasses] = useState([
-    'z-30',
-    'absolute',
-    'max-h-[18rem]',
-    'w-72',
-    'sm:w-60',
-    'bg-gray-50',
-    'shadow-md',
-    'rounded-lg',
-    'p-2',
-    'flex',
-    'flex-col',
-    'gap-y-2',
-    'animate-d-down-open',
-    'overflow-y-auto',
-    'border-2',
-    'border-gray-200',
+    "z-30",
+    "absolute",
+    "max-h-[18rem]",
+    "w-72",
+    "sm:w-60",
+    "bg-gray-50",
+    "shadow-md",
+    "rounded-lg",
+    "p-2",
+    "flex",
+    "flex-col",
+    "gap-y-2",
+    "overflow-y-auto",
+    "border-2",
+    "border-gray-200",
+    `${general?.animation ? `animate-d-down-open` : `open`}`,
   ]);
 
   // filter duplicate classes
@@ -84,43 +91,69 @@ export default function Dropdown({
     });
   }, []);
 
+  // auto close dropdown
   useEffect(() => {
     const autoCloseDropdown = (e) => {
       if (!dropDown.current) return;
 
       [...dropDown.current.children].forEach((child) => {
         if (!dropDown.current.contains(e.target) || child.contains(e.target)) {
-          if (!dropDown.current.classList.contains('animate-d-down-open')) {
-            dropDown.current.classList.add('animate-d-down-close');
-            setTimeout(() => setOpen(false), 195);
+          if (general?.animation) {
+            if (!dropDown.current.classList.contains("animate-d-down-open")) {
+              dropDown.current.classList.add("animate-d-down-close");
+              setTimeout(() => setOpen(false), 195);
+            }
+          } else {
+            if (e.target !== btn.current) setOpen(false);
           }
         }
       });
     };
-    window.addEventListener('click', autoCloseDropdown);
+    window.addEventListener("click", autoCloseDropdown);
 
     return () => {
-      window.removeEventListener('click', autoCloseDropdown);
+      window.removeEventListener("click", autoCloseDropdown);
     };
-  }, [dropDown]);
+  }, [dropDown, general]);
 
+  // setting the button offset
   useEffect(() => {
     if (!btn.current) return;
     setBtnOffsetHeight(btn.current.offsetHeight);
   }, [btn]);
 
+  // for adding or removing list animation when setting changes
+  useEffect(() => {
+    setBtnDefaultClasses((prev) =>
+      replaceCss(prev, general?.animation ? "duration-200" : "")
+    );
+
+    setListDefaultClasses((prev) =>
+      replaceCss(prev, general?.animation ? "animate-d-down-open" : "open")
+    );
+  }, [general]);
+
   const handleOpen = () => {
     if (!open) {
       setOpen(true);
 
-      setTimeout(
-        () => dropDown.current?.classList.remove('animate-d-down-open'),
-        200
-      );
+      if (general?.animation) {
+        setTimeout(
+          () => dropDown.current?.classList.remove("animate-d-down-open"),
+          200
+        );
+      } else {
+        dropDown.current?.classList.remove("open");
+      }
     } else {
-      if (!dropDown.current?.classList.contains('animate-d-down-open')) {
-        dropDown.current?.classList.add('animate-d-down-close');
-        setTimeout(() => setOpen(false), 195);
+      if (general?.animation) {
+        if (!dropDown.current?.classList.contains("animate-d-down-open")) {
+          dropDown.current?.classList.add("animate-d-down-close");
+          setTimeout(() => setOpen(false), 195);
+        }
+      } else {
+        dropDown.current?.classList.add("close");
+        setOpen(false);
       }
     }
   };
@@ -129,12 +162,12 @@ export default function Dropdown({
     <>
       <div
         ref={dropDownWrapper}
-        className={`${defaultClasses.join(' ')} ${className}`}
+        className={`${defaultClasses.join(" ")} ${className}`}
       >
         <button
           ref={btn}
           onClick={handleOpen}
-          className={`${btnDefaultClasses.join(' ')} ${btnClassName}`}
+          className={`${btnDefaultClasses.join(" ")} ${btnClassName}`}
           style={{ fontSize }}
         >
           {icon}
@@ -146,7 +179,7 @@ export default function Dropdown({
           <ul
             ref={dropDown}
             className={`${position} ${listDefaultClasses.join(
-              ' '
+              " "
             )} ${listClassName}`}
             style={{ top: `${btnOffsetHeight + offset + 1}px`, ...listStyle }}
           >
