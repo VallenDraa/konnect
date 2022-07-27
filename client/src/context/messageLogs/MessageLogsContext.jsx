@@ -116,6 +116,12 @@ export default function MessageLogsContextProvider({ children }) {
       if (chat.by === userId) return true;
     };
 
+    function handleIncrement(by) {
+      const currValue = result.detail[by] || 0;
+      result.detail[by] = currValue + 1;
+      result.total = result.total + 1;
+    }
+
     // only increments the Unread value if the last message sent by a user is Unread
     for (const by in msgEntries) {
       const lastMsg = msgEntries[by].chat.length - 1; //last index of the message log
@@ -129,16 +135,21 @@ export default function MessageLogsContextProvider({ children }) {
         if (isLastMsgInvalid) continue;
 
         // loop over to see how many messages are Unread
-        for (let i = chatLog.length - 1; i >= 0; i--) {
-          const isMsgInvalid = hasBeenReadOrMine(chatLog[i], userId);
+        const chatIdxLen = chatLog.length - 1;
+        if (chatIdxLen > 0) {
+          for (let i = chatIdxLen; i >= 0; i--) {
+            const isMsgInvalid = hasBeenReadOrMine(chatLog[i], userId);
 
-          // if the current message has been read or is not by this user then continue
-          if (isMsgInvalid) continue;
+            // if the current message has been read or is not by this user then continue
+            if (!isMsgInvalid) continue;
 
-          // increment the the unread value
-          const currValue = result.detail[by] || 0;
-          result.detail[by] = currValue + 1;
-          result.total = result.total + 1;
+            // increment the the unread value
+            handleIncrement(by);
+          }
+        } else {
+          const isMsgInvalid = hasBeenReadOrMine(chatLog[chatIdxLen], userId);
+
+          if (!isMsgInvalid) handleIncrement(by);
         }
       }
     }
@@ -147,7 +158,7 @@ export default function MessageLogsContextProvider({ children }) {
   }, [msgLogs]);
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs), [msgLogs]);
+  useEffect(() => console.log(msgLogs), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider

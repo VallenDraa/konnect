@@ -5,7 +5,9 @@ import { UserContext } from "../user/userContext";
 
 export const SETTINGS_DEFAULT = {
   calls: {},
-  general: {},
+  general: {
+    animation: true,
+  },
   messages: {},
 };
 

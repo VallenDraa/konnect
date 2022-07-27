@@ -4,13 +4,13 @@ import {
   useEffect,
   useContext,
   useReducer,
-} from 'react';
+} from "react";
 import groupedContactsReducer, {
   GROUPED_CONTACTS_ACTIONS,
   GROUPED_CONTACTS_DEFAULT,
-} from '../../reducer/groupedContactsReducer/groupedContactsReducer';
-import getUsersContactsPreview from '../../utils/apis/getUserContactsPreview';
-import { UserContext } from '../user/userContext';
+} from "../../reducer/groupedContactsReducer/groupedContactsReducer";
+import getUsersContactsPreview from "../../utils/apis/getUserContactsPreview";
+import { UserContext } from "../user/userContext";
 
 export const ContactsContext = createContext([]);
 
@@ -29,7 +29,7 @@ export default function ContactsContextProvider({ children }) {
       try {
         const result = [];
         const data = await getUsersContactsPreview(
-          sessionStorage.getItem('token')
+          sessionStorage.getItem("token")
         );
 
         if (data.contacts.length > 0) {
@@ -89,7 +89,7 @@ export default function ContactsContextProvider({ children }) {
 
   // useEffect(() => {
   //   console.log(
-  //     '🚀 ~ file: ContactContext.jsx ~ line 111 ~ ContactsContextProvider ~ contacts',
+  //     "🚀 ~ file: ContactContext.jsx ~ line 111 ~ ContactsContextProvider ~ contacts",
   //     contacts
   //   );
   // }, [contacts]);

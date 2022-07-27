@@ -1,6 +1,6 @@
-import User from '../../../../model/User.js';
-import PrivateChat from '../../../../model/PrivateChat.js';
-import createError from '../../../../utils/createError.js';
+import User from "../../../../model/User.js";
+import PrivateChat from "../../../../model/PrivateChat.js";
+import createError from "../../../../utils/createError.js";
 
 export const saveMessage = async (req, res, next) => {
   const { to, ...messageData } = req.body.message;
@@ -10,17 +10,17 @@ export const saveMessage = async (req, res, next) => {
     // find the chat log according to the ids
     const [privateChat] = await PrivateChat.where({
       $or: [
-        { 'users.0': to, 'users.1': messageData.by },
-        { 'users.0': messageData.by, 'users.1': to },
+        { "users.0": to, "users.1": messageData.by },
+        { "users.0": messageData.by, "users.1": to },
       ],
     });
-    const msgToPush = { ...messageData, isSent: true };
+    const msgToPush = { ...req.body.message, isSent: true };
 
     // check if chat log exists
     if (!privateChat) {
       const newPrivateChat = {
-        'users.0': messageData.by,
-        'users.1': to,
+        "users.0": messageData.by,
+        "users.1": to,
         chat: [msgToPush],
       };
 
@@ -34,7 +34,7 @@ export const saveMessage = async (req, res, next) => {
       return res.json({
         chatId: _id,
         success: true,
-        message: req.body.message,
+        message: msgToPush,
       });
     } else {
       privateChat.chat.push(msgToPush);
@@ -42,7 +42,7 @@ export const saveMessage = async (req, res, next) => {
       return res.json({
         chatId: privateChat._id,
         success: true,
-        message: req.body.message,
+        message: msgToPush,
       });
     }
   } catch (error) {
@@ -56,7 +56,7 @@ export const readMessage = async (req, res, next) => {
 
   // check if the time passed in is of a date format
   if (new Date(time).getMonth().toString() === NaN.toString()) {
-    return createError(next, 400, 'invalid time arguments');
+    return createError(next, 400, "invalid time arguments");
   }
 
   // individual message read status
@@ -66,10 +66,15 @@ export const readMessage = async (req, res, next) => {
     const { chat } = chatLog;
 
     // set the latest unread message to read
-    for (let i = chat.length - 1; i >= 0; i--) {
-      if (chat[i].readAt !== null) break;
+    const chatIdxLen = chat.length - 1;
+    if (chatIdxLen > 0) {
+      for (let i = chatIdxLen; i >= 0; i--) {
+        if (chat[i].readAt !== null) break;
 
-      chatLog.chat[i].readAt = time;
+        chatLog.chat[i].readAt = time;
+      }
+    } else {
+      chatLog.chat[chatIdxLen].readAt = time;
     }
 
     // save the updated message log
@@ -103,67 +108,3 @@ export const readMessage = async (req, res, next) => {
 };
 
 export const deleteMessage = async (req, res, next) => {};
-
-// const setToRead = (contacts, contactIndex, toBeRead) => {
-//   let timesTarget = toBeRead;
-
-//   const updatedChat = contacts[contactIndex].chat.map((chat) => {
-//     let isUpdated;
-
-//     for (const time of timesTarget) {
-//       isUpdated = chat.time.toString() === new Date(time).toString();
-
-//       if (isUpdated) {
-//         timesTarget = timesTarget.filter((item) => item !== time);
-//         break;
-//       }
-//     }
-
-//     return isUpdated ? { ...chat, isRead: true } : chat;
-//   });
-
-//   return updatedChat._doc;
-// };
-
-// export const readMessage = async (req, res, next) => {
-//   const { toBeRead, token, senderId } = req.body;
-
-//   try {
-//     const { _id } = jwt.decode(token);
-
-//     const result = await User.where('_id', [_id, senderId]);
-
-//     const sender = result.find(({ _id }) => _id.toString() === senderId);
-//     const recipient = result.find((user) => user._id.toString() === _id);
-
-//     // loop over the user contacts and find the correct message to be set to read
-//     const senIndex = recipient.contacts.findIndex(
-//       ({ user }) => user.toString() === senderId
-//     );
-
-//     recipient.contacts[senIndex].chat = setToRead(
-//       recipient.contacts,
-//       senIndex,
-//       toBeRead
-//     );
-
-//     const recIndex = sender.contacts.findIndex(
-//       ({ user }) => user.toString() === _id
-//     );
-//     recipient.contacts[recIndex].chat = setToRead(
-//       sender.contacts,
-//       recIndex,
-//       toBeRead
-//     );
-
-//     recipient.markModified('contacts.chat');
-//     sender.markModified('contacts.chat');
-//     await recipient.save();
-//     await sender.save();
-
-//     res.json({ success: true });
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// };

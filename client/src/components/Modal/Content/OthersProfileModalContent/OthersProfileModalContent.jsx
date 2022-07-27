@@ -21,7 +21,6 @@ import { UserContext } from "../../../../context/user/userContext";
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
-  handleActiveChat,
 } from "../../../../context/activeChat/ActiveChatContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ImProfile } from "react-icons/im";
@@ -322,16 +321,6 @@ export const OthersProfileModalContent = ({ username }) => {
                   </Pill>
 
                   <Pill
-                    onClick={() =>
-                      handleActiveChat({
-                        target: otherUserData,
-                        activeChat,
-                        msgLogs,
-                        setActiveChat,
-                        setIsSidebarOn,
-                        ACTIVE_CHAT_DEFAULT,
-                      })
-                    }
                     link={`/chats?id=${otherUserData._id}&type=user`}
                     className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
                   >

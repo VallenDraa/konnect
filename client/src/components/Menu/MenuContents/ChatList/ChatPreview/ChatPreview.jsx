@@ -8,13 +8,13 @@ import RenderIf from "../../../../../utils/React/RenderIf";
 import {
   ActiveChatContext,
   ACTIVE_CHAT_DEFAULT,
+  handleActiveChat,
 } from "../../../../../context/activeChat/ActiveChatContext";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 export const ChatPreview = ({
   user,
   lastMessage,
-  handleActiveChat,
   timeSentArg,
   isActive,
   setIsSidebarOn,

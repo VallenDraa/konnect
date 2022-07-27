@@ -1,10 +1,7 @@
 import { ChatPreview } from "./ChatPreview/ChatPreview";
 import { useContext, useEffect, useState } from "react";
 import RenderIf from "../../../../utils/React/RenderIf";
-import {
-  ActiveChatContext,
-  handleActiveChat,
-} from "../../../../context/activeChat/ActiveChatContext";
+import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 
@@ -28,7 +25,7 @@ export default function ChatList({ setIsSidebarOn }) {
     ) {
       setLogsEntries(newEntries);
     }
-  }, [msgLogs]);
+  }, [msgLogs, logsEntries]);
   // useEffect(() => {
   //   console.log(logsEntries);
   // }, [logsEntries]);
@@ -74,7 +71,6 @@ export default function ChatList({ setIsSidebarOn }) {
                   )}
                   user={user}
                   isActive={_id === activeChat?._id}
-                  handleActiveChat={handleActiveChat}
                 />
               );
             })}

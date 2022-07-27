@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { createContext, useEffect, useState } from "react";
+import { MessageLogsContext } from "../messageLogs/MessageLogsContext";
 import { TitleContext } from "../titleContext/TitleContext";
 
 export const ACTIVE_CHAT_DEFAULT = {
@@ -15,6 +16,7 @@ export const ActiveChatContext = createContext(ACTIVE_CHAT_DEFAULT);
 export default function ActiveChatContextProvider({ children }) {
   const [activeChat, setActiveChat] = useState(ACTIVE_CHAT_DEFAULT);
   const { setTitle } = useContext(TitleContext);
+  const { msgLogs } = useContext(MessageLogsContext);
 
   // change the web title according to the user we are chatting to
   useEffect(() => {
@@ -23,6 +25,10 @@ export default function ActiveChatContextProvider({ children }) {
       suffix: activeChat.username ? ` - ${activeChat.username}` : "",
     }));
   }, [activeChat]);
+
+  // useEffect(() => {
+  //   console.log(activeChat);
+  // }, [activeChat]);
 
   return (
     <ActiveChatContext.Provider value={{ activeChat, setActiveChat }}>
@@ -44,12 +50,14 @@ export const handleActiveChat = ({
 
   // check if target id is the same as the current one, if so deactivate it
   if (target._id !== activeChat._id) {
-    const { chat } = msgLogs.content[target._id];
+    if (msgLogs.content[target._id]) {
+      const { chat } = msgLogs.content[target._id];
 
-    setActiveChat({
-      ...target,
-      lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
-    });
+      setActiveChat({
+        ...target,
+        lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
+      });
+    }
   } else {
     setActiveChat(ACTIVE_CHAT_DEFAULT);
   }
