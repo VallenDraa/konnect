@@ -55,6 +55,11 @@ export const Menu = ({
   // to change the active menu according to the current URL path
   useEffect(() => {
     const newActiveMenu = location.pathname.split("/")[1];
+
+    // check if the new active menu is valid
+    const isValid = menus.some(({ name }) => name === newActiveMenu);
+
+    if (!isValid) return;
     if (newActiveMenu !== activeMenu) {
       setActiveMenu(newActiveMenu || "chats");
     }

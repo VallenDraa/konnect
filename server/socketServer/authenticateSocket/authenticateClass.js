@@ -22,7 +22,7 @@ export default class Authenticate {
       const user = { [`${this.userId}`]: this.socketId };
       return { success: true, user, message: null };
     } else {
-      return { success: false, user: null, message: 'User is already online' };
+      return { success: false, user: null, message: "User is already online" };
     }
   }
 
@@ -40,7 +40,7 @@ export default class Authenticate {
       const user = { [`${this.userId}`]: this.socketId };
       return { success: true, user, message: null };
     } else {
-      return { success: false, user: null, message: 'Invalid user' };
+      return { success: false, user: null, message: "Invalid user" };
     }
   }
 }

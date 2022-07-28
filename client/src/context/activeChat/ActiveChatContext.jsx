@@ -3,7 +3,7 @@ import { createContext, useEffect, useState } from "react";
 import { MessageLogsContext } from "../messageLogs/MessageLogsContext";
 import { TitleContext } from "../titleContext/TitleContext";
 
-export const ACTIVE_CHAT_DEFAULT = {
+export const ACTIVE_PRIVATE_CHAT_DEFAULT = {
   _id: null,
   initials: null,
   lastMessage: null,
@@ -11,10 +11,10 @@ export const ACTIVE_CHAT_DEFAULT = {
   username: null,
 };
 
-export const ActiveChatContext = createContext(ACTIVE_CHAT_DEFAULT);
+export const ActiveChatContext = createContext(ACTIVE_PRIVATE_CHAT_DEFAULT);
 
 export default function ActiveChatContextProvider({ children }) {
-  const [activeChat, setActiveChat] = useState(ACTIVE_CHAT_DEFAULT);
+  const [activeChat, setActiveChat] = useState(ACTIVE_PRIVATE_CHAT_DEFAULT);
   const { setTitle } = useContext(TitleContext);
   const { msgLogs } = useContext(MessageLogsContext);
 
@@ -43,7 +43,7 @@ export const handleActiveChat = ({
   setActiveChat,
   msgLogs,
   setIsSidebarOn,
-  ACTIVE_CHAT_DEFAULT,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
 }) => {
   // changing the active chat
   if (!target) return;
@@ -59,7 +59,7 @@ export const handleActiveChat = ({
       });
     }
   } else {
-    setActiveChat(ACTIVE_CHAT_DEFAULT);
+    setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
   }
 
   // close sidebar for smaller screen

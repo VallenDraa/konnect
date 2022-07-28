@@ -70,4 +70,20 @@ export default function messages(socket) {
       socket.emit("error", e);
     }
   });
+
+  socket.on("download-a-chat-history", async ({ token, pcIds, gcIds }) => {
+    const url = `${
+      process.env.API_URL
+    }/chat/get_chat_history?pcIds=${pcIds.join(",")}&gcIds=${gcIds.join(",")}`;
+
+    try {
+      const { data } = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      socket.emit("a-chat-history-downloaded", data);
+    } catch (error) {
+      socket.emit("error", error);
+    }
+  });
 }

@@ -20,7 +20,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import { UserContext } from "../../../../context/user/userContext";
 import {
   ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
 } from "../../../../context/activeChat/ActiveChatContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ImProfile } from "react-icons/im";

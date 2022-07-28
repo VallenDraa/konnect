@@ -1,8 +1,8 @@
-import Authenticate from './authenticateClass.js';
-import axios from 'axios';
+import Authenticate from "./authenticateClass.js";
+import axios from "axios";
 
 export default function authentication(socket) {
-  socket.on('login', async ({ userId, token }, cb) => {
+  socket.on("login", async ({ userId, token }, cb) => {
     const userTarget = new Authenticate(userId, socket.id);
 
     const { success, user, message } = userTarget.addUserToOnline(
@@ -12,39 +12,35 @@ export default function authentication(socket) {
     if (success) {
       Object.assign(global.onlineUsers, user);
       cb(success, null);
-      socket.emit('is-authorized', { authorized: true });
+      socket.emit("is-authorized", { authorized: true });
 
       // get all chat history if the user is authenticated
       try {
-        const { data } = await axios.post(
+        const { data } = await axios.get(
           `${process.env.API_URL}/chat/get_all_chat_history`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const { data: onlyIds } = await axios.get(
+          `${process.env.API_URL}/chat/get_all_chat_id`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (data.success) {
-          socket.emit('download-all-chats', data);
-        } else {
-          console.error(error);
-          socket.emit('error', data);
-        }
+        console.log(onlyIds);
+        socket.emit("download-all-chats", data);
+        socket.emit("download-all-chat-ids", onlyIds);
       } catch (error) {
         console.error(error);
 
-        socket.emit('error', error);
+        socket.emit("error", error);
       }
     } else {
       cb(success, message);
-      socket.emit('is-authorized', { authorized: false });
+      socket.emit("is-authorized", { authorized: false });
     }
-    console.log(global.onlineUsers, 'login');
+    console.log(global.onlineUsers, "login");
   });
 
-  socket.on('logout', (userId, cb) => {
+  socket.on("logout", (userId, cb) => {
     const userTarget = new Authenticate(userId, socket.id);
 
     const { success, user, message } = userTarget.removeOnlineUser(
@@ -58,7 +54,7 @@ export default function authentication(socket) {
       cb(success, message);
     }
 
-    console.log(global.onlineUsers, 'log out');
+    console.log(global.onlineUsers, "log out");
   });
 }
 

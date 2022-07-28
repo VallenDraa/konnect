@@ -8,7 +8,7 @@ import { UserContext } from "../../context/user/userContext";
 import getUsersPreview from "../../utils/apis/getusersPreview";
 import {
   ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
 } from "../../context/activeChat/ActiveChatContext";
 import {
   MessageLogsContext,
@@ -29,11 +29,13 @@ import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
 import scrollToBottom from "../../utils/scroll/scrollToBottom";
+import { cloneDeep } from "lodash";
 
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
-  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
+  const { newMsgLogs, newMsgLogsDispatch, msgLogs, msgLogsDispatch } =
+    useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
@@ -45,6 +47,49 @@ export const ChatBox = () => {
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
+    const incompleteChatLog = newMsgLogs.content[activeChat._id];
+
+    if (incompleteChatLog) {
+      // check if the chat history has already been downloaded
+      if (incompleteChatLog.chat) return;
+
+      const token = sessionStorage.getItem("token");
+      const { chatId } = incompleteChatLog;
+
+      try {
+        socket.emit("download-a-chat-history", {
+          token,
+          pcIds: [chatId],
+          gcIds: [],
+        });
+      } catch (error) {
+        console.error(
+          "🚀 ~ file: ChatBox.jsx ~ line 56 ~ getChatData ~ error",
+          error
+        );
+      }
+    }
+  }, [newMsgLogs, activeChat]);
+  useEffect(() => {
+    socket.on("a-chat-history-downloaded", (data) => {
+      const updatedMsgLogs = cloneDeep(newMsgLogs.content);
+      const { privateChats, groupChats } = data;
+      const { user, chat, type } = privateChats[0];
+      const targetChatLog = updatedMsgLogs[user];
+      if (targetChatLog) {
+        targetChatLog.type = type;
+        targetChatLog.chat = chat;
+      }
+
+      newMsgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.loaded,
+        payload: updatedMsgLogs,
+      });
+    });
+
+    return () => socket.off("a-chat-history-downloaded");
+  }, [newMsgLogs]);
+  useEffect(() => {
     if (location.pathname === "/chats") {
       const search = Object.fromEntries(
         location.search
@@ -55,55 +100,50 @@ export const ChatBox = () => {
 
       // check if the url provided id and type of chat
       if (search.id && search.type) {
-        const targetInContact = contacts.find(({ user }) => {
-          return user._id === search.id;
-        });
-
-        if (!targetInContact) {
-          // assemble the new active chat state
+        const updateActiveChat = (data, lastMsg) => {
           const newActiveChat = {
-            _id: search.id,
-            activeChat: true,
-            initials: null,
-            lastMessage: null,
-            profilePicture: null,
-            username: null,
-          };
-
-          // execute different code according to the search type
-          switch (search.type) {
-            case "user":
-              // fetch the initials, profile picture, and username from the server
-              getUsersPreview(sessionStorage.getItem("token"), [search.id])
-                .then((userPrev) => {
-                  Object.assign(newActiveChat, userPrev[0]);
-                  setActiveChat(newActiveChat);
-                  if (window.innerWidth <= 1024) setIsSidebarOn(false);
-                })
-                .catch((err) => console.log(err));
-
-              break;
-
-            case "group":
-              break;
-
-            default:
-              break;
-          }
-        } else {
-          const { user } = targetInContact;
-
-          const newActiveChat = {
-            _id: search.id,
-            activeChat: true,
-            initials: user.initials,
-            lastMessage: null,
-            profilePicture: user.profilePicture,
-            username: user.username,
+            _id: data._id,
+            initials: data.initials,
+            lastMsg: lastMsg || null,
+            profilePicture: data.profilePicture,
+            username: data.username,
           };
 
           setActiveChat(newActiveChat);
           if (window.innerWidth <= 1024) setIsSidebarOn(false);
+        };
+
+        // search existing user data in chatlogs for handling the active chat
+        const userInMsgLog = msgLogs.content[search.id];
+        if (userInMsgLog) {
+          const lastMsg = userInMsgLog.chat[userInMsgLog.chat.length - 1];
+          return updateActiveChat(userInMsgLog.user, lastMsg);
+        }
+
+        // search existing user data in contacts for handling the active chat
+        const targetInContact = contacts.find(({ user }) => {
+          return user._id === search.id;
+        });
+        if (targetInContact) {
+          return updateActiveChat(targetInContact.user, null);
+        }
+
+        // get user data from the server for handling the active chat
+        switch (search.type) {
+          // execute different code according to the search type
+          case "user":
+            // fetch the initials, profile picture, and username from the server
+            getUsersPreview(sessionStorage.getItem("token"), [search.id])
+              .then(([userPreview]) => updateActiveChat(userPreview))
+              .catch((err) => console.log(err));
+
+            break;
+
+          case "group":
+            break;
+
+          default:
+            break;
         }
       }
     }
@@ -192,8 +232,8 @@ export const ChatBox = () => {
     if (!msgLogs?.content[activeChat._id]?.chatId) return;
     if (activeChat.lastMessage?.by === userState.user._id) return;
 
-    const updatedMsgLogs = msgLogs;
-    const { chat, chatId } = msgLogs.content[activeChat._id];
+    const updatedMsgLogs = cloneDeep(msgLogs);
+    const { chat, chatId } = updatedMsgLogs.content[activeChat._id];
     const time = new Date().toISOString();
 
     if (chat.length > 0) {
@@ -215,8 +255,6 @@ export const ChatBox = () => {
             chat[chatIdxLen].readAt = time;
           }
 
-          console.log(updatedMsgLogs, "u");
-
           msgLogsDispatch({
             type: MESSAGE_LOGS_ACTIONS.updateLoaded,
             payload: updatedMsgLogs.content,
@@ -237,7 +275,7 @@ export const ChatBox = () => {
         if (!msgLogs.content[activeChat._id]) return;
 
         msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-        const updatedMsgLogs = msgLogs;
+        const updatedMsgLogs = cloneDeep(msgLogs);
         const { chat } = updatedMsgLogs.content[activeChat._id];
 
         // set the readAt time for messages
@@ -267,7 +305,7 @@ export const ChatBox = () => {
 
       // start the update sequence
       msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-      const updatedMsgLogs = msgLogs;
+      const updatedMsgLogs = cloneDeep(msgLogs);
 
       if (updatedMsgLogs.content[message.to]) {
         const chatContent = updatedMsgLogs.content[message.to].chat;
@@ -306,7 +344,7 @@ export const ChatBox = () => {
   const handleGoToMenu = () => {
     setIsSidebarOn(!isSidebarOn);
 
-    setTimeout(() => setActiveChat(ACTIVE_CHAT_DEFAULT), 330);
+    setTimeout(() => setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 330);
   };
 
   return (
@@ -342,7 +380,7 @@ export const ChatBox = () => {
                     />
                     <div className="flex flex-col items-start">
                       <span className="text-sm max-w-[200px] truncate">
-                        {activeChat.username}
+                        {activeChat?.username}
                       </span>
                       <span className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate">
                         Status

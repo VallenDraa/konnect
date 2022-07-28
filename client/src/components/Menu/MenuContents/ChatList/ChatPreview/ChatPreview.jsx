@@ -7,7 +7,7 @@ import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLo
 import RenderIf from "../../../../../utils/React/RenderIf";
 import {
   ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
   handleActiveChat,
 } from "../../../../../context/activeChat/ActiveChatContext";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
@@ -34,7 +34,7 @@ export const ChatPreview = ({
           setActiveChat,
           msgLogs,
           setIsSidebarOn,
-          ACTIVE_CHAT_DEFAULT,
+          ACTIVE_PRIVATE_CHAT_DEFAULT,
         })
       }
     >

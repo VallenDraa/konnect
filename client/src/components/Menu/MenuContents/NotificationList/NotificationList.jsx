@@ -10,6 +10,7 @@ import ContactNotif from "./type/ContactNotif/ContactNotif";
 import { useLocation } from "react-router-dom";
 import { NotifContext } from "../../../../context/notifContext/NotifContext";
 import NOTIF_CONTEXT_ACTIONS from "../../../../context/notifContext/notifContextActions";
+import { cloneDeep } from "lodash";
 
 export default function NotificationList() {
   const NOTIFICATION_TABS = [
@@ -68,7 +69,7 @@ export default function NotificationList() {
 
     const { name } = activeBox;
     const toBeSeenNotifIds = []; // the notif ids whose seen parameter will be changed to true
-    const updatedNotifs = notifs.content;
+    const updatedNotifs = cloneDeep(notifs.content);
 
     // loop over the notif contents to update the seen status locally and also to pick the ids whose seen status will be updated in the database
     for (const i in updatedNotifs[name]) {

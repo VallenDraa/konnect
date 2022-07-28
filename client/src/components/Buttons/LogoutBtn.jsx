@@ -1,14 +1,14 @@
-import { useContext } from 'react';
-import { BiLogOut } from 'react-icons/bi';
-import { useNavigate } from 'react-router-dom';
+import { useContext } from "react";
+import { BiLogOut } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
 import {
   ActiveChatContext,
-  ACTIVE_CHAT_DEFAULT,
-} from '../../context/activeChat/ActiveChatContext';
-import USER_ACTIONS from '../../context/user/userAction';
-import { UserContext } from '../../context/user/userContext';
-import socket from '../../utils/socketClient/socketClient';
-import Pill from './Pill';
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
+} from "../../context/activeChat/ActiveChatContext";
+import USER_ACTIONS from "../../context/user/userAction";
+import { UserContext } from "../../context/user/userContext";
+import socket from "../../utils/socketClient/socketClient";
+import Pill from "./Pill";
 
 export default function LogoutBtn() {
   const { userState, userDispatch } = useContext(UserContext);
@@ -16,13 +16,13 @@ export default function LogoutBtn() {
   const Navigate = useNavigate();
 
   const handleLogout = () => {
-    socket.emit('logout', userState.user._id, (success, message) => {
+    socket.emit("logout", userState.user._id, (success, message) => {
       // deactivate chat
-      setActiveChat(ACTIVE_CHAT_DEFAULT);
+      setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
 
       userDispatch({ type: USER_ACTIONS.logout });
-      sessionStorage.removeItem('token');
-      Navigate('/login');
+      sessionStorage.removeItem("token");
+      Navigate("/login");
     });
   };
   return (

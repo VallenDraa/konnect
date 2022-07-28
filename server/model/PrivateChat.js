@@ -1,13 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const PrivateChatSchema = new mongoose.Schema(
   {
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-
+    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    type: { type: String, default: "private" },
     chat: [
       {
-        by: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-        to: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+        by: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        to: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
         msgType: String,
         content: String,
         isSent: { type: Boolean, default: false },
@@ -19,6 +19,6 @@ const PrivateChatSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const PrivateChat = mongoose.model('private_chat', PrivateChatSchema);
+const PrivateChat = mongoose.model("private_chat", PrivateChatSchema);
 
 export default PrivateChat;

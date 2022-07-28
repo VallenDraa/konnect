@@ -11,6 +11,7 @@ import MESSAGE_LOGS_ACTIONS from "./messageLogsActions";
 import { UserContext } from "../user/userContext";
 import getUsersPreview from "../../utils/apis/getusersPreview";
 import { ContactsContext } from "../contactContext/ContactContext";
+import { cloneDeep } from "lodash";
 
 const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
@@ -28,16 +29,18 @@ export default function MessageLogsContextProvider({ children }) {
     messageLogsReducer,
     MESSAGE_LOGS_DEFAULT
   );
+  const [newMsgLogs, newMsgLogsDispatch] = useReducer(
+    messageLogsReducer,
+    MESSAGE_LOGS_DEFAULT
+  );
   const { userState } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
   const [msgUnread, setMsgUnread] = useState({ detail: {}, total: 0 });
 
-  // fetch all the message log from the server
   useEffect(() => {
-    if (msgLogs.length > 0) return;
-
-    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
-    socket.on("download-all-chats", (data) => {
+    if (newMsgLogs.length > 0) return;
+    newMsgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
+    socket.on("download-all-chat-ids", (data) => {
       // assign the incoming chat data to an object
       const payload = {};
 
@@ -45,7 +48,37 @@ export default function MessageLogsContextProvider({ children }) {
         payload[log.user._id] = {
           user: log.user,
           chatId: log.chatId,
+        };
+      }
+
+      if (data.success) {
+        newMsgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.loaded, payload });
+      } else {
+        newMsgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.loaded,
+          payload: data.message,
+        });
+        console.error(error);
+        socket.emit("error", data);
+      }
+    });
+
+    return () => socket.off("download-all-chats");
+  }, []);
+
+  // fetch all the message log from the server
+  useEffect(() => {
+    if (msgLogs.length > 0) return;
+    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
+    socket.on("download-all-chats", (data) => {
+      // assign the incoming chat data to an object
+      const payload = {};
+      for (const log of data.messageLogs) {
+        payload[log.user._id] = {
+          user: log.user,
+          chatId: log.chatId,
           chat: log.chat,
+          type: log.type,
         };
       }
 
@@ -71,7 +104,7 @@ export default function MessageLogsContextProvider({ children }) {
       if (contacts.length === 0) return;
 
       msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-      const updatedMsgLogs = msgLogs;
+      const updatedMsgLogs = cloneDeep(msgLogs);
 
       const newUserId = contacts[contacts.length - 1].user;
 
@@ -159,10 +192,18 @@ export default function MessageLogsContextProvider({ children }) {
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
   useEffect(() => console.log(msgLogs), [msgLogs]);
+  // useEffect(() => console.log(newMsgLogs), [newMsgLogs]);
 
   return (
     <MessageLogsContext.Provider
-      value={{ msgLogs, msgLogsDispatch, msgUnread, setMsgUnread }}
+      value={{
+        newMsgLogs,
+        newMsgLogsDispatch,
+        msgLogs,
+        msgLogsDispatch,
+        msgUnread,
+        setMsgUnread,
+      }}
     >
       {children}
     </MessageLogsContext.Provider>
@@ -181,7 +222,7 @@ export const pushNewEntry = async ({
   try {
     const [user] = await getUsersPreview(token, [targetId]);
     const isActiveChat = currentActiveChatId === targetId;
-    const updatedMsgLogs = msgLogs;
+    const updatedMsgLogs = cloneDeep(msgLogs);
 
     // assemble the final result object
     const newMessageLogContent = {
@@ -203,7 +244,7 @@ export const pushNewEntry = async ({
 };
 
 export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
-  const updatedMsgLogs = msgLogs;
+  const updatedMsgLogs = cloneDeep(msgLogs);
   updatedMsgLogs.content[targetId].chat.push(message);
 
   dispatch({
