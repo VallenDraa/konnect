@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
-export function useDetectFirstRender() {
+export default function useDetectFirstRender() {
   const firstRender = useRef(true);
 
   useEffect(() => {

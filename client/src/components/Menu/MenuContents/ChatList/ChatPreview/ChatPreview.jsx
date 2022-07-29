@@ -5,39 +5,22 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
 import RenderIf from "../../../../../utils/React/RenderIf";
-import {
-  ActiveChatContext,
-  ACTIVE_PRIVATE_CHAT_DEFAULT,
-  handleActiveChat,
-} from "../../../../../context/activeChat/ActiveChatContext";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
 export const ChatPreview = ({
   user,
+  chatId,
   lastMessage,
   timeSentArg,
   isActive,
-  setIsSidebarOn,
 }) => {
   if (!lastMessage || !timeSentArg) return;
-  const { msgUnread, msgLogs } = useContext(MessageLogsContext);
-  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
+  const { msgUnread } = useContext(MessageLogsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
   return (
-    <li
-      onClick={() =>
-        handleActiveChat({
-          target: user,
-          activeChat,
-          setActiveChat,
-          msgLogs,
-          setIsSidebarOn,
-          ACTIVE_PRIVATE_CHAT_DEFAULT,
-        })
-      }
-    >
+    <li>
       <Link
         to={isActive ? "/chats" : `/chats?id=${user._id}&type=user`}
         className={`flex items-center p-2 cursor-pointer rounded-lg shadow group
@@ -58,16 +41,18 @@ export const ChatPreview = ({
                 className="rounded-full absolute inset-0 z-10"
               />
               {/* notifications*/}
-              <RenderIf conditionIs={msgUnread.detail[user._id]}>
-                <div
-                  className={`inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 
+              <RenderIf conditionIs={msgUnread.detail[chatId]}>
+                <RenderIf conditionIs={msgUnread.detail[chatId] > 0}>
+                  <div
+                    className={`inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 
                   ${general?.animation ? "animate-fade-in duration-200" : ""}
                 `}
-                >
-                  {msgUnread.detail[user._id] <= 99
-                    ? msgUnread.detail[user._id]
-                    : "99+"}
-                </div>
+                  >
+                    {msgUnread.detail[chatId] <= 99
+                      ? msgUnread.detail[chatId]
+                      : "99+"}
+                  </div>
+                </RenderIf>
               </RenderIf>
             </div>
             <div className="flex flex-col gap-1 overflow-hidden">

@@ -1,4 +1,12 @@
-export default function NotifBadge({ children, isActive, size = 20 }) {
+import useCheckMobile from "../../utils/React/hooks/useCheckMobile/useCheckMobile";
+
+export default function NotifBadge({
+  children,
+  isActive,
+  size = 20,
+  style,
+  textOffset,
+}) {
   return (
     <>
       {isActive && (
@@ -7,10 +15,16 @@ export default function NotifBadge({ children, isActive, size = 20 }) {
             width: `${size}px`,
             height: `${size}px`,
             fontSize: `${(parseInt(size) * 65) / 100}px`,
+            ...style,
           }}
-          className="text-xxs rounded-full absolute -top-1 -right-1 bg-red-500 text-white grid place-content-center aspect-square"
+          className="rounded-full absolute bg-red-500 text-white grid place-content-center aspect-square"
         >
-          <span className="text-xs">{children}</span>
+          <span
+            className="relative"
+            style={{ top: textOffset.top, right: textOffset.right }}
+          >
+            {children}
+          </span>
         </div>
       )}
     </>

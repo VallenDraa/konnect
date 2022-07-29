@@ -10,6 +10,7 @@ import MODAL_ACTIONS from "../../context/modal/modalActions";
 import RenderIf from "../../utils/React/RenderIf";
 import { NotifContext } from "../../context/notifContext/NotifContext";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import useCheckMobile from "../../utils/React/hooks/useCheckMobile/useCheckMobile";
 
 export const Menu = ({
   menus,
@@ -25,6 +26,7 @@ export const Menu = ({
   const { msgUnread } = useContext(MessageLogsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [isMobile] = useCheckMobile();
 
   // check if the pathname is heading for a user profile
   useEffect(() => {
@@ -71,6 +73,12 @@ export const Menu = ({
         if (msgUnread) {
           return (
             <NotifBadge
+              size={18}
+              style={{ right: "5px", top: "-1px" }}
+              textOffset={{
+                right: !isMobile ? "0px" : "",
+                top: !isMobile ? "0.5px" : "",
+              }}
               isActive={
                 msgUnread.total !== 0 && typeof msgUnread.total === "number"
               }
@@ -110,7 +118,7 @@ export const Menu = ({
   };
 
   return (
-    <ul className="flex justify-evenly gap-x-2 divide-gray-300">
+    <ul className="flex justify-between divide-gray-300 gap-x-1">
       {menus.map((menu, i) => {
         return (
           <Fragment key={i}>
@@ -119,23 +127,21 @@ export const Menu = ({
                 setActiveMenu(menu.name);
                 isMenuNavigateWithBtn.current = true;
               }}
-              className={`basis-1/4 text-xxs w-full p-1 rounded-lg  cursor-pointer
-              ${
+              className={`w-[70px] grow text-xxs cursor-pointer rounded-lg ${
                 activeMenu === menu.name
                   ? "text-blue-400"
                   : "text-gray-500 hover:text-blue-400"
-              }
-              ${general?.animation ? "duration-200" : ""}`}
+              } ${general?.animation ? "duration-200" : ""}`}
             >
               <Link
                 to={`${linkSwitcher(menu.name)}`}
                 className="cursor-pointer flex flex-col items-center gap-1 relative w-full h-full"
               >
                 <RenderIf conditionIs={activeMenu !== menu.name}>
-                  <menu.icon className="text-2xl" />
+                  <menu.icon className="text-2xl lg:text-xl" />
                 </RenderIf>
                 <RenderIf conditionIs={activeMenu === menu.name}>
-                  <menu.activeIcon className="text-2xl" />
+                  <menu.activeIcon className="text-2xl lg:text-xl" />
                 </RenderIf>
 
                 <NotifBadgeSwitcher menuName={menu.name} />
@@ -143,15 +149,6 @@ export const Menu = ({
                 <span className="capitalize text-xxs">{menu.name}</span>
               </Link>
             </li>
-
-            <RenderIf conditionIs={i !== menus.length - 1}>
-              <li
-                style={{
-                  margin: "4px 0",
-                  border: "0.2px solid rgb(229 231 235)",
-                }}
-              />
-            </RenderIf>
           </Fragment>
         );
       })}

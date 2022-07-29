@@ -11,9 +11,11 @@ import {
   ACTIVE_PRIVATE_CHAT_DEFAULT,
 } from "../../context/activeChat/ActiveChatContext";
 import {
+  incrementMsgUnread,
   MessageLogsContext,
   pushNewEntry,
   pushNewMsgToEntry,
+  removeMsgUnread,
 } from "../../context/messageLogs/MessageLogsContext";
 import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
 import throttle from "../../utils/performance/throttle";
@@ -34,7 +36,7 @@ import { cloneDeep } from "lodash";
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
-  const { newMsgLogs, newMsgLogsDispatch, msgLogs, msgLogsDispatch } =
+  const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
     useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
@@ -47,11 +49,11 @@ export const ChatBox = () => {
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
-    const incompleteChatLog = newMsgLogs.content[activeChat._id];
+    const incompleteChatLog = msgLogs.content[activeChat._id];
 
     if (incompleteChatLog) {
       // check if the chat history has already been downloaded
-      if (incompleteChatLog.chat) return;
+      if (!incompleteChatLog.preview) return;
 
       const token = sessionStorage.getItem("token");
       const { chatId } = incompleteChatLog;
@@ -69,26 +71,27 @@ export const ChatBox = () => {
         );
       }
     }
-  }, [newMsgLogs, activeChat]);
+  }, [msgLogs, activeChat]); //tell the server to download the chat log
   useEffect(() => {
     socket.on("a-chat-history-downloaded", (data) => {
-      const updatedMsgLogs = cloneDeep(newMsgLogs.content);
+      const updatedMsgLogs = cloneDeep(msgLogs.content);
       const { privateChats, groupChats } = data;
       const { user, chat, type } = privateChats[0];
       const targetChatLog = updatedMsgLogs[user];
       if (targetChatLog) {
         targetChatLog.type = type;
         targetChatLog.chat = chat;
+        targetChatLog.preview = false;
       }
 
-      newMsgLogsDispatch({
+      msgLogsDispatch({
         type: MESSAGE_LOGS_ACTIONS.loaded,
         payload: updatedMsgLogs,
       });
     });
 
     return () => socket.off("a-chat-history-downloaded");
-  }, [newMsgLogs]);
+  }, [msgLogs]); //recieve the downloaded chat log
   useEffect(() => {
     if (location.pathname === "/chats") {
       const search = Object.fromEntries(
@@ -114,7 +117,7 @@ export const ChatBox = () => {
         };
 
         // search existing user data in chatlogs for handling the active chat
-        const userInMsgLog = msgLogs.content[search.id];
+        const userInMsgLog = cloneDeep(msgLogs.content[search.id]);
         if (userInMsgLog) {
           const lastMsg = userInMsgLog.chat[userInMsgLog.chat.length - 1];
           return updateActiveChat(userInMsgLog.user, lastMsg);
@@ -145,26 +148,11 @@ export const ChatBox = () => {
           default:
             break;
         }
+      } else {
+        setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
       }
     }
-  }, [location]); // to check if the url is directed to a certain chat
-
-  useEffect(() => {
-    if (!msgLogs.content) return;
-    if (!msgLogs?.content[activeChat._id]) return;
-
-    // check if the active chat has a lastMessage in the message log
-    if (!activeChat.lastMessage) {
-      const { chat } = msgLogs.content[activeChat._id];
-
-      if (chat.length > 0) {
-        // const assemble the new active chat
-        const newDatas = { ...activeChat, lastMessage: chat[chat.length - 1] };
-
-        setActiveChat(newDatas);
-      }
-    }
-  }, [msgLogs]); // refresh the active chat message log if it is still empty
+  }, [location, msgLogs]); // to check if the url is directed to a certain chat
   // END OF INITIAL LOADING USE EFFECT
 
   useEffect(() => {
@@ -207,9 +195,11 @@ export const ChatBox = () => {
             targetId: message.by,
             message: assembledMsg,
             token: sessionStorage.getItem("token"),
-            currentActiveChatId: activeChat._id,
             dispatch: msgLogsDispatch,
           });
+
+      // update the unread message notif
+      incrementMsgUnread({ msgUnread, setMsgUnread, chatId });
 
       // update the active chat last message so that when receiver see it, the message can be flag as read
       setActiveChat({ ...activeChat, lastMessage: message });
@@ -259,6 +249,9 @@ export const ChatBox = () => {
             type: MESSAGE_LOGS_ACTIONS.updateLoaded,
             payload: updatedMsgLogs.content,
           });
+
+          // updated the msgUnread notifs
+          removeMsgUnread({ msgUnread, setMsgUnread, chatId });
 
           // update the message read status to the server
           socket.emit("read-msg", time, token, activeChat._id, chatId);

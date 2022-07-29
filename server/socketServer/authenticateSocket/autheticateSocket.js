@@ -25,7 +25,6 @@ export default function authentication(socket) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        console.log(onlyIds);
         socket.emit("download-all-chats", data);
         socket.emit("download-all-chat-ids", onlyIds);
       } catch (error) {

@@ -24,7 +24,7 @@ import unfriend from "./socketServer/contactsRelated/unfriendSocket/unfriendSock
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: ["http://localhost:3000", "http://192.168.1.4:3000"] },
+  cors: { origin: ["http://localhost:3000", "http://localhost:3000"] },
 });
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
@@ -42,7 +42,7 @@ if (process.env.NODE_ENV !== "production") {
     cors({
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
-      origin: ["http://localhost:3000", "http://192.168.1.4:3000"],
+      origin: ["http://localhost:3000", "http://localhost:3000"],
     })
   );
 }

@@ -13,7 +13,6 @@ import {
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import socket from "../../../../utils/socketClient/socketClient";
 import scrollToBottom from "../../../../utils/scroll/scrollToBottom";
-import useCheckMobile from "../../../../utils/React/hooks/useCheckMobile/useCheckMobile";
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
@@ -53,12 +52,9 @@ export default function inputBar({ messageLogRef }) {
           targetId: activeChat._id,
           message: newMessageInput,
           token: sessionStorage.getItem("token"),
-          currentActiveChatId: activeChat._id,
           dispatch: msgLogsDispatch,
         });
-    setTimeout(() => {
-      messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
-    }, 150);
+    setTimeout(() => scrollToBottom(messageLogRef.current), 150);
 
     // reset the input bar
     setnewMessage("");

@@ -4,8 +4,9 @@ import RenderIf from "../../../../utils/React/RenderIf";
 import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
+import { cloneDeep } from "lodash";
 
-export default function ChatList({ setIsSidebarOn }) {
+export default function ChatList() {
   const { activeChat } = useContext(ActiveChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
@@ -16,7 +17,7 @@ export default function ChatList({ setIsSidebarOn }) {
   useEffect(() => {
     if (!msgLogs || !msgLogs.content) return;
 
-    const newEntries = Object.entries(msgLogs.content);
+    const newEntries = Object.entries(cloneDeep(msgLogs.content));
 
     // check if the new message logs and current one is the same
     if (
@@ -59,10 +60,10 @@ export default function ChatList({ setIsSidebarOn }) {
         <ul className="p-3 flex flex-col gap-y-4">
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
-            {logsEntries.map(([_id, { user, chat }]) => {
+            {logsEntries.map(([_id, { user, chat, chatId }]) => {
               return (
                 <ChatPreview
-                  setIsSidebarOn={setIsSidebarOn}
+                  chatId={chatId}
                   key={_id}
                   lastMessage={chat[chat.length - 1]}
                   timeSentArg={chatPreviewTimeStatus(
@@ -80,50 +81,3 @@ export default function ChatList({ setIsSidebarOn }) {
     }
   }
 }
-
-// unused code
-// const [chats, setChats] = useState([
-//   // {
-//   //   username: 'john',
-//   //   id: '1',
-//   //   lastMessage: {
-//   //     type: 'text',
-//   //     content: 'Lorem ipsum dolor sit',
-//   //     by: 'me',
-//   //   },
-//   //   activeChat: false,
-//   // },
-// ]);
-// set chats state based on the user contact
-// useEffect(() => {
-//   if (Object.keys(msgLogs.content).length === 0) return;
-//   // both index will match
-//   const lastMessages = {};
-//   const usersPreviewToBeFetched = [];
-
-//   for (const id in msgLogs.content) {
-//     const logs = msgLogs.content;
-
-//     if (logs[id].chat.length === 0) continue;
-
-//     // add the last message to the last messages object
-//     lastMessages[id] = logs[id].chat[logs[id].chat.length - 1];
-//     usersPreviewToBeFetched.push(id);
-//   }
-
-//   getUsersPreview(sessionStorage.getItem('token'), usersPreviewToBeFetched)
-//     .then((result) => {
-//       const finalResults = [];
-
-//       // assemble the final result which includes (username, id, lastMessage, initials, profilePicture)
-//       for (const preview of result) {
-//         finalResults.push({
-//           ...preview,
-//           activeChat: activeChat._id === preview._id,
-//           lastMessage: lastMessages[preview._id],
-//         });
-//       }
-//       setChats(finalResults);
-//     })
-//     .catch((e) => console.log(e));
-// }, [msgLogs]);

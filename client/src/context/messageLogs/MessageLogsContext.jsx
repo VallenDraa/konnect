@@ -29,64 +29,37 @@ export default function MessageLogsContextProvider({ children }) {
     messageLogsReducer,
     MESSAGE_LOGS_DEFAULT
   );
-  const [newMsgLogs, newMsgLogsDispatch] = useReducer(
-    messageLogsReducer,
-    MESSAGE_LOGS_DEFAULT
-  );
+
   const { userState } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
   const [msgUnread, setMsgUnread] = useState({ detail: {}, total: 0 });
 
-  useEffect(() => {
-    if (newMsgLogs.length > 0) return;
-    newMsgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
-    socket.on("download-all-chat-ids", (data) => {
-      // assign the incoming chat data to an object
-      const payload = {};
-
-      for (const log of data.messageLogs) {
-        payload[log.user._id] = {
-          user: log.user,
-          chatId: log.chatId,
-        };
-      }
-
-      if (data.success) {
-        newMsgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.loaded, payload });
-      } else {
-        newMsgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.loaded,
-          payload: data.message,
-        });
-        console.error(error);
-        socket.emit("error", data);
-      }
-    });
-
-    return () => socket.off("download-all-chats");
-  }, []);
-
-  // fetch all the message log from the server
+  // fetch all the message log id from the server
   useEffect(() => {
     if (msgLogs.length > 0) return;
-    msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
-    socket.on("download-all-chats", (data) => {
-      // assign the incoming chat data to an object
-      const payload = {};
-      for (const log of data.messageLogs) {
-        payload[log.user._id] = {
-          user: log.user,
-          chatId: log.chatId,
-          chat: log.chat,
-          type: log.type,
-        };
-      }
-
+    // msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.initialLoading });
+    socket.on("download-all-chat-ids", (data) => {
       if (data.success) {
+        // assign the incoming chat data to an object
+
+        const payload = {};
+        for (const log of data.messageLogs) {
+          payload[log.user._id] = {
+            user: log.user,
+            chatId: log.chatId,
+            chat: log.chat,
+            preview: log.preview,
+          };
+        }
+
+        // update the msgLogs
         msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.loaded, payload });
+        if (JSON.stringify(data.unreadMsg) !== JSON.stringify(msgUnread)) {
+          setMsgUnread(data.unreadMsg);
+        }
       } else {
         msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.loaded,
+          type: MESSAGE_LOGS_ACTIONS.error,
           payload: data.message,
         });
         console.error(error);
@@ -97,7 +70,7 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off("download-all-chats");
   }, []);
 
-  // refresh messageLog
+  /* refresh messageLog*/
   useEffect(() => {
     const refreshMsgLogs = () => {
       if (!userState.user || !userState) return;
@@ -137,68 +110,12 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off("refresh-msg-log");
   }, [userState, contacts, msgLogs]);
 
-  // count unread messages
-  useEffect(() => {
-    if (Object.keys(msgLogs.content).length === 0) return;
-    const msgEntries = msgLogs.content;
-    const userId = userState.user._id;
-    const result = { detail: {}, total: 0 };
-
-    const hasBeenReadOrMine = (chat, userId) => {
-      if (chat.readAt !== null) return true;
-      if (chat.by === userId) return true;
-    };
-
-    function handleIncrement(by) {
-      const currValue = result.detail[by] || 0;
-      result.detail[by] = currValue + 1;
-      result.total = result.total + 1;
-    }
-
-    // only increments the Unread value if the last message sent by a user is Unread
-    for (const by in msgEntries) {
-      const lastMsg = msgEntries[by].chat.length - 1; //last index of the message log
-
-      // check if the user has sent any messages
-      if (lastMsg !== -1) {
-        const chatLog = msgEntries[by].chat;
-        const isLastMsgInvalid = hasBeenReadOrMine(chatLog[lastMsg], userId);
-
-        // if the last message has been read or is not by this user then continue
-        if (isLastMsgInvalid) continue;
-
-        // loop over to see how many messages are Unread
-        const chatIdxLen = chatLog.length - 1;
-        if (chatIdxLen > 0) {
-          for (let i = chatIdxLen; i >= 0; i--) {
-            const isMsgInvalid = hasBeenReadOrMine(chatLog[i], userId);
-
-            // if the current message has been read or is not by this user then continue
-            if (!isMsgInvalid) continue;
-
-            // increment the the unread value
-            handleIncrement(by);
-          }
-        } else {
-          const isMsgInvalid = hasBeenReadOrMine(chatLog[chatIdxLen], userId);
-
-          if (!isMsgInvalid) handleIncrement(by);
-        }
-      }
-    }
-
-    setMsgUnread(result);
-  }, [msgLogs]);
-
   // useEffect(() => console.log(msgUnread), [msgUnread]);
-  useEffect(() => console.log(msgLogs), [msgLogs]);
-  // useEffect(() => console.log(newMsgLogs), [newMsgLogs]);
+  // useEffect(() => console.log(msgLogs), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider
       value={{
-        newMsgLogs,
-        newMsgLogsDispatch,
         msgLogs,
         msgLogsDispatch,
         msgUnread,
@@ -251,4 +168,26 @@ export const pushNewMsgToEntry = ({ targetId, message, dispatch, msgLogs }) => {
     type: MESSAGE_LOGS_ACTIONS.updateLoaded,
     payload: updatedMsgLogs.content,
   });
+};
+
+export const incrementMsgUnread = ({ msgUnread, setMsgUnread, chatId }) => {
+  const updatedMsgUnread = cloneDeep(msgUnread);
+
+  const currentNotifValue = updatedMsgUnread.detail[chatId] || 0;
+
+  updatedMsgUnread.detail[chatId] = currentNotifValue + 1;
+  updatedMsgUnread.total = updatedMsgUnread.total + 1;
+
+  setMsgUnread(updatedMsgUnread);
+};
+
+export const removeMsgUnread = ({ msgUnread, setMsgUnread, chatId }) => {
+  const updatedMsgUnread = cloneDeep(msgUnread);
+
+  const currentNotifValue = updatedMsgUnread.detail[chatId] || 0;
+
+  delete updatedMsgUnread.detail[chatId];
+  updatedMsgUnread.total = updatedMsgUnread.total - currentNotifValue;
+
+  setMsgUnread(updatedMsgUnread);
 };

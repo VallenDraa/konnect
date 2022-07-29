@@ -18,11 +18,6 @@ import addRequestSentReducer, {
 } from "../../../../reducer/contactRequestSent/contactRequestSentReducer";
 import { FaPaperPlane } from "react-icons/fa";
 import { UserContext } from "../../../../context/user/userContext";
-import {
-  ActiveChatContext,
-  ACTIVE_PRIVATE_CHAT_DEFAULT,
-} from "../../../../context/activeChat/ActiveChatContext";
-import { useLocation, useNavigate } from "react-router-dom";
 import { ImProfile } from "react-icons/im";
 import { ContactsContext } from "../../../../context/contactContext/ContactContext";
 import {
@@ -31,8 +26,6 @@ import {
   receiveContactRequestResponse,
   receiveSendAddContact,
 } from "../../../../context/notifContext/NotifContext";
-import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
-import { SidebarContext } from "../../../../pages/Home/Home";
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -44,16 +37,11 @@ export const OthersProfileModalContent = ({ username }) => {
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState("");
   const { contacts, setContacts } = useContext(ContactsContext);
-  const { msgLogs } = useContext(MessageLogsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
-  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
-  const { setIsSidebarOn } = useContext(SidebarContext);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   //for both sending and cancelling a contact request
   const handleSendContactRequest = () => {
