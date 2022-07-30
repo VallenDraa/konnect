@@ -28,7 +28,7 @@ export const InitialLoadingScreen = () => {
     <RenderIf conditionIs={isInitialLoading}>
       <div
         ref={loading}
-        className="fixed inset-0 bg-white z-30 flex items-center justify-center"
+        className="fixed inset-0 bg-white z-40 flex items-center justify-center"
       >
         Loading...
       </div>

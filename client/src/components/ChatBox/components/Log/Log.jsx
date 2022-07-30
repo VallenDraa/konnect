@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Fragment, useContext } from "react";
 import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
@@ -14,6 +15,42 @@ export default function Log({ messageLogRef }) {
   const { userState } = useContext(UserContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [groupedMsgLogs, setGroupedMsgLogs] = useState([
+    { date: null, messages: [] },
+  ]);
+
+  useEffect(() => {
+    const result = [];
+
+    msgLogs?.content[activeChat._id]?.chat?.forEach((msg, i) => {
+      if (i === 0) {
+        result.push({
+          date: new Date(msg.time).toLocaleDateString(),
+          messages: [msg],
+        });
+      } else {
+        const { time: past } = msgLogs?.content[activeChat._id]?.chat[i - 1];
+        const { time: curr } = msg;
+        const datePast = new Date(past).toLocaleDateString();
+        const dateCurr = new Date(curr).toLocaleDateString();
+
+        if (datePast !== dateCurr) {
+          result.push({ date: dateCurr, messages: [msg] });
+        } else {
+          const timeGroupIdx = result.findIndex(
+            ({ date }) => date === dateCurr
+          );
+
+          timeGroupIdx === -1
+            ? result.push({ date: dateCurr, messages: [msg] })
+            : result[timeGroupIdx].messages.push(msg);
+        }
+      }
+    });
+
+    setGroupedMsgLogs(result);
+  }, [msgLogs, activeChat]);
+
   return (
     <main className="bg-gray-100 flex flex-col grow">
       <ul
@@ -23,49 +60,23 @@ export default function Log({ messageLogRef }) {
           general?.animation ? "scroll-smooth" : ""
         }`}
       >
-        <RenderIf conditionIs={msgLogs.content}>
-          {msgLogs?.content[activeChat._id]?.chat.map((log, i) => {
+        <RenderIf conditionIs={groupedMsgLogs.length > 0}>
+          {groupedMsgLogs.map(({ date, messages }, i) => {
             return (
               <Fragment key={i}>
-                {/* the time separator */}
-                <>
-                  {/* the initial time separator */}
-                  <RenderIf conditionIs={i === 0}>
-                    <TimeSeparator now={new Date()} then={new Date(log.time)} />
-                  </RenderIf>
-                  {/* the incoming ones */}
-                  <RenderIf conditionIs={i > 0}>
-                    <RenderIf
-                      conditionIs={
-                        getDayDifference(
-                          new Date(log.time),
-                          new Date(
-                            msgLogs?.content[activeChat._id]?.chat[i - 1]?.time
-                          )
-                        ) > 1
-                      }
-                    >
-                      <TimeSeparator
-                        now={new Date(log.time)}
-                        then={
-                          new Date(
-                            msgLogs?.content[activeChat._id]?.chat[i - 1]?.time
-                          )
-                        }
-                      />
-                    </RenderIf>
-                  </RenderIf>
-                </>
+                <TimeSeparator now={new Date()} then={new Date(date)} />
 
-                {/* the message */}
-                <>
-                  <Message
-                    state={{ isSent: log.isSent, readAt: log.readAt }}
-                    isSentByMe={log.by === userState.user._id}
-                    msg={log.content}
-                    time={new Date(log.time)}
-                  />
-                </>
+                {messages.map((msg) => {
+                  return (
+                    <Message
+                      key={msg._id}
+                      state={{ isSent: msg.isSent, readAt: msg.readAt }}
+                      isSentByMe={msg.by === userState.user._id}
+                      msg={msg.content}
+                      time={new Date(msg.time)}
+                    />
+                  );
+                })}
               </Fragment>
             );
           })}
