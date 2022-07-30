@@ -23,14 +23,11 @@ export const ChatPreview = ({
     <li>
       <Link
         to={isActive ? "/chats" : `/chats?id=${user._id}&type=user`}
-        className={`flex items-center p-2 cursor-pointer rounded-lg shadow group
-              ${
-                isActive
-                  ? "bg-blue-100 font-semibold"
-                  : "hover:bg-pink-100 bg-gray-100"
-              } 
-              ${general?.animation ? "duration-200" : ""}
-              `}
+        className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
+          isActive
+            ? "bg-blue-100 font-semibold"
+            : "hover:bg-pink-100 bg-gray-100"
+        } ${general?.animation ? "duration-200" : ""}`}
       >
         <div className="flex overflow-hidden grow">
           <div className="flex gap-2 overflow-hidden grow">
@@ -44,8 +41,9 @@ export const ChatPreview = ({
               <RenderIf conditionIs={msgUnread.detail[chatId]}>
                 <RenderIf conditionIs={msgUnread.detail[chatId] > 0}>
                   <div
-                    className={`inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 
-                  ${general?.animation ? "animate-fade-in duration-200" : ""}
+                    className={`inset-0 bg-gradient-to-tl from-pink-300/80 to-blue-300 rounded-full grid place-content-center text-lg hover:text-xl font-medium text-gray-800 absolute z-20 ${
+                      general?.animation ? "animate-fade-in duration-200" : ""
+                    }
                 `}
                   >
                     {msgUnread.detail[chatId] <= 99
@@ -57,31 +55,21 @@ export const ChatPreview = ({
             </div>
             <div className="flex flex-col gap-1 overflow-hidden">
               <span
-                className={`truncate font-medium
-                          ${
-                            isActive
-                              ? "group-hover:text-blue-500"
-                              : "group-hover:text-pink-700"
-                          }
-                          ${general?.animation ? "duration-200" : ""}
-                `}
+                className={`truncate font-medium ${
+                  isActive
+                    ? "group-hover:text-blue-500"
+                    : "group-hover:text-pink-700"
+                } ${general?.animation ? "duration-200" : ""}`}
               >
                 {user.username}
               </span>
               <span
-                className={`text-sm truncate text-gray-500 relative z-10 flex items-center gap-1
-                          ${
-                            isActive
-                              ? "group-hover:text-blue-500"
-                              : "group-hover:text-pink-700"
-                          }
-                          ${
-                            general?.animation
-                              ? "duration-200 transition-all"
-                              : ""
-                          }
-
-              `}
+                className={`text-sm truncate text-gray-500 relative z-10 flex items-center gap-1 
+                ${
+                  isActive
+                    ? "group-hover:text-blue-500"
+                    : "group-hover:text-pink-700"
+                } ${general?.animation ? "duration-200 transition-all" : ""}`}
               >
                 {lastMessage.msgType === "image" && (
                   <>
@@ -107,18 +95,11 @@ export const ChatPreview = ({
           </div>
           <div className="flex flex-col items-center basis-10 gap-y-2">
             <time
-              className={`text-xxs self-center text-right basis-1/12 relative top-0.5
-                          ${
-                            isActive
-                              ? "group-hover:text-blue-400"
-                              : "group-hover:text-pink-400"
-                          }
-                          ${
-                            general?.animation
-                              ? "duration-200 transition-all"
-                              : ""
-                          }
-                      `}
+              className={`text-xxs self-center text-right basis-1/12 relative top-0.5 ${
+                isActive
+                  ? "group-hover:text-blue-400"
+                  : "group-hover:text-pink-400"
+              } ${general?.animation ? "duration-200 transition-all" : ""} `}
             >
               {timeSentArg}
             </time>

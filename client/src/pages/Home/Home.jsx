@@ -40,10 +40,20 @@ export default function Home() {
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, "history error");
   }, [urlHistoryError]);
+
+  // join the chat-tab room when the url contains /chats
+  useEffect(() => {
+    const isPathValid = /\/chats/.test(pathname);
+
+    isPathValid
+      ? socket.emit("join-room", "chats")
+      : socket.emit("leave-room", "chats");
+  }, [location]);
 
   // authorize user with socket.io, if the userState is not empty
   useEffect(() => {

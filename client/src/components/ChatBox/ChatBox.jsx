@@ -22,16 +22,25 @@ import throttle from "../../utils/performance/throttle";
 import getScrollPercentage, {
   isWindowScrollable,
 } from "../../utils/scroll/getScrollPercentage";
-import { BsArrowLeftShort } from "react-icons/bs";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
 import { SidebarContext } from "../../pages/Home/Home";
-import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
 import scrollToBottom from "../../utils/scroll/scrollToBottom";
 import { cloneDeep } from "lodash";
+import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
+
+const userOnlineStatusSwitcher = (status) => {
+  if (status === "online") return { isOnline: true, lastSeen: null };
+  else {
+    // check if the lastSeen time is valid
+    return new Date(status).getMonth().toString() === NaN.toString()
+      ? { isOnline: false, lastSeen: null }
+      : { isOnline: false, lastSeen: status };
+  }
+};
 
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
@@ -39,13 +48,68 @@ export const ChatBox = () => {
   const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
     useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
-  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
+  const { setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
   const [willGoToBottom, setWillGoToBottom] = useState(false);
   const messageLogRef = useRef();
-  const { settings } = useContext(SettingsContext);
-  const { general } = settings;
   const { contacts } = useContext(ContactsContext);
+  const invisibleWallRef = useRef();
+  const [currStatus, setCurrStatus] = useState({
+    isOnline: false,
+    lastSeen: null,
+    hasFetch: false,
+  }); // for stopping infinite re render
+
+  // check if the activeChat is online
+  useEffect(() => {
+    if (!activeChat?._id) return;
+
+    const { isOnline, lastSeen } = activeChat;
+    const { hasFetch, ...others } = currStatus;
+
+    if (
+      isOnline === others.isOnline &&
+      lastSeen === others.lastSeen &&
+      hasFetch
+    ) {
+      return;
+    }
+
+    socket.emit(
+      "is-user-online",
+      activeChat._id,
+      sessionStorage.getItem("token")
+    );
+  }, [activeChat, currStatus]);
+
+  // receive the online status from server
+  useEffect(() => {
+    socket.on("receive-is-user-online", (userId, status) => {
+      if (userId !== activeChat._id) return;
+      else {
+        const newOnlineStatus = userOnlineStatusSwitcher(status);
+
+        setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+        setCurrStatus({ ...newOnlineStatus, hasFetch: true });
+      }
+    });
+    return () => socket.off("receive-is-user-online");
+  }, [activeChat]);
+
+  // refresh user online status
+  useEffect(() => {
+    socket.on("change-user-status", (userId, status) => {
+      if (userId !== activeChat._id) return;
+      else {
+        const newOnlineStatus = userOnlineStatusSwitcher(status);
+
+        setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+        setCurrStatus({ ...newOnlineStatus, hasFetch: true });
+      }
+    });
+
+    return () => socket.off("change-user-status");
+  }, [activeChat]);
 
   // INITIAL LOADING USE EFFECT
   useEffect(() => {
@@ -110,6 +174,8 @@ export const ChatBox = () => {
             lastMsg: lastMsg || null,
             profilePicture: data.profilePicture,
             username: data.username,
+            isOnline: false,
+            lastSeen: null,
           };
 
           setActiveChat(newActiveChat);
@@ -149,7 +215,14 @@ export const ChatBox = () => {
             break;
         }
       } else {
-        setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+        if (window.innerWidth <= 1024) {
+          setIsSidebarOn(true);
+          setTimeout(() => {
+            setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+          }, 330);
+        } else {
+          setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+        }
       }
     }
   }, [location, msgLogs]); // to check if the url is directed to a certain chat
@@ -334,69 +407,26 @@ export const ChatBox = () => {
     return () => socket.off("msg-sent");
   }, [msgLogs]); // for changing the message state indicator
 
-  const handleGoToMenu = () => {
-    setIsSidebarOn(!isSidebarOn);
-
-    setTimeout(() => setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 330);
-  };
-
   return (
     <>
       <RenderIf conditionIs={!activeChat?.username}>
-        <StartScreen handleGoToMenu={handleGoToMenu} />
+        <StartScreen />
       </RenderIf>
       <RenderIf conditionIs={activeChat?.username}>
-        <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
-          <header className="h-14 bg-gray-50 shadow-inner py-2 px-2 lg:px-5 border-b-2">
-            <div className="max-w-screen-sm lg:max-w-full mx-auto flex justify-between items-center">
-              <div className="flex justify-between items-center  w-full">
-                {/* sidebar btn (will show up when screen is <lg) */}
-                <div className="flex items-center justify-between gap-2">
-                  <Link
-                    to="/chats"
-                    onClick={handleGoToMenu}
-                    className={`block lg:hidden hover:text-blue-400 text-3xl
-                            ${general?.animation ? "duration-200" : ""}
-                            `}
-                  >
-                    <BsArrowLeftShort />
-                  </Link>
-                  {/* profile  */}
-                  <Link
-                    to={`user/${activeChat?.username}`}
-                    className="flex items-center gap-1"
-                  >
-                    <img
-                      src="https://picsum.photos/200/200"
-                      alt=""
-                      className="rounded-full h-9 w-9"
-                    />
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm max-w-[200px] truncate">
-                        {activeChat?.username}
-                      </span>
-                      <span className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate">
-                        Status
-                      </span>
-                    </div>
-                  </Link>
-                </div>
+        <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
+          {/* invisible wall */}
+          <div
+            ref={invisibleWallRef}
+            className="absolute inset-0 z-20 hidden"
+          />
 
-                {/* chat action buttons */}
-                <div></div>
-              </div>
-            </div>
-          </header>
+          <ChatBoxHeader invisibleWallRef={invisibleWallRef} />
 
           {/* message */}
-          <main className="bg-gray-100 flex flex-col grow">
-            <Log messageLogRef={messageLogRef} />
-          </main>
+          <Log messageLogRef={messageLogRef} />
 
           {/* input */}
-          <footer className="sticky bottom-0 bg-gray-100">
-            <InputBar messageLogRef={messageLogRef} />
-          </footer>
+          <InputBar messageLogRef={messageLogRef} />
         </main>
       </RenderIf>
     </>

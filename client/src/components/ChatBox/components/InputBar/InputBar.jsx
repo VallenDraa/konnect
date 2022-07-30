@@ -66,53 +66,57 @@ export default function inputBar({ messageLogRef }) {
   const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 
   return (
-    <form
-      onSubmit={(e) => handleNewMessage(e)}
-      className="flex items-center justify-center gap-3 py-3 px-5 max-w-screen-sm lg:max-w-full mx-auto"
-    >
-      {/* emoji btn */}
-      <div aria-label="message-button-group" className="self-end">
-        <EmojiBarToggle isEmojiBarOnState={{ isEmojiBarOn, setIsEmojiBarOn }} />
-      </div>
-      <RenderIf conditionIs={isEmojiBarOn}>
-        <Picker
-          pickerStyle={{
-            shadow:
-              "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-            borderRadius: "20px",
-            position: "absolute",
-            left: "25px",
-            bottom: "60px",
+    <footer className="sticky bottom-0 bg-gray-100">
+      <form
+        onSubmit={(e) => handleNewMessage(e)}
+        className="flex items-center justify-center gap-3 py-3 px-5 max-w-screen-sm lg:max-w-full mx-auto"
+      >
+        {/* emoji btn */}
+        <div aria-label="message-button-group" className="self-end">
+          <EmojiBarToggle
+            isEmojiBarOnState={{ isEmojiBarOn, setIsEmojiBarOn }}
+          />
+        </div>
+        <RenderIf conditionIs={isEmojiBarOn}>
+          <Picker
+            pickerStyle={{
+              shadow:
+                "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+              borderRadius: "20px",
+              position: "absolute",
+              left: "25px",
+              bottom: "60px",
+            }}
+            disableAutoFocus={true}
+            native={true}
+            onEmojiClick={onEmojiClick}
+          />
+        </RenderIf>
+        {/* the input bar */}
+        <input
+          onDoubleClick={() => {
+            scrollToBottom(messageLogRef.current);
           }}
-          disableAutoFocus={true}
-          native={true}
-          onEmojiClick={onEmojiClick}
-        />
-      </RenderIf>
-      {/* the input bar */}
-      <input
-        onDoubleClick={() => {
-          scrollToBottom(messageLogRef.current);
-        }}
-        type="text"
-        ref={inputRef}
-        onChange={(e) => setnewMessage(e.target.value)}
-        value={newMessage}
-        className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
+          type="text"
+          ref={inputRef}
+          onChange={(e) => setnewMessage(e.target.value)}
+          value={newMessage}
+          className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
                rounded-full px-6 resize-none flex items-center justify-center h-8"
-      />
-      {/* the send msg btn */}
-      <RenderIf conditionIs={newMessage !== ""}>
-        <button
-          className={`w-8 h-8 rounded-full bg-blue-300 text-white
+        />
+        {/* the send msg btn */}
+        <RenderIf conditionIs={newMessage !== ""}>
+          <button
+            className={`w-8 h-8 rounded-full bg-blue-300 text-white
                 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
                 flex items-center justify-center shadow aspect-square text-xs 
                 ${general?.animation ? `animate-pop-in` : ``}
                 `}
-        >
-          <FaPaperPlane className="relative right-[1px]" />
-        </button>
-      </RenderIf>
-    </form>
+          >
+            <FaPaperPlane className="relative right-[1px]" />
+          </button>
+        </RenderIf>
+      </form>
+    </footer>
   );
 }

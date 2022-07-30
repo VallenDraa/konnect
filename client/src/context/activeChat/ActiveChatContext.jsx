@@ -8,6 +8,8 @@ export const ACTIVE_PRIVATE_CHAT_DEFAULT = {
   lastMessage: null,
   profilePicture: null,
   username: null,
+  isOnline: false,
+  lastSeen: null,
 };
 
 export const ActiveChatContext = createContext(ACTIVE_PRIVATE_CHAT_DEFAULT);

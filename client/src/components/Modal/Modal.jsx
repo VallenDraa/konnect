@@ -68,7 +68,7 @@ export const Modal = () => {
       <RenderIf conditionIs={modalState.isActive === true}>
         <div
           ref={modalWrapper}
-          className={`fixed z-30 inset-0 flex justify-center items-center 
+          className={`fixed z-40 inset-0 flex justify-center items-center 
                     ${modalState.isActive ? "lg:bg-gray-900/40" : "bg-gray-100"}
                     ${general?.animation ? "animate-fade-in" : ""}`}
         >

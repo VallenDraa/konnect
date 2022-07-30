@@ -21,6 +21,7 @@ import { SidebarContext } from "../../pages/Home/Home";
 
 export const Sidebar = ({ urlHistory }) => {
   const Navigate = useNavigate();
+  if (!useContext(SidebarContext)) return;
   const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
   const [activeMenu, setActiveMenu] = useState(MENUS[0].name);
   const { userState } = useContext(UserContext);
@@ -41,7 +42,7 @@ export const Sidebar = ({ urlHistory }) => {
     ],
     BASE: [
       "inset-0",
-      "z-20",
+      "z-30",
       "fixed",
       "lg:sticky",
       "top-0",

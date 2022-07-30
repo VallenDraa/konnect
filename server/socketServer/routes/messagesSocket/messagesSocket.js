@@ -1,6 +1,6 @@
 import axios from "axios";
 import jwt from "jsonwebtoken";
-import { createErrorNonExpress } from "../../utils/createError.js";
+import { createErrorNonExpress } from "../../../utils/createError.js";
 
 export default function messages(socket) {
   socket.on("new-msg", async (message, token) => {

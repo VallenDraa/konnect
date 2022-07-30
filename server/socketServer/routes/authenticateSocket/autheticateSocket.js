@@ -17,16 +17,15 @@ export default function authentication(socket) {
       // get all chat history if the user is authenticated
       try {
         const { data } = await axios.get(
-          `${process.env.API_URL}/chat/get_all_chat_history`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const { data: onlyIds } = await axios.get(
           `${process.env.API_URL}/chat/get_all_chat_id`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        socket.emit("download-all-chats", data);
-        socket.emit("download-all-chat-ids", onlyIds);
+        // emit the statu to the user that is currently chatting
+        delete global.lastSeen[userId];
+        socket.to("chats").emit("change-user-status", userId, "online");
+
+        socket.emit("download-all-chat-ids", data);
       } catch (error) {
         console.error(error);
 
@@ -39,7 +38,7 @@ export default function authentication(socket) {
     console.log(global.onlineUsers, "login");
   });
 
-  socket.on("logout", (userId, cb) => {
+  socket.on("logout", async (userId, cb) => {
     const userTarget = new Authenticate(userId, socket.id);
 
     const { success, user, message } = userTarget.removeOnlineUser(
@@ -53,6 +52,12 @@ export default function authentication(socket) {
       cb(success, message);
     }
 
+    const time = new Date();
+
+    // emit the statu to the user that is currently chatting
+    global.lastSeen[userId] = time;
+    socket.to("chats").emit("change-user-status", userId, time);
+
     console.log(global.onlineUsers, "log out");
   });
 }
@@ -61,12 +66,17 @@ export default function authentication(socket) {
  *  force remove user from the online users list
  * @param {*} socket
  */
-export const tabClose = (socket) => {
-  const objKey = Object.keys(global.onlineUsers).filter(
+export const tabClose = async (socket) => {
+  const userId = Object.keys(global.onlineUsers).filter(
     (key) => global.onlineUsers[key] === socket.id
   )[0];
-  console.log(objKey);
 
-  delete global.onlineUsers[objKey];
+  delete global.onlineUsers[userId];
+
+  // emit the status to the user that is currently chatting
+  const time = new Date();
+  global.lastSeen[userId] = time;
+  socket.to("chats").emit("change-user-status", userId, time);
+
   console.log(`user ${socket.id} has been force removed`);
 };

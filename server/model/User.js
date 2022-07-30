@@ -1,16 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true },
-    firstName: { type: String, default: '' },
-    status: { type: String, default: '' },
-    lastName: { type: String, default: '' },
+    firstName: { type: String, default: "" },
+    status: { type: String, default: "" },
+    lastName: { type: String, default: "" },
     initials: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    profilePicture: { type: String, default: '' },
-    contacts: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' } }],
+    profilePicture: { type: String, default: "" },
+    contacts: [{ user: { type: mongoose.Schema.Types.ObjectId, ref: "user" } }],
     // this'll contain any other type of notifications other than requests
     notifications: {
       inbox: [
@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
       contacts: {
         inbox: [
           {
-            by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            by: { type: mongoose.Schema.ObjectId, ref: "user" },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
             iat: { type: Date, default: new Date() },
@@ -41,7 +41,7 @@ const UserSchema = new mongoose.Schema(
         ],
         outbox: [
           {
-            by: { type: mongoose.Schema.ObjectId, ref: 'user' },
+            by: { type: mongoose.Schema.ObjectId, ref: "user" },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
             iat: { type: Date, default: new Date() },
@@ -49,8 +49,8 @@ const UserSchema = new mongoose.Schema(
         ],
       },
     },
-    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'group' }],
-    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: 'private_chat' }],
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
+    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "private_chat" }],
     settings: {
       general: { type: Object, default: {} },
       calls: { type: Object, default: {} },
@@ -60,6 +60,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model('user', UserSchema);
+const User = mongoose.model("user", UserSchema);
 
 export default User;

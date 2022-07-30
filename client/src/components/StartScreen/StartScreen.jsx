@@ -4,10 +4,12 @@ import { Logo } from "../Logo/Logo";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import { SidebarContext } from "../../pages/Home/Home";
 
-export const StartScreen = ({ handleGoToMenu }) => {
+export const StartScreen = () => {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const { setIsSidebarOn } = useContext(SidebarContext);
 
   return (
     <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 relative h-screen flex flex-col gap-3 items-center justify-center tracking-wide px-5">
@@ -16,7 +18,7 @@ export const StartScreen = ({ handleGoToMenu }) => {
           <div className="flex justify-between items-center grow sm:flex-grow-0 gap-3">
             {/* sidebar btn (will show up when screen is <lg) */}
             <button
-              onClick={handleGoToMenu}
+              onClick={() => setIsSidebarOn(true)}
               className={`block lg:hidden hover:text-blue-400 text-2xl
                         ${general?.animation ? "duration-200" : ""}`}
             >

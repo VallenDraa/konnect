@@ -43,7 +43,7 @@ export const Login = ({ user }) => {
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
           setIsLoginViaRefresh(false);
           setIsInitialLoading(true);
-          navigate("/");
+          navigate("/chats");
         } else {
           alert(message);
         }
