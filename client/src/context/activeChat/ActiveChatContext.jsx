@@ -4,10 +4,11 @@ import { TitleContext } from "../titleContext/TitleContext";
 
 export const ACTIVE_PRIVATE_CHAT_DEFAULT = {
   _id: null,
-  initials: null,
-  lastMessage: null,
-  profilePicture: null,
   username: null,
+  initials: null,
+  profilePicture: null,
+  status: null,
+  lastMessage: null,
   isOnline: false,
   lastSeen: null,
 };
@@ -36,34 +37,3 @@ export default function ActiveChatContextProvider({ children }) {
     </ActiveChatContext.Provider>
   );
 }
-
-// export const handleActiveChat = ({
-//   target,
-//   activeChat,
-//   setActiveChat,
-//   msgLogs,
-//   setIsSidebarOn,
-//   ACTIVE_PRIVATE_CHAT_DEFAULT,
-// }) => {
-//   // changing the active chat
-//   if (!target) return;
-
-//   // check if target id is the same as the current one, if so deactivate it
-//   if (target._id !== activeChat._id) {
-//     if (msgLogs.content[target._id]) {
-//       const { chat } = msgLogs.content[target._id];
-
-//       setActiveChat({
-//         ...target,
-//         lastMessage: chat.length > 0 ? chat[chat.length - 1] : null,
-//       });
-//     }
-//   } else {
-//     setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
-//   }
-
-//   // close sidebar for smaller screen
-//   if (setIsSidebarOn) {
-//     setIsSidebarOn(false);
-//   }
-// };

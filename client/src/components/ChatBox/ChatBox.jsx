@@ -45,8 +45,14 @@ const userOnlineStatusSwitcher = (status) => {
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
-  const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
-    useContext(MessageLogsContext);
+  const {
+    msgLogs,
+    msgLogsDispatch,
+    newMsgLogs,
+    newMsgLogsDispatch,
+    msgUnread,
+    setMsgUnread,
+  } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
@@ -139,9 +145,12 @@ export const ChatBox = () => {
   useEffect(() => {
     socket.on("a-chat-history-downloaded", (data) => {
       const updatedMsgLogs = cloneDeep(msgLogs.content);
+
       const { privateChats, groupChats } = data;
       const { user, chat, type } = privateChats[0];
       const targetChatLog = updatedMsgLogs[user];
+
+      // old msgLogs
       if (targetChatLog) {
         targetChatLog.type = type;
         targetChatLog.chat = chat;
@@ -152,10 +161,47 @@ export const ChatBox = () => {
         type: MESSAGE_LOGS_ACTIONS.loaded,
         payload: updatedMsgLogs,
       });
+
+      /*NEW MESSAGE LOG */
+      const newChatLogs = cloneDeep(newMsgLogs.content);
+
+      // loop over the incoming message and group them based on time sent
+      const result = {
+        ...newChatLogs,
+        [user]: { ...newChatLogs[user], chat: [] },
+      };
+      const timeGroup = result[user];
+
+      chat.forEach((msg, i) => {
+        if (i === 0) {
+          timeGroup.chat.push({
+            date: new Date(msg.time).toLocaleDateString(),
+            messages: [msg],
+          });
+        } else {
+          const dateCurr = new Date(msg.time).toLocaleDateString();
+          const datePast = new Date(chat[i - 1].time).toLocaleDateString();
+
+          if (datePast !== dateCurr) {
+            timeGroup.chat.push({ date: dateCurr, messages: [msg] });
+          } else {
+            const latestTimeGroup = timeGroup.chat[timeGroup.chat.length - 1];
+
+            latestTimeGroup.date === dateCurr
+              ? latestTimeGroup.messages.push(msg)
+              : timeGroup.chat.push({ date: dateCurr, messages: [msg] });
+          }
+        }
+      });
+
+      newMsgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.loaded,
+        payload: result,
+      });
     });
 
     return () => socket.off("a-chat-history-downloaded");
-  }, [msgLogs]); //recieve the downloaded chat log
+  }, [msgLogs, newMsgLogs]); //recieve the downloaded chat log
   useEffect(() => {
     if (location.pathname === "/chats") {
       const search = Object.fromEntries(
@@ -170,10 +216,11 @@ export const ChatBox = () => {
         const updateActiveChat = (data, lastMsg) => {
           const newActiveChat = {
             _id: data._id,
-            initials: data.initials,
-            lastMsg: lastMsg || null,
-            profilePicture: data.profilePicture,
             username: data.username,
+            initials: data.initials,
+            profilePicture: data.profilePicture,
+            status: data.status,
+            lastMsg: lastMsg || null,
             isOnline: false,
             lastSeen: null,
           };
@@ -261,6 +308,8 @@ export const ChatBox = () => {
             message: assembledMsg,
             dispatch: msgLogsDispatch,
             msgLogs,
+            newMsgLogs,
+            newMsgLogsDispatch,
           })
         : // if chat log doesn't exist for this user
           pushNewEntry({
@@ -269,6 +318,8 @@ export const ChatBox = () => {
             message: assembledMsg,
             token: sessionStorage.getItem("token"),
             dispatch: msgLogsDispatch,
+            newMsgLogs,
+            newMsgLogsDispatch,
           });
 
       // update the unread message notif
@@ -285,15 +336,12 @@ export const ChatBox = () => {
     });
 
     return () => socket.off("receive-msg");
-  }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
+  }, [msgLogs, newMsgLogs, userState, activeChat]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (!activeChat._id) return;
-    if (!msgLogs) return;
-    if (!msgLogs?.content) return;
-    if (!msgLogs?.content[activeChat._id]) return;
+    if (!activeChat?._id) return;
     if (!msgLogs?.content[activeChat._id]?.chatId) return;
-    if (activeChat.lastMessage?.by === userState.user._id) return;
+    if (activeChat?.lastMessage?.by === userState?.user?._id) return;
 
     const updatedMsgLogs = cloneDeep(msgLogs);
     const { chat, chatId } = updatedMsgLogs.content[activeChat._id];
@@ -332,7 +380,42 @@ export const ChatBox = () => {
         }
       }
     }
-  }, [activeChat, msgLogs]); //set the message to read
+
+    /** NEW MSG LOGS */
+    const updatedChatLogs = cloneDeep(newMsgLogs.content);
+    const { chat: newChat } = updatedChatLogs[activeChat._id];
+    const newTime = new Date().toISOString();
+    const newDate = new Date().toLocaleDateString();
+
+    if (newChat.length > 0) {
+      const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
+      const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+      const finalMesIndex = msgsInTimeLog.length - 1;
+      const lastMsg = msgsInTimeLog[finalMesIndex];
+
+      if (lastMsg.by !== userState.user._id) {
+        const token = sessionStorage.getItem("token");
+
+        if (lastMsg.readAt === null) {
+          const msgsMaxLen = msgsInTimeLog.length - 1;
+
+          if (msgsMaxLen > 0) {
+            for (let i = msgsMaxLen; i > 0; i--) {
+              if (msgsInTimeLog[i].readAt !== null) break;
+              msgsInTimeLog[i].readAt = newTime;
+            }
+          } else {
+            msgsInTimeLog[i].readAt = newTime;
+          }
+
+          newMsgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+            payload: updatedChatLogs,
+          });
+        }
+      }
+    }
+  }, [activeChat, msgLogs, newMsgLogs]); //set the message to read
 
   useEffect(() => {
     socket.on("msg-on-read", (isRead, recipientId, time) => {
@@ -340,7 +423,7 @@ export const ChatBox = () => {
         if (!msgLogs.content[recipientId]) return;
         if (!msgLogs.content[activeChat._id]) return;
 
-        msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+        // msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
         const updatedMsgLogs = cloneDeep(msgLogs);
         const { chat } = updatedMsgLogs.content[activeChat._id];
 
@@ -348,7 +431,6 @@ export const ChatBox = () => {
         for (let i = chat.length - 1; i >= 0; i--) {
           // it will break when the loop encounters a message that has been read
           if (chat[i].readAt !== null) break;
-
           chat[i].readAt = time;
         }
 
@@ -358,19 +440,35 @@ export const ChatBox = () => {
         });
 
         setTimeout(() => scrollToBottom(messageLogRef.current), 250);
+
+        /* NEW MSG LOGS*/
+        const updatedChatLogs = cloneDeep(newMsgLogs.content);
+        const { chat: newChat } = updatedChatLogs[activeChat._id];
+        const newDate = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const msgsMaxLen = msgsInTimeLog.length - 1;
+
+        for (let i = msgsMaxLen; i > 0; i--) {
+          if (msgsInTimeLog[i].readAt !== null) break;
+          msgsInTimeLog[i].readAt = time;
+        }
+
+        newMsgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedChatLogs,
+        });
       }
     });
 
     return () => socket.off("msg-on-read");
-  }, [msgLogs, activeChat]); //msg onread
+  }, [msgLogs, newMsgLogs, activeChat]); //msg onread
 
   useEffect(() => {
     socket.on("msg-sent", ({ success, message, chatId, timeSent }) => {
       if (!success) return;
-      // console.log(chatId, success);
 
       // start the update sequence
-      msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
       const updatedMsgLogs = cloneDeep(msgLogs);
 
       if (updatedMsgLogs.content[message.to]) {
@@ -401,6 +499,35 @@ export const ChatBox = () => {
 
         // when finish sending message go straight to the bottom
         setTimeout(() => scrollToBottom(messageLogRef.current), 250);
+      }
+
+      /* NEW MSG LOGS*/
+      const updatedChatLogs = cloneDeep(newMsgLogs.content);
+
+      if (updatedChatLogs[message.to]) {
+        const { chat: newChat } = updatedChatLogs[activeChat._id];
+        const newDate = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const msgsMaxLen = msgsInTimeLog.length - 1;
+
+        if (msgsMaxLen > 0) {
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i].time === timeSent) {
+              msgsInTimeLog[i].isSent = true;
+              break;
+            }
+          }
+        } else {
+          if (msgsInTimeLog[msgsMaxLen].time === timeSent) {
+            msgsInTimeLog[msgsMaxLen].isSent = true;
+          }
+        }
+
+        newMsgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedChatLogs,
+        });
       }
     });
 

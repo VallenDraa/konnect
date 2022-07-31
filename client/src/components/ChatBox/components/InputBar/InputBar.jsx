@@ -18,7 +18,8 @@ export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
   const { activeChat } = useContext(ActiveChatContext);
   const { userState } = useContext(UserContext);
-  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
+  const { msgLogs, msgLogsDispatch, newMsgLogs, newMsgLogsDispatch } =
+    useContext(MessageLogsContext);
   const [newMessage, setnewMessage] = useState("");
   const inputRef = useRef();
   const { settings } = useContext(SettingsContext);
@@ -46,13 +47,17 @@ export default function inputBar({ messageLogRef }) {
           targetId: activeChat._id,
           message: newMessageInput,
           dispatch: msgLogsDispatch,
+          newMsgLogs,
+          newMsgLogsDispatch,
         })
       : pushNewEntry({
           msgLogs,
+          activeChat,
           targetId: activeChat._id,
           message: newMessageInput,
-          token: sessionStorage.getItem("token"),
           dispatch: msgLogsDispatch,
+          newMsgLogs,
+          newMsgLogsDispatch,
         });
     setTimeout(() => scrollToBottom(messageLogRef.current), 150);
 

@@ -1,20 +1,11 @@
 import mongoose from "mongoose";
+import MessageSchema from "./Message.js";
 
 const PrivateChatSchema = new mongoose.Schema(
   {
     users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     type: { type: String, default: "private" },
-    chat: [
-      {
-        by: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        to: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-        msgType: String,
-        content: String,
-        isSent: { type: Boolean, default: false },
-        readAt: { type: Date, default: null },
-        time: { type: Date, default: new Date() },
-      },
-    ],
+    chat: [MessageSchema],
   },
   { timestamps: true }
 );
