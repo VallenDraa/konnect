@@ -9,10 +9,13 @@ export const getAllChatHistory = async (req, res, next) => {
 
     if (chats.length > 0) {
       const privateChats = await PrivateChat.where({ _id: { $in: chats } })
-        .populate({
-          path: "users",
-          select: ["username", "status", "initials", "profilePicture"],
-        })
+        .populate([
+          {
+            path: "users",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          "chat.messages",
+        ])
         .lean();
 
       // formatting the result
@@ -66,6 +69,7 @@ export const getChatHistory = async (req, res, next) => {
     if (parsedPcIds.length > 0) {
       privateChats = await PrivateChat.where({ _id: { $in: parsedPcIds } })
         .select(["chat", "type", "users"])
+        .populate("chat.messages")
         .lean();
 
       privateChats = privateChats.map((pc) => ({
@@ -75,53 +79,75 @@ export const getChatHistory = async (req, res, next) => {
       }));
     }
 
-    // if (groupChats.length > 0)
-    //WIP
-
     res.json({ success: true, privateChats, groupChats });
   } catch (error) {
     next(error);
   }
 };
 
-async function fetchUnreadMsgFromDb(chatIds, userId) {
-  const pc = await PrivateChat.where({ _id: { $in: chatIds } })
-    .select(["chat.readAt", "chat.by"])
-    .lean();
+async function fetchUnreadMsgFromDb(chatIds, userId, next) {
+  try {
+    const pc = await PrivateChat.where({ _id: { $in: chatIds } })
+      .select("chat")
+      .populate("chat.messages")
+      .lean();
 
-  const totalUnreadMsg = pc.reduce(
-    (p, c) => {
-      const chatIdxLen = c.chat.length - 1;
-      const newDetail = { [c._id]: 0 };
+    const totalUnreadMsg = pc.reduce(
+      (p, c) => {
+        const timeGroups = c.chat;
+        const timeGroupMaxIdx = timeGroups.length - 1;
+        const newDetail = { [c._id]: 0 };
+        // check if the length is more than 0
+        if (timeGroupMaxIdx > 0) {
+          // loop over the time group from the back
+          for (let i = timeGroupMaxIdx; i >= 0; i--) {
+            const chatMaxIdx = timeGroups[i].messages.length - 1;
 
-      // check if the length is more than 0
-      if (chatIdxLen > 0) {
-        // loop from the back of the chat log and count the unread message
-        for (let i = chatIdxLen; i >= 0; i--) {
-          if (c.chat[i].by.toString() !== userId) {
-            if (c.chat[i].readAt) break;
-            else newDetail[c._id]++;
+            // loop over the messages in the time group from the back
+            for (let z = chatMaxIdx; z >= 0; i--) {
+              if (timeGroups[i].messages[z].by.toString() !== userId) {
+                if (timeGroups[i].messages[z].readAt) break;
+
+                newDetail[c._id]++;
+              }
+            }
+          }
+        } else {
+          const chatMaxIdx = timeGroups[timeGroupMaxIdx].messages.length - 1;
+
+          // loop over the messages in the time group from the back4
+          if (chatMaxIdx === 0) {
+            if (timeGroups[0].messages[0].by.toString() === userId) return p;
+            if (timeGroups[0].messages[0].readAt) return p;
+
+            newDetail[c._id]++;
+          } else {
+            for (let z = chatMaxIdx; z >= 0; z--) {
+              if (timeGroups[0].messages[z].by.toString() !== userId) {
+                if (timeGroups[0].messages[z].readAt) break;
+
+                newDetail[c._id]++;
+              }
+            }
           }
         }
-      } else {
-        if (chatIdxLen === 0) {
-          if (c.chat[chatIdxLen].by.toString() === userId) return p;
-          if (c.chat[chatIdxLen].readAt) return p;
 
-          newDetail[c._id]++;
-        }
-      }
+        // assemble the final result
+        const newTotals = {
+          detail: { ...p.detail, ...newDetail },
+          total: p.total + newDetail[c._id],
+        };
+        return newDetail[c._id] > 0 ? newTotals : p;
+      },
+      { detail: {}, total: 0 }
+    );
 
-      // assemble the final result
-      const newTotals = {
-        detail: { ...p.detail, ...newDetail },
-        total: p.total + newDetail[c._id],
-      };
-      return newDetail[c._id] > 0 ? newTotals : p;
-    },
-    { detail: {}, total: 0 }
-  );
-  return totalUnreadMsg;
+    console.log(totalUnreadMsg);
+    return totalUnreadMsg;
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 }
 export const getChatNotifications = async (req, res, next) => {
   try {
@@ -129,7 +155,7 @@ export const getChatNotifications = async (req, res, next) => {
     const { chats } = await User.findById(_id).select("chats").lean();
 
     if (chats.length > 0) {
-      const totalUnreadMsg = await fetchUnreadMsgFromDb(chats, _id);
+      const totalUnreadMsg = await fetchUnreadMsgFromDb(chats, _id, next);
 
       res.json(totalUnreadMsg);
     } else {
@@ -152,10 +178,13 @@ export const getAllChatId = async (req, res, next) => {
       })
         .select(["users", "_id", "chat"])
         .slice("chat", -1)
-        .populate({
-          path: "users",
-          select: ["username", "status", "initials", "profilePicture"],
-        })
+        .populate([
+          {
+            path: "users",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          "chat.messages",
+        ])
         .lean();
 
       // formatting the result
@@ -164,8 +193,7 @@ export const getAllChatId = async (req, res, next) => {
 
         return { chatId: pc._id, user, chat: pc.chat, preview: true };
       });
-      const unreadMsg = await fetchUnreadMsgFromDb(chats, _id, true);
-
+      const unreadMsg = await fetchUnreadMsgFromDb(chats, _id, next);
       const response = {
         currentUser: _id,
         messageLogs: [...formattedPC],

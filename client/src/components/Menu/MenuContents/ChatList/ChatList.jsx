@@ -5,6 +5,7 @@ import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatCont
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 import { cloneDeep } from "lodash";
+import lastIdx from "../../../../utils/others/lastIdx";
 
 export default function ChatList() {
   const { activeChat } = useContext(ActiveChatContext);
@@ -18,7 +19,6 @@ export default function ChatList() {
     if (!msgLogs || !msgLogs.content) return;
 
     const newEntries = Object.entries(cloneDeep(msgLogs.content));
-
     // check if the new message logs and current one is the same
     if (
       JSON.stringify(Object.fromEntries(newEntries)) !==
@@ -61,14 +61,19 @@ export default function ChatList() {
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, { user, chat, chatId }]) => {
+              const lastMsg =
+                chat[lastIdx(chat)].messages[
+                  lastIdx(chat[lastIdx(chat)].messages)
+                ];
+
               return (
                 <ChatPreview
                   chatId={chatId}
                   key={_id}
-                  lastMessage={chat[chat.length - 1]}
+                  lastMessage={lastMsg}
                   timeSentArg={chatPreviewTimeStatus(
                     new Date(),
-                    new Date(chat[chat.length - 1].time)
+                    new Date(lastMsg.time)
                   )}
                   user={user}
                   isActive={_id === activeChat?._id}

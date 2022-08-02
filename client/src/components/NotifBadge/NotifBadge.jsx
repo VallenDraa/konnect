@@ -1,5 +1,3 @@
-import useCheckMobile from "../../utils/React/hooks/useCheckMobile/useCheckMobile";
-
 export default function NotifBadge({
   children,
   isActive,

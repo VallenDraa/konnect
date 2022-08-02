@@ -39,7 +39,7 @@ export default function MiniModal() {
     <RenderIf conditionIs={miniModalState.isActive}>
       <div
         ref={miniModalWrapperRef}
-        className={`fixed bg-black/30 inset-0 flex items-center justify-center z-40 
+        className={`fixed bg-black/30 inset-0 flex items-center justify-center z-50 
                   ${general?.animation ? "animate-fade-in" : ""}`}
       >
         <div

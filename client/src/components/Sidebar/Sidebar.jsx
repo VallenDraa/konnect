@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext, useCallback } from "react";
 import { Menu } from "../Menu/Menu";
 import { ModalContext } from "../../context/modal/modalContext";
 import { MyProfileModalContent } from "../Modal/Content/MyProfileModalContent/MyProfileModalContent";
@@ -11,7 +11,7 @@ import MODAL_ACTIONS from "../../context/modal/modalActions";
 import CTA from "../CTA/CTA";
 import MENUS from "../Menu/MENUS";
 import NotificationList from "../Menu/MenuContents/NotificationList/NotificationList";
-import throttle from "../../utils/performance/throttle";
+import _ from "lodash";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   replaceCss,
@@ -55,6 +55,20 @@ export const Sidebar = ({ urlHistory }) => {
       "lg:shadow-none",
     ],
   });
+  const closeSidebar = useCallback(
+    _.throttle(() => {
+      if (window.innerWidth >= 1024) isSidebarOn && setIsSidebarOn(false);
+    }, 500),
+    [isSidebarOn]
+  );
+  const checkIfNavigateWithBtn = useCallback(
+    _.throttle(() => {
+      if (isMenuNavigateWithBtn.current) {
+        isMenuNavigateWithBtn.current = false;
+      }
+    }, 800),
+    [isMenuNavigateWithBtn]
+  );
 
   useEffect(() => {
     if (isMenuNavigateWithBtn) {
@@ -107,10 +121,6 @@ export const Sidebar = ({ urlHistory }) => {
 
   // for handling close and open through screen size
   useEffect(() => {
-    const closeSidebar = throttle(() => {
-      if (window.innerWidth >= 1024) isSidebarOn && setIsSidebarOn(false);
-    }, 200);
-
     window.addEventListener("resize", closeSidebar);
 
     return () => window.removeEventListener("resize", closeSidebar);
@@ -195,11 +205,7 @@ export const Sidebar = ({ urlHistory }) => {
 
           {/* the content */}
           <Swiper
-            onTouchMove={throttle(() => {
-              if (isMenuNavigateWithBtn.current) {
-                isMenuNavigateWithBtn.current = false;
-              }
-            }, 800)}
+            onTouchMove={checkIfNavigateWithBtn}
             onSwiper={(swiper) => (swiperRef.current = swiper)}
             noSwiping={!settings?.general?.menuSwiping}
             noSwipingClass="no-swipe"

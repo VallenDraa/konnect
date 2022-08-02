@@ -4,7 +4,6 @@ import {
   replaceCss,
   SettingsContext,
 } from "../../context/settingsContext/SettingsContext";
-import throttle from "../../utils/performance/throttle";
 import checkInjectedClasses from "../../utils/tailwindClasses/checkInjectedClasses";
 import NotifBadge from "../NotifBadge/NotifBadge";
 

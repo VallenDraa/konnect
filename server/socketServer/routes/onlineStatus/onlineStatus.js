@@ -12,8 +12,9 @@ export default function onlineStatus(socket) {
         // check if user is online
         const isOnline = userId in global.onlineUsers;
 
-        if (isOnline) status = "online";
-        else {
+        if (isOnline) {
+          status = "online";
+        } else {
           // get the user's last seen
           const lastSeen = global.lastSeen[userId];
 

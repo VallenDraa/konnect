@@ -12,22 +12,30 @@ export default function messages(socket) {
       const { data } = await axios.put(
         `${process.env.API_URL}/messages/save_message`,
         { message },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // send success flag if everything is daijoubu
+      // send the chat id, timesent, and new msg id if everything is daijoubu
       if (data.success) {
-        socket.emit("msg-sent", { timeSent: message.time, ...data });
-      }
+        socket.emit("msg-sent", {
+          success: true,
+          to: message.to,
+          timeSent: message.time,
+          msgId: data.msgId,
+        });
 
-      if (isTargetOnline) {
-        socket.to(targetSocketId).emit("receive-msg", data);
+        if (isTargetOnline) {
+          const newMsgData = {
+            timeSent: message.time,
+            message: { ...message, _id: data.msgId, isSent: true },
+            ...data,
+          };
+
+          socket.to(targetSocketId).emit("receive-msg", newMsgData);
+        }
       }
     } catch (error) {
+      console.log(error);
       socket.emit("msg-sent", false, {
         timeSent: message.time,
         to: message.to,
@@ -39,7 +47,7 @@ export default function messages(socket) {
     // save message to reciever and send the message if target is online
   });
 
-  socket.on("read-msg", async (time, token, senderId, chatLogId) => {
+  socket.on("read-msg", async (time, token, senderId, msgIds) => {
     try {
       if (new Date(time).getMonth().toString() === NaN.toString()) {
         throw createErrorNonExpress(400, "invalid time arguments");
@@ -48,12 +56,8 @@ export default function messages(socket) {
       // set all passed in messages isRead field to true
       const { data } = await axios.put(
         `${process.env.API_URL}/messages/read_message`,
-        { time, senderId, chatLogId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { time, msgIds },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // check if sender is online

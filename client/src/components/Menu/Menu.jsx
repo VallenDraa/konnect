@@ -75,10 +75,7 @@ export const Menu = ({
             <NotifBadge
               size={18}
               style={{ right: "5px", top: "-1px" }}
-              textOffset={{
-                right: !isMobile ? "0px" : "",
-                top: !isMobile ? "0.5px" : "",
-              }}
+              textOffset={{ right: "0px", top: !isMobile ? "0.5px" : "" }}
               isActive={
                 msgUnread.total !== 0 && typeof msgUnread.total === "number"
               }
@@ -99,6 +96,8 @@ export const Menu = ({
               isActive={
                 notifUnseen.total !== 0 && typeof notifUnseen.total === "number"
               }
+              style={{ right: "5px", top: "-1px" }}
+              textOffset={{ right: "0px", top: "0px" }}
             >
               {notifUnseen.total <= 99 ? notifUnseen.total : "99+"}
             </NotifBadge>

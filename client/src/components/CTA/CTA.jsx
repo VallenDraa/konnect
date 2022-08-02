@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { IoPeopleSharp, IoCall, IoChatbubbles } from "react-icons/io5";
 import MODAL_ACTIONS from "../../context/modal/modalActions";
 import { ModalContext } from "../../context/modal/modalContext";
@@ -8,7 +8,7 @@ import NewGroup from "./contents/NewGroup/NewGroup";
 import StartCall from "./contents/StartCall/StartCall";
 import { useLocation } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import throttle from "../../utils/performance/throttle";
+import _ from "lodash";
 import RenderIf from "../../utils/React/RenderIf";
 import { Logo } from "../Logo/Logo";
 import { FaLongArrowAltLeft } from "react-icons/fa";
@@ -77,7 +77,7 @@ export default function CTA({
         {/* call */}
         <Pill
           link="/new/call"
-          className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-500 hover:bg-slate-100 tracking-normal lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
@@ -97,7 +97,7 @@ export default function CTA({
         {/* message */}
         <Pill
           link="/new/chat"
-          className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-500 hover:bg-slate-100 tracking-normal lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
@@ -117,7 +117,7 @@ export default function CTA({
         {/* group */}
         <Pill
           link="/new/group"
-          className="bg-gray-200 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-500 hover:bg-slate-100 tracking-normal lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
@@ -138,11 +138,18 @@ export default function CTA({
   };
 
   // function for when the user is moving the CTA button swiper
-  const handleSwiping = throttle(() => {
-    if (swipeBall.current.style.width !== "36px") return;
-    swipeBall.current.style.width = "100px";
-    swipeBall.current.classList.add("mr-5");
-  }, 1000);
+  const handleSwiping = useCallback(
+    _.throttle(
+      () => {
+        if (swipeBall.current.style.width !== "36px") return;
+        swipeBall.current.style.width = "100px";
+        swipeBall.current.classList.add("mr-5");
+      },
+      1000,
+      { trailing: false }
+    ),
+    [swipeBall]
+  );
 
   // function for when the user stop moving the CTA button swiper
   const handleSwipingStop = () => {

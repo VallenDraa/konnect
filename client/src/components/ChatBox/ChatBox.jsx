@@ -18,7 +18,6 @@ import {
   removeMsgUnread,
 } from "../../context/messageLogs/MessageLogsContext";
 import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
-import throttle from "../../utils/performance/throttle";
 import getScrollPercentage, {
   isWindowScrollable,
 } from "../../utils/scroll/getScrollPercentage";
@@ -29,12 +28,15 @@ import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
 import scrollToBottom from "../../utils/scroll/scrollToBottom";
-import { cloneDeep } from "lodash";
+import _ from "lodash";
 import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
+import lastIdx from "../../utils/others/lastIdx";
+import { useCallback } from "react";
 
 const userOnlineStatusSwitcher = (status) => {
-  if (status === "online") return { isOnline: true, lastSeen: null };
-  else {
+  if (status === "online") {
+    return { isOnline: true, lastSeen: null };
+  } else {
     // check if the lastSeen time is valid
     return new Date(status).getMonth().toString() === NaN.toString()
       ? { isOnline: false, lastSeen: null }
@@ -45,14 +47,8 @@ const userOnlineStatusSwitcher = (status) => {
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activeChat, setActiveChat } = useContext(ActiveChatContext);
-  const {
-    msgLogs,
-    msgLogsDispatch,
-    newMsgLogs,
-    newMsgLogsDispatch,
-    msgUnread,
-    setMsgUnread,
-  } = useContext(MessageLogsContext);
+  const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
+    useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
@@ -65,6 +61,14 @@ export const ChatBox = () => {
     lastSeen: null,
     hasFetch: false,
   }); // for stopping infinite re render
+  const checkWillGoToBottom = useCallback(
+    _.throttle(() => {
+      const scrollPercent = getScrollPercentage();
+
+      setWillGoToBottom(scrollPercent > 70 ? true : false);
+    }, 500),
+    []
+  ); // check if the page is atleast scrolled by 70%
 
   // check if the activeChat is online
   useEffect(() => {
@@ -92,12 +96,11 @@ export const ChatBox = () => {
   useEffect(() => {
     socket.on("receive-is-user-online", (userId, status) => {
       if (userId !== activeChat._id) return;
-      else {
-        const newOnlineStatus = userOnlineStatusSwitcher(status);
 
-        setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
-        setCurrStatus({ ...newOnlineStatus, hasFetch: true });
-      }
+      const newOnlineStatus = userOnlineStatusSwitcher(status);
+
+      setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+      setCurrStatus({ ...newOnlineStatus, hasFetch: true });
     });
     return () => socket.off("receive-is-user-online");
   }, [activeChat]);
@@ -106,12 +109,11 @@ export const ChatBox = () => {
   useEffect(() => {
     socket.on("change-user-status", (userId, status) => {
       if (userId !== activeChat._id) return;
-      else {
-        const newOnlineStatus = userOnlineStatusSwitcher(status);
 
-        setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
-        setCurrStatus({ ...newOnlineStatus, hasFetch: true });
-      }
+      const newOnlineStatus = userOnlineStatusSwitcher(status);
+
+      setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+      setCurrStatus({ ...newOnlineStatus, hasFetch: true });
     });
 
     return () => socket.off("change-user-status");
@@ -141,67 +143,27 @@ export const ChatBox = () => {
         );
       }
     }
-  }, [msgLogs, activeChat]); //tell the server to download the chat log
+  }, [activeChat, msgLogs]); //tell the server to download the chat log
   useEffect(() => {
     socket.on("a-chat-history-downloaded", (data) => {
-      const updatedMsgLogs = cloneDeep(msgLogs.content);
-
       const { privateChats, groupChats } = data;
       const { user, chat, type } = privateChats[0];
-      const targetChatLog = updatedMsgLogs[user];
-
-      // old msgLogs
-      if (targetChatLog) {
-        targetChatLog.type = type;
-        targetChatLog.chat = chat;
-        targetChatLog.preview = false;
-      }
-
-      msgLogsDispatch({
-        type: MESSAGE_LOGS_ACTIONS.loaded,
-        payload: updatedMsgLogs,
-      });
-
-      /*NEW MESSAGE LOG */
-      const newChatLogs = cloneDeep(newMsgLogs.content);
+      const newChatLogs = _.cloneDeep(msgLogs.content);
 
       // loop over the incoming message and group them based on time sent
       const result = {
         ...newChatLogs,
-        [user]: { ...newChatLogs[user], chat: [] },
+        [user]: { ...newChatLogs[user], chat, type, preview: false },
       };
-      const timeGroup = result[user];
 
-      chat.forEach((msg, i) => {
-        if (i === 0) {
-          timeGroup.chat.push({
-            date: new Date(msg.time).toLocaleDateString(),
-            messages: [msg],
-          });
-        } else {
-          const dateCurr = new Date(msg.time).toLocaleDateString();
-          const datePast = new Date(chat[i - 1].time).toLocaleDateString();
-
-          if (datePast !== dateCurr) {
-            timeGroup.chat.push({ date: dateCurr, messages: [msg] });
-          } else {
-            const latestTimeGroup = timeGroup.chat[timeGroup.chat.length - 1];
-
-            latestTimeGroup.date === dateCurr
-              ? latestTimeGroup.messages.push(msg)
-              : timeGroup.chat.push({ date: dateCurr, messages: [msg] });
-          }
-        }
-      });
-
-      newMsgLogsDispatch({
+      msgLogsDispatch({
         type: MESSAGE_LOGS_ACTIONS.loaded,
         payload: result,
       });
     });
 
     return () => socket.off("a-chat-history-downloaded");
-  }, [msgLogs, newMsgLogs]); //recieve the downloaded chat log
+  }, [msgLogs]); //recieve the downloaded chat log
   useEffect(() => {
     if (location.pathname === "/chats") {
       const search = Object.fromEntries(
@@ -213,14 +175,14 @@ export const ChatBox = () => {
 
       // check if the url provided id and type of chat
       if (search.id && search.type) {
-        const updateActiveChat = (data, lastMsg) => {
+        const updateActiveChat = (data, lastMessage) => {
           const newActiveChat = {
             _id: data._id,
             username: data.username,
             initials: data.initials,
             profilePicture: data.profilePicture,
             status: data.status,
-            lastMsg: lastMsg || null,
+            lastMessage: lastMessage || null,
             isOnline: false,
             lastSeen: null,
           };
@@ -230,10 +192,13 @@ export const ChatBox = () => {
         };
 
         // search existing user data in chatlogs for handling the active chat
-        const userInMsgLog = cloneDeep(msgLogs.content[search.id]);
+        const userInMsgLog = msgLogs.content[search.id];
         if (userInMsgLog) {
-          const lastMsg = userInMsgLog.chat[userInMsgLog.chat.length - 1];
-          return updateActiveChat(userInMsgLog.user, lastMsg);
+          const lastTimeGroup = userInMsgLog.chat[lastIdx(userInMsgLog.chat)];
+          const lastMessage =
+            lastTimeGroup.messages[lastIdx(lastTimeGroup.messages)];
+
+          return updateActiveChat(userInMsgLog.user, lastMessage);
         }
 
         // search existing user data in contacts for handling the active chat
@@ -272,7 +237,7 @@ export const ChatBox = () => {
         }
       }
     }
-  }, [location, msgLogs]); // to check if the url is directed to a certain chat
+  }, [location]); // to check if the url is directed to a certain chat
   // END OF INITIAL LOADING USE EFFECT
 
   useEffect(() => {
@@ -284,138 +249,112 @@ export const ChatBox = () => {
   useEffect(() => setWillGoToBottom(isWindowScrollable()), [activeChat]); // see if window is scrollable when active user is changed
 
   useEffect(() => {
-    // check if the page is atleast scrolled by 70%
-    const scrollCb = throttle(() => {
-      const scrollPercent = getScrollPercentage();
+    messageLogRef.current?.addEventListener("scroll", checkWillGoToBottom);
 
-      setWillGoToBottom(scrollPercent > 70 ? true : false);
-    }, 200);
-
-    messageLogRef.current?.addEventListener("scroll", scrollCb);
-
-    return () => messageLogRef.current?.removeEventListener("scroll", scrollCb);
-  }, []); //automatically scroll down to the latest message
+    return () =>
+      messageLogRef.current?.removeEventListener("scroll", checkWillGoToBottom);
+  }, [checkWillGoToBottom]); //automatically scroll down to the latest message
 
   useEffect(() => {
     socket.on("receive-msg", async (data) => {
       const { message, chatId, success } = data;
       const assembledMsg = { ...message, chatId };
 
-      // update the message logs
-      msgLogs.content[message.by]
-        ? pushNewMsgToEntry({
-            targetId: message.by,
-            message: assembledMsg,
-            dispatch: msgLogsDispatch,
-            msgLogs,
-            newMsgLogs,
-            newMsgLogsDispatch,
-          })
-        : // if chat log doesn't exist for this user
-          pushNewEntry({
-            msgLogs,
-            targetId: message.by,
-            message: assembledMsg,
-            token: sessionStorage.getItem("token"),
-            dispatch: msgLogsDispatch,
-            newMsgLogs,
-            newMsgLogsDispatch,
-          });
+      if (success) {
+        // update the message logs
+        msgLogs.content[message.by]
+          ? pushNewMsgToEntry({
+              targetId: message.by,
+              message: assembledMsg,
+              msgLogs,
+              msgLogsDispatch,
+            })
+          : // if chat log doesn't exist for this user
+            pushNewEntry({
+              activeChat,
+              targetId: message.by,
+              message: assembledMsg,
+              token: sessionStorage.getItem("token"),
+              msgLogs,
+              msgLogsDispatch,
+            });
 
-      // update the unread message notif
-      incrementMsgUnread({ msgUnread, setMsgUnread, chatId });
+        // update the unread message notif
+        incrementMsgUnread({ msgUnread, setMsgUnread, chatId });
 
-      // update the active chat last message so that when receiver see it, the message can be flag as read
-      setActiveChat({ ...activeChat, lastMessage: message });
+        // update the active chat last message so that when receiver see it, the message can be flag as read
+        setActiveChat({ ...activeChat, lastMessage: message });
 
-      // play notification audio when receiving a message
-      playAudio(newMsgSound);
+        // play notification audio when receiving a message
+        playAudio(newMsgSound);
 
-      // read msg if current active chat is the same user that sent the message
-      if (willGoToBottom) scrollToBottom(messageLogRef.current);
+        // read msg if current active chat is the same user that sent the message
+        if (willGoToBottom) scrollToBottom(messageLogRef.current);
+      }
     });
 
     return () => socket.off("receive-msg");
-  }, [msgLogs, newMsgLogs, userState, activeChat]); // receiving message for recipient only code
+  }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
 
   useEffect(() => {
     if (!activeChat?._id) return;
     if (!msgLogs?.content[activeChat._id]?.chatId) return;
     if (activeChat?.lastMessage?.by === userState?.user?._id) return;
 
-    const updatedMsgLogs = cloneDeep(msgLogs);
-    const { chat, chatId } = updatedMsgLogs.content[activeChat._id];
-    const time = new Date().toISOString();
-
-    if (chat.length > 0) {
-      const finalMesIndex = chat.length - 1;
-
-      // only execute if the last message is not sent by this user
-      if (chat[finalMesIndex].by !== userState.user._id) {
-        const token = sessionStorage.getItem("token");
-
-        if (chat[finalMesIndex].readAt === null) {
-          // update local message read status
-          const chatIdxLen = chat.length - 1;
-          if (chatIdxLen > 0) {
-            for (let i = chatIdxLen; i > 0; i--) {
-              if (chat[i].readAt !== null) break;
-              chat[i].readAt = time;
-            }
-          } else {
-            chat[chatIdxLen].readAt = time;
-          }
-
-          msgLogsDispatch({
-            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-            payload: updatedMsgLogs.content,
-          });
-
-          // updated the msgUnread notifs
-          removeMsgUnread({ msgUnread, setMsgUnread, chatId });
-
-          // update the message read status to the server
-          socket.emit("read-msg", time, token, activeChat._id, chatId);
-          scrollToBottom(messageLogRef.current);
-        }
-      }
-    }
-
-    /** NEW MSG LOGS */
-    const updatedChatLogs = cloneDeep(newMsgLogs.content);
+    const updatedChatLogs = _.cloneDeep(msgLogs.content);
     const { chat: newChat } = updatedChatLogs[activeChat._id];
-    const newTime = new Date().toISOString();
-    const newDate = new Date().toLocaleDateString();
+    const time = new Date().toISOString();
+    const date = new Date().toLocaleDateString();
 
     if (newChat.length > 0) {
-      const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
-      const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-      const finalMesIndex = msgsInTimeLog.length - 1;
-      const lastMsg = msgsInTimeLog[finalMesIndex];
+      const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
 
-      if (lastMsg.by !== userState.user._id) {
-        const token = sessionStorage.getItem("token");
+      // if updatedTimeLogIdx is -1 it means there is no new message today
+      if (updatedTimeLogIdx === -1) {
+        scrollToBottom(messageLogRef.current);
+      } else {
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const finalMesIndex = msgsInTimeLog.length - 1;
+        const lastMsg = msgsInTimeLog[finalMesIndex];
 
-        if (lastMsg.readAt === null) {
-          const msgsMaxLen = msgsInTimeLog.length - 1;
+        if (lastMsg.by !== userState.user._id) {
+          if (lastMsg.readAt === null) {
+            const { chatId } = msgLogs.content[activeChat._id];
+            const token = sessionStorage.getItem("token");
+            const msgsMaxLen = msgsInTimeLog.length - 1;
+            const readMsgIds = [];
 
-          if (msgsMaxLen > 0) {
-            for (let i = msgsMaxLen; i > 0; i--) {
-              if (msgsInTimeLog[i].readAt !== null) break;
-              msgsInTimeLog[i].readAt = newTime;
+            if (msgsMaxLen > 0) {
+              for (let i = msgsMaxLen; i > 0; i--) {
+                if (msgsInTimeLog[i].readAt !== null) break;
+
+                msgsInTimeLog[i].readAt = time;
+                console.log(msgsInTimeLog[i]);
+                readMsgIds.push(msgsInTimeLog[i]._id);
+              }
+            } else {
+              msgsInTimeLog[0].readAt = time;
+              readMsgIds.push(msgsInTimeLog[0]._id);
             }
-          } else {
-            msgsInTimeLog[i].readAt = newTime;
-          }
 
-          newMsgLogsDispatch({
-            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-            payload: updatedChatLogs,
-          });
+            msgLogsDispatch({
+              type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+              payload: updatedChatLogs,
+            });
+
+            // updated the msgUnread notifs
+            removeMsgUnread({ msgUnread, setMsgUnread, chatId });
+
+            console.log(readMsgIds);
+            // update the message read status to the server
+            socket.emit("read-msg", time, token, activeChat._id, readMsgIds);
+
+            scrollToBottom(messageLogRef.current);
+          }
         }
       }
     }
-  }, [activeChat, msgLogs, newMsgLogs]); //set the message to read
+  }, [activeChat, msgLogs]); //set the message to read
 
   useEffect(() => {
     socket.on("msg-on-read", (isRead, recipientId, time) => {
@@ -423,29 +362,11 @@ export const ChatBox = () => {
         if (!msgLogs.content[recipientId]) return;
         if (!msgLogs.content[activeChat._id]) return;
 
-        // msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
-        const updatedMsgLogs = cloneDeep(msgLogs);
-        const { chat } = updatedMsgLogs.content[activeChat._id];
-
-        // set the readAt time for messages
-        for (let i = chat.length - 1; i >= 0; i--) {
-          // it will break when the loop encounters a message that has been read
-          if (chat[i].readAt !== null) break;
-          chat[i].readAt = time;
-        }
-
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedMsgLogs.content,
-        });
-
-        setTimeout(() => scrollToBottom(messageLogRef.current), 250);
-
         /* NEW MSG LOGS*/
-        const updatedChatLogs = cloneDeep(newMsgLogs.content);
+        const updatedChatLogs = _.cloneDeep(msgLogs.content);
         const { chat: newChat } = updatedChatLogs[activeChat._id];
-        const newDate = new Date().toLocaleDateString();
-        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
+        const date = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
         const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
         const msgsMaxLen = msgsInTimeLog.length - 1;
 
@@ -454,85 +375,16 @@ export const ChatBox = () => {
           msgsInTimeLog[i].readAt = time;
         }
 
-        newMsgLogsDispatch({
+        msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedChatLogs,
         });
+        setTimeout(() => scrollToBottom(messageLogRef.current), 250);
       }
     });
 
     return () => socket.off("msg-on-read");
-  }, [msgLogs, newMsgLogs, activeChat]); //msg onread
-
-  useEffect(() => {
-    socket.on("msg-sent", ({ success, message, chatId, timeSent }) => {
-      if (!success) return;
-
-      // start the update sequence
-      const updatedMsgLogs = cloneDeep(msgLogs);
-
-      if (updatedMsgLogs.content[message.to]) {
-        const chatContent = updatedMsgLogs.content[message.to].chat;
-
-        // loop over the array of chats and find the one where the time sent matches, then update the isSent field into true
-        const chatIdxLen = chatContent.length - 1;
-        if (chatIdxLen > 0) {
-          for (let i = chatIdxLen; i >= 0; i--) {
-            if (chatContent[i].time === timeSent) {
-              chatContent[i].isSent = true;
-              break;
-            }
-          }
-        } else {
-          if (chatContent[chatIdxLen].time === timeSent) {
-            chatContent[chatIdxLen].isSent = true;
-          }
-        }
-
-        // fill the chat log id
-        updatedMsgLogs.content[message.to].chatId = chatId;
-
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedMsgLogs.content,
-        });
-
-        // when finish sending message go straight to the bottom
-        setTimeout(() => scrollToBottom(messageLogRef.current), 250);
-      }
-
-      /* NEW MSG LOGS*/
-      const updatedChatLogs = cloneDeep(newMsgLogs.content);
-
-      if (updatedChatLogs[message.to]) {
-        const { chat: newChat } = updatedChatLogs[activeChat._id];
-        const newDate = new Date().toLocaleDateString();
-        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === newDate);
-        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-        const msgsMaxLen = msgsInTimeLog.length - 1;
-
-        if (msgsMaxLen > 0) {
-          for (let i = msgsMaxLen; i > 0; i--) {
-            if (msgsInTimeLog[i].time === timeSent) {
-              msgsInTimeLog[i].isSent = true;
-              break;
-            }
-          }
-        } else {
-          if (msgsInTimeLog[msgsMaxLen].time === timeSent) {
-            msgsInTimeLog[msgsMaxLen].isSent = true;
-          }
-        }
-
-        newMsgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedChatLogs,
-        });
-      }
-    });
-
-    return () => socket.off("msg-sent");
-  }, [msgLogs]); // for changing the message state indicator
+  }, [msgLogs, activeChat]); //msg onread
 
   return (
     <>

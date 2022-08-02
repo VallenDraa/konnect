@@ -103,7 +103,7 @@ export default function NotificationList() {
         <nav className="relative w-fit">
           <Dropdown
             offset={8}
-            fontSize={14}
+            fontSize={12}
             icon={activeBox.icon()}
             text={activeBox.name}
             position={"origin-top-left left-0"}

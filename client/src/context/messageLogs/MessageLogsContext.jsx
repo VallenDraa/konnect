@@ -29,77 +29,40 @@ export default function MessageLogsContextProvider({ children }) {
     messageLogsReducer,
     MESSAGE_LOGS_DEFAULT
   );
-  const [newMsgLogs, newMsgLogsDispatch] = useReducer(
-    messageLogsReducer,
-    MESSAGE_LOGS_DEFAULT
-  );
   const { userState } = useContext(UserContext);
   const { contacts } = useContext(ContactsContext);
   const [msgUnread, setMsgUnread] = useState({ detail: {}, total: 0 });
 
   // fetch all the message log id from the server
   useEffect(() => {
-    if (newMsgLogs.length > 0) return;
-    socket.on("download-all-chat-ids", ({ messageLogs, success }) => {
-      if (success) {
-        // assign the incoming chat data to an object
-        const result = {};
-
-        for (const log of messageLogs) {
-          result[log.user._id] = {
-            chat: [
-              {
-                date: new Date(log.chat[0].time).toLocaleDateString(),
-                messages: log.chat,
-              },
-            ],
-            user: log.user,
-            chatId: log.chatId,
-            preview: log.preview,
-          };
-        }
-
-        newMsgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.loaded,
-          payload: result,
-        });
-      }
-    });
-
-    return () => socket.off("download-all-chats");
-  }, []);
-
-  // fetch all the message log id from the server
-  useEffect(() => {
     if (msgLogs.length > 0) return;
-    socket.on("download-all-chat-ids", (data) => {
-      if (data.success) {
-        // assign the incoming chat data to an object
+    socket.on(
+      "download-all-chat-ids",
+      ({ unreadMsg, messageLogs, success }) => {
+        if (success) {
+          // assign the incoming chat data to an object
+          const result = {};
 
-        const payload = {};
-        for (const log of data.messageLogs) {
-          payload[log.user._id] = {
-            user: log.user,
-            chatId: log.chatId,
-            chat: log.chat,
-            preview: log.preview,
-          };
-        }
+          for (const log of messageLogs) {
+            result[log.user._id] = {
+              chat: log.chat,
+              user: log.user,
+              chatId: log.chatId,
+              preview: log.preview,
+            };
+          }
 
-        // update the msgLogs
-        msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.loaded, payload });
-        if (JSON.stringify(data.unreadMsg) !== JSON.stringify(msgUnread)) {
-          setMsgUnread(data.unreadMsg);
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.loaded,
+            payload: result,
+          });
+
+          if (JSON.stringify(unreadMsg) !== JSON.stringify(msgUnread)) {
+            setMsgUnread(unreadMsg);
+          }
         }
-      } else {
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.error,
-          payload: data.message,
-        });
-        console.error(error);
-        socket.emit("error", data);
       }
-    });
+    );
 
     return () => socket.off("download-all-chats");
   }, []);
@@ -122,7 +85,7 @@ export default function MessageLogsContextProvider({ children }) {
             user, //this'll get the last user (new user) in the contact array
             chatId: null,
             chat: [],
-            activeChat: false,
+            preview: false,
           };
           updatedMsgLogs.content[newUserId] = newMessageLogContent;
 
@@ -145,19 +108,11 @@ export default function MessageLogsContextProvider({ children }) {
   }, [userState, contacts, msgLogs]);
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs), [msgLogs]);
-  // useEffect(() => console.log(newMsgLogs), [newMsgLogs]);
+  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider
-      value={{
-        msgLogs,
-        msgLogsDispatch,
-        newMsgLogs,
-        newMsgLogsDispatch,
-        msgUnread,
-        setMsgUnread,
-      }}
+      value={{ msgLogs, msgLogsDispatch, msgUnread, setMsgUnread }}
     >
       {children}
     </MessageLogsContext.Provider>
@@ -170,34 +125,14 @@ export const pushNewEntry = async ({
   message = null,
   currentActiveChatId,
   msgLogs,
-  dispatch,
-  newMsgLogs,
-  newMsgLogsDispatch,
+  msgLogsDispatch,
 }) => {
-  dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
+  // dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
   try {
+    console.log(activeChat);
     const { lastMsg, isOnline, lastSeen, ...user } = activeChat;
     const isActiveChat = currentActiveChatId === targetId;
-    const updatedMsgLogs = cloneDeep(msgLogs);
-
-    // assemble the final result object
-    const newMessageLogContent = {
-      user,
-      chatId: message ? message.chatId : null,
-      chat: message ? [message] : [],
-      activeChat: isActiveChat,
-    };
-    updatedMsgLogs.content[targetId] = newMessageLogContent;
-
-    // save the new message log
-    dispatch({
-      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-      payload: updatedMsgLogs.content,
-    });
-
-    /**  NEW MSG LOGS */
-    const updatedChatLog = cloneDeep(newMsgLogs.content);
-    // assemble the final result object
+    const updatedChatLog = cloneDeep(msgLogs.content);
     const newChatLogContent = {
       user,
       chatId: message.chatId,
@@ -208,10 +143,11 @@ export const pushNewEntry = async ({
         },
       ],
       activeChat: isActiveChat,
-    };
+    }; // assemble the final result object
+
     updatedChatLog[targetId] = newChatLogContent;
 
-    newMsgLogsDispatch({
+    msgLogsDispatch({
       type: MESSAGE_LOGS_ACTIONS.updateLoaded,
       payload: updatedChatLog,
     });
@@ -223,21 +159,10 @@ export const pushNewEntry = async ({
 export const pushNewMsgToEntry = ({
   targetId,
   message,
-  dispatch,
   msgLogs,
-  newMsgLogs,
-  newMsgLogsDispatch,
+  msgLogsDispatch,
 }) => {
-  const updatedMsgLogs = cloneDeep(msgLogs);
-  updatedMsgLogs.content[targetId].chat.push(message);
-
-  dispatch({
-    type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-    payload: updatedMsgLogs.content,
-  });
-
-  /*NEW MSG LOGS */
-  const newChatLogs = cloneDeep(newMsgLogs.content);
+  const newChatLogs = cloneDeep(msgLogs.content);
   const timeGroup = newChatLogs[targetId];
   const latestTimeGroup = timeGroup.chat[timeGroup.chat.length - 1];
   const dateCurr = new Date(message.time).toLocaleDateString();
@@ -246,7 +171,7 @@ export const pushNewMsgToEntry = ({
     ? latestTimeGroup.messages.push(message)
     : timeGroup.chat.push({ date: dateCurr, messages: [message] });
 
-  newMsgLogsDispatch({
+  msgLogsDispatch({
     type: MESSAGE_LOGS_ACTIONS.updateLoaded,
     payload: newChatLogs,
   });

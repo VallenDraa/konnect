@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import RenderIf from "../../../../utils/React/RenderIf";
 import EmojiBarToggle from "../EmojiBarToggle/EmojiBarToggle";
@@ -13,13 +13,14 @@ import {
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import socket from "../../../../utils/socketClient/socketClient";
 import scrollToBottom from "../../../../utils/scroll/scrollToBottom";
+import { cloneDeep } from "lodash";
+import MESSAGE_LOGS_ACTIONS from "../../../../context/messageLogs/messageLogsActions";
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
   const { activeChat } = useContext(ActiveChatContext);
   const { userState } = useContext(UserContext);
-  const { msgLogs, msgLogsDispatch, newMsgLogs, newMsgLogsDispatch } =
-    useContext(MessageLogsContext);
+  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const [newMessage, setnewMessage] = useState("");
   const inputRef = useRef();
   const { settings } = useContext(SettingsContext);
@@ -31,6 +32,7 @@ export default function inputBar({ messageLogRef }) {
     if (isEmojiBarOn) setIsEmojiBarOn(false);
 
     const newMessageInput = {
+      _id: null,
       by: userState.user._id,
       to: activeChat._id,
       msgType: "text",
@@ -43,21 +45,17 @@ export default function inputBar({ messageLogRef }) {
     // update the message logs
     msgLogs.content[activeChat._id]
       ? pushNewMsgToEntry({
-          msgLogs,
           targetId: activeChat._id,
           message: newMessageInput,
-          dispatch: msgLogsDispatch,
-          newMsgLogs,
-          newMsgLogsDispatch,
+          msgLogs,
+          msgLogsDispatch,
         })
       : pushNewEntry({
-          msgLogs,
           activeChat,
           targetId: activeChat._id,
           message: newMessageInput,
-          dispatch: msgLogsDispatch,
-          newMsgLogs,
-          newMsgLogsDispatch,
+          msgLogs,
+          msgLogsDispatch,
         });
     setTimeout(() => scrollToBottom(messageLogRef.current), 150);
 
@@ -67,6 +65,44 @@ export default function inputBar({ messageLogRef }) {
     // add a "to" field to the final object to indicate who the message is for
     socket.emit("new-msg", newMessageInput, sessionStorage.getItem("token"));
   };
+
+  useEffect(() => {
+    socket.on("msg-sent", ({ success, to, msgId, timeSent }) => {
+      if (!success) return;
+      /* NEW MSG LOGS*/
+      const updatedChatLogs = cloneDeep(msgLogs.content);
+
+      if (updatedChatLogs[to]) {
+        const { chat: newChat } = updatedChatLogs[activeChat._id];
+        const date = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const msgsMaxLen = msgsInTimeLog.length - 1;
+
+        if (msgsMaxLen > 0) {
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i].time !== timeSent) continue;
+
+            msgsInTimeLog[i].isSent = true;
+            msgsInTimeLog[i]._id = msgId;
+            break;
+          }
+        } else {
+          if (msgsInTimeLog[msgsMaxLen].time === timeSent) {
+            msgsInTimeLog[msgsMaxLen].isSent = true;
+            msgsInTimeLog[msgsMaxLen]._id = msgId;
+          }
+        }
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedChatLogs,
+        });
+      }
+    });
+
+    return () => socket.off("msg-sent");
+  }, [msgLogs]); // for changing the message state indicator
 
   const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 
@@ -99,9 +135,7 @@ export default function inputBar({ messageLogRef }) {
         </RenderIf>
         {/* the input bar */}
         <input
-          onDoubleClick={() => {
-            scrollToBottom(messageLogRef.current);
-          }}
+          onDoubleClick={() => scrollToBottom(messageLogRef.current)}
           type="text"
           ref={inputRef}
           onChange={(e) => setnewMessage(e.target.value)}

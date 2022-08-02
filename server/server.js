@@ -80,7 +80,7 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
 
-  if (!isProduction) console.log(stack);
+  if (!isProduction) console.log(message);
 
   return res
     .status(status || 500)
