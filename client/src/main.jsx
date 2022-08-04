@@ -8,12 +8,12 @@ import IsAuthorizedContextProvider from "./context/isAuthorized/isAuthorized";
 import IsLoginViaRefreshContextProvider from "./context/isLoginViaRefresh/isLoginViaRefresh";
 import "./index.css";
 import MiniModalContextProvider from "./context/miniModal/miniModalContext";
-import ActiveChatContextProvider from "./context/activeChat/ActiveChatContext";
 import MessageLogsContextProvider from "./context/messageLogs/MessageLogsContext";
 import ContactsContextProvider from "./context/contactContext/ContactContext";
 import NotifContextProvider from "./context/notifContext/NotifContext";
 import SettingsContextProvider from "./context/settingsContext/SettingsContext";
 import TitleContextProvider from "./context/titleContext/TitleContext";
+import ActivePrivateChatContextProvider from "./context/activePrivateChat/ActivePrivateChatContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <TitleContextProvider>
@@ -27,9 +27,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                   <ModalContextProvider>
                     <MiniModalContextProvider>
                       <MessageLogsContextProvider>
-                        <ActiveChatContextProvider>
+                        <ActivePrivateChatContextProvider>
                           <App />
-                        </ActiveChatContextProvider>
+                        </ActivePrivateChatContextProvider>
                       </MessageLogsContextProvider>
                     </MiniModalContextProvider>
                   </ModalContextProvider>

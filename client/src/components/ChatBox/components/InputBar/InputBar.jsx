@@ -3,7 +3,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import RenderIf from "../../../../utils/React/RenderIf";
 import EmojiBarToggle from "../EmojiBarToggle/EmojiBarToggle";
 import Picker from "emoji-picker-react";
-import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
+import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/ActivePrivateChatContext";
 import { UserContext } from "../../../../context/user/userContext";
 import {
   MessageLogsContext,
@@ -21,7 +21,7 @@ import MESSAGE_LOGS_ACTIONS from "../../../../context/messageLogs/messageLogsAct
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
-  const { activeChat } = useContext(ActiveChatContext);
+  const { activePrivateChat } = useContext(ActivePrivateChatContext);
   const { userState } = useContext(UserContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const [newMessage, setnewMessage] = useState("");
@@ -37,7 +37,7 @@ export default function inputBar({ messageLogRef }) {
     const newMessageInput = {
       _id: null,
       by: userState.user._id,
-      to: activeChat._id,
+      to: activePrivateChat._id,
       msgType: "text",
       content: newMessage,
       isSent: false,
@@ -46,16 +46,16 @@ export default function inputBar({ messageLogRef }) {
     };
 
     // update the message logs
-    msgLogs.content[activeChat._id]
+    msgLogs.content[activePrivateChat._id]
       ? pushNewMsgToEntry({
-          targetId: activeChat._id,
+          targetId: activePrivateChat._id,
           message: newMessageInput,
           msgLogs,
           msgLogsDispatch,
         })
       : pushNewEntry({
-          activeChat,
-          targetId: activeChat._id,
+          activePrivateChat,
+          targetId: activePrivateChat._id,
           message: newMessageInput,
           msgLogs,
           chatId: null,
@@ -82,7 +82,7 @@ export default function inputBar({ messageLogRef }) {
       const updatedChatLogs = cloneDeep(msgLogs.content);
 
       if (updatedChatLogs[to]) {
-        const { chat: newChat } = updatedChatLogs[activeChat._id];
+        const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
         const date = new Date().toLocaleDateString();
         const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
         const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
@@ -103,7 +103,7 @@ export default function inputBar({ messageLogRef }) {
           }
         }
 
-        updatedChatLogs[activeChat._id].chatId = chatId;
+        updatedChatLogs[activePrivateChat._id].chatId = chatId;
         msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedChatLogs,

@@ -22,7 +22,7 @@ export const ChatPreview = ({
   return (
     <li>
       <Link
-        to={isActive ? "/chats" : `/chats?id=${user._id}&type=user`}
+        to={isActive ? "/chats" : `/chats?id=${user._id}&type=private`}
         className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
           isActive
             ? "bg-blue-100 font-semibold"

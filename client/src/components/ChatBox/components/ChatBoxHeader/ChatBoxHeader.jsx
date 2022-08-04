@@ -2,13 +2,13 @@ import { useContext, useRef } from "react";
 import { BsArrowLeftShort } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
-import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
+import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/ActivePrivateChatContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 
 export default function ChatBoxHeader({ invisibleWallRef }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
-  const { activeChat } = useContext(ActiveChatContext);
+  const { activePrivateChat } = useContext(ActivePrivateChatContext);
   const statusRef = useRef();
 
   const statusSwitcher = (isOnline, lastSeen) => {
@@ -56,7 +56,7 @@ export default function ChatBoxHeader({ invisibleWallRef }) {
             </Link>
             {/* profile  */}
             <Link
-              to={`user/${activeChat?.username}`}
+              to={`user/${activePrivateChat?.username}`}
               className="flex items-center gap-1.5"
             >
               <img
@@ -66,13 +66,16 @@ export default function ChatBoxHeader({ invisibleWallRef }) {
               />
               <div className="flex flex-col items-start">
                 <span className="text-sm max-w-[200px] truncate">
-                  {activeChat?.username}
+                  {activePrivateChat?.username}
                 </span>
                 <span
                   ref={statusRef}
                   className=" text-xs text-gray-500 relative z-10 max-w-[200px] truncate"
                 >
-                  {statusSwitcher(activeChat?.isOnline, activeChat?.lastSeen)}
+                  {statusSwitcher(
+                    activePrivateChat?.isOnline,
+                    activePrivateChat?.lastSeen
+                  )}
                 </span>
               </div>
             </Link>

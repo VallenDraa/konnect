@@ -29,7 +29,6 @@ import {
   receiveContactRequestResponse,
   receiveSendAddContact,
 } from "../../../../context/notifContext/NotifContext";
-import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const OthersProfileModalContent = ({ username }) => {
@@ -183,15 +182,13 @@ export const OthersProfileModalContent = ({ username }) => {
           }
         );
 
-        if (data === null) navigate("/chats");
-
-        setOtherUserData(data);
+        return data === null ? navigate("/chats") : setOtherUserData(data);
       } catch (error) {
         console.log(error);
       }
     };
 
-    setTimeout(getOtherUserDetail, 500);
+    setTimeout(getOtherUserDetail, 300);
   }, [username]);
 
   // turn initials to rgb
@@ -299,7 +296,7 @@ export const OthersProfileModalContent = ({ username }) => {
                   </Pill>
 
                   <Pill
-                    link={`/chats?id=${otherUserData._id}&type=user`}
+                    link={`/chats?id=${otherUserData._id}&type=private`}
                     className="text-base px-4 py-1 font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 text-gray-50 hover:text-white flex items-center gap-x-2"
                   >
                     <FaPaperPlane />

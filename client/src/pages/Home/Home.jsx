@@ -6,7 +6,7 @@ import { InitialLoadingScreen } from "../../components/InitialLoadingScreen/Init
 import { ModalContext } from "../../context/modal/modalContext";
 import { useEffect } from "react";
 import { UserContext } from "../../context/user/userContext";
-import { ActiveChatContext } from "../../context/activeChat/ActiveChatContext";
+import { ActivePrivateChatContext } from "../../context/activePrivateChat/ActivePrivateChatContext";
 import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
 import { useLocation } from "react-router-dom";
 import socket from "../../utils/socketClient/socketClient";
@@ -30,7 +30,7 @@ export const UrlHistoryContext = createContext(null);
 export const SidebarContext = createContext(null);
 
 export default function Home() {
-  const { activeChat } = useContext(ActiveChatContext);
+  const { activePrivateChat } = useContext(ActivePrivateChatContext);
   const { modalState, modalDispatch } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(window.innerWidth <= 1024); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
@@ -48,7 +48,7 @@ export default function Home() {
 
   // join the chat-tab room when the url contains /chats
   useEffect(() => {
-    const isPathValid = /\/chats/.test(pathname);
+    const isPathValid = /^\/chats/.test(pathname);
 
     isPathValid
       ? socket.emit("join-room", "chats")
@@ -172,7 +172,7 @@ export default function Home() {
             >
               <ChatboxContextProvider>
                 <Sidebar urlHistory={urlHistory} />
-                <ChatBox activeChat={activeChat} />
+                <ChatBox activePrivateChat={activePrivateChat} />
               </ChatboxContextProvider>
             </div>
           </div>

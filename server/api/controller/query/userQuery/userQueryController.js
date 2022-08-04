@@ -16,7 +16,6 @@ export const findUsers = async (req, res, next) => {
 
 export const getUsersPreview = async (req, res, next) => {
   const userIds = req.query.userIds.split(",");
-  console.log(userIds);
 
   try {
     const users = await User.find({ _id: { $in: userIds } })

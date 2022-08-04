@@ -1,14 +1,14 @@
 import { ChatPreview } from "./ChatPreview/ChatPreview";
 import { useContext, useEffect, useState } from "react";
 import RenderIf from "../../../../utils/React/RenderIf";
-import { ActiveChatContext } from "../../../../context/activeChat/ActiveChatContext";
+import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/ActivePrivateChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 import { cloneDeep } from "lodash";
 import lastIdx from "../../../../utils/others/lastIdx";
 
 export default function ChatList() {
-  const { activeChat } = useContext(ActiveChatContext);
+  const { activePrivateChat } = useContext(ActivePrivateChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
@@ -61,24 +61,25 @@ export default function ChatList() {
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, { user, chat, chatId }]) => {
-              const lastMsg =
-                chat[lastIdx(chat)].messages[
-                  lastIdx(chat[lastIdx(chat)].messages)
-                ];
+              const lastMsgIdx = lastIdx(chat[lastIdx(chat)].messages);
 
-              return (
-                <ChatPreview
-                  chatId={chatId}
-                  key={_id}
-                  lastMessage={lastMsg}
-                  timeSentArg={chatPreviewTimeStatus(
-                    new Date(),
-                    new Date(lastMsg.time)
-                  )}
-                  user={user}
-                  isActive={_id === activeChat?._id}
-                />
-              );
+              if (lastMsgIdx !== -1) {
+                const lastMsg = chat[lastIdx(chat)].messages[lastMsgIdx];
+
+                return (
+                  <ChatPreview
+                    chatId={chatId}
+                    key={_id}
+                    lastMessage={lastMsg}
+                    timeSentArg={chatPreviewTimeStatus(
+                      new Date(),
+                      new Date(lastMsg.time)
+                    )}
+                    user={user}
+                    isActive={_id === activePrivateChat?._id}
+                  />
+                );
+              }
             })}
           </RenderIf>
         </ul>

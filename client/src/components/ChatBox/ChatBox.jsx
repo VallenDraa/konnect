@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import RenderIf from "../../utils/React/RenderIf";
 import { StartScreen } from "../StartScreen/StartScreen";
 import socket from "../../utils/socketClient/socketClient";
@@ -7,9 +7,9 @@ import { useContext } from "react";
 import { UserContext } from "../../context/user/userContext";
 import getUsersPreview from "../../utils/apis/getusersPreview";
 import {
-  ActiveChatContext,
+  ActivePrivateChatContext,
   ACTIVE_PRIVATE_CHAT_DEFAULT,
-} from "../../context/activeChat/ActiveChatContext";
+} from "../../context/activePrivateChat/ActivePrivateChatContext";
 import {
   incrementMsgUnread,
   MessageLogsContext,
@@ -21,7 +21,7 @@ import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
 import getScrollPercentage from "../../utils/scroll/getScrollPercentage";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
-import { SidebarContext } from "../../pages/Home/Home";
+import { SidebarContext, UrlHistoryContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
@@ -33,6 +33,8 @@ import _ from "lodash";
 import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
 import lastIdx from "../../utils/others/lastIdx";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import { useCallback } from "react";
+import MENUS from "../Menu/MENUS";
 
 const userOnlineStatusSwitcher = (status) => {
   if (status === "online") {
@@ -47,27 +49,110 @@ const userOnlineStatusSwitcher = (status) => {
 
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
-  const { activeChat, setActiveChat } = useContext(ActiveChatContext);
+  const { activePrivateChat, setActivePrivateChat } = useContext(
+    ActivePrivateChatContext
+  );
   const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
     useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
-  const { setIsSidebarOn } = useContext(SidebarContext);
+  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
   const messageLogRef = useRef();
   const { contacts } = useContext(ContactsContext);
   const invisibleWallRef = useRef();
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const navigate = useNavigate();
   const [currStatus, setCurrStatus] = useState({
+    // for stopping infinite re render
     isOnline: false,
     lastSeen: null,
     hasFetch: false,
-  }); // for stopping infinite re render
+  });
+  const closeChatLog = useCallback(() => {
+    if (window.innerWidth <= 1024) {
+      if (isSidebarOn) return;
+      setIsSidebarOn(true);
+      setTimeout(() => setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
+    } else {
+      setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+    }
+  }, [isSidebarOn]);
+
+  const updateActivePrivateChat = useCallback((data) => {
+    const newActivePrivateChat = {
+      _id: data._id,
+      username: data.username,
+      initials: data.initials,
+      profilePicture: data.profilePicture,
+      status: data.status,
+      isOnline: false,
+      lastSeen: null,
+    };
+
+    setActivePrivateChat(newActivePrivateChat);
+    if (window.innerWidth <= 1024) setIsSidebarOn(false);
+  }, []);
 
   useEffect(() => {
-    if (!activeChat?._id) return;
+    const url = location.pathname + location.search;
 
-    const { isOnline, lastSeen } = activeChat;
+    if (/^\/chats\?id=/.test(url) && /&type=/.test(url)) {
+      const search = Object.fromEntries(
+        location.search
+          .slice(1, location.search.length)
+          .split("&")
+          .map((q) => q.split("="))
+      );
+
+      // check if the url provided id and type of chat
+      if (!search.id && !search.type) {
+        closeChatLog();
+      } else {
+        switch (search.type) {
+          case "private":
+            // search existing user data in chatlogs for handling the active chat
+            const userInMsgLog = msgLogs.content[search.id];
+            if (userInMsgLog) {
+              return updateActivePrivateChat(userInMsgLog.user);
+            }
+
+            // search existing user data in contacts for handling the active chat
+            const targetInContact = contacts.find(
+              ({ user }) => user._id === search.id
+            );
+            if (targetInContact) {
+              return updateActivePrivateChat(targetInContact.user, null);
+            }
+
+            // get user data from the server for handling the active chat
+            // fetch the initials, profile picture, and username from the server
+            getUsersPreview(sessionStorage.getItem("token"), [search.id])
+              .then(([userPreview]) => updateActivePrivateChat(userPreview))
+              .catch((err) => {
+                closeChatLog();
+                navigate("/chats");
+              });
+            break;
+          case "group":
+            break;
+          default:
+            closeChatLog();
+            navigate("/chats");
+            break;
+        }
+      }
+    }
+
+    if (url === "/chats") {
+      closeChatLog();
+    }
+  }, [location]); // to check if the url is directed to a certain chat
+
+  useEffect(() => {
+    if (!activePrivateChat?._id) return;
+
+    const { isOnline, lastSeen } = activePrivateChat;
     const { hasFetch, ...others } = currStatus;
 
     if (
@@ -80,38 +165,38 @@ export const ChatBox = () => {
 
     socket.emit(
       "is-user-online",
-      activeChat._id,
+      activePrivateChat._id,
       sessionStorage.getItem("token")
     );
-  }, [activeChat, currStatus]); // check if the activeChat is online
+  }, [activePrivateChat, currStatus]); // check if the activePrivateChat is online
 
   useEffect(() => {
     socket.on("receive-is-user-online", (userId, status) => {
-      if (userId !== activeChat._id) return;
+      if (userId !== activePrivateChat._id) return;
 
       const newOnlineStatus = userOnlineStatusSwitcher(status);
 
-      setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+      setActivePrivateChat((prev) => ({ ...prev, ...newOnlineStatus }));
       setCurrStatus({ ...newOnlineStatus, hasFetch: true });
     });
     return () => socket.off("receive-is-user-online");
-  }, [activeChat]); // receive the online status from server
+  }, [activePrivateChat]); // receive the online status from server
 
   useEffect(() => {
     socket.on("change-user-status", (userId, status) => {
-      if (userId !== activeChat._id) return;
+      if (userId !== activePrivateChat._id) return;
 
       const newOnlineStatus = userOnlineStatusSwitcher(status);
 
-      setActiveChat((prev) => ({ ...prev, ...newOnlineStatus }));
+      setActivePrivateChat((prev) => ({ ...prev, ...newOnlineStatus }));
       setCurrStatus({ ...newOnlineStatus, hasFetch: true });
     });
 
     return () => socket.off("change-user-status");
-  }, [activeChat]); // refresh user online status
+  }, [activePrivateChat]); // refresh user online status
 
   useEffect(() => {
-    const incompleteChatLog = msgLogs.content[activeChat._id];
+    const incompleteChatLog = msgLogs.content[activePrivateChat._id];
 
     if (incompleteChatLog) {
       // check if the chat history has already been downloaded
@@ -133,7 +218,7 @@ export const ChatBox = () => {
         );
       }
     }
-  }, [activeChat, msgLogs]); //tell the server to download the chat log
+  }, [activePrivateChat, msgLogs]); //tell the server to download the chat log
   useEffect(() => {
     socket.on("a-chat-history-downloaded", (data) => {
       const { privateChats, groupChats } = data;
@@ -156,77 +241,10 @@ export const ChatBox = () => {
 
     return () => socket.off("a-chat-history-downloaded");
   }, [messageLogRef, msgLogs]); //receive the downloaded chat log
-  useEffect(() => {
-    if (location.pathname === "/chats") {
-      const search = Object.fromEntries(
-        location.search
-          .slice(1, location.search.length)
-          .split("&")
-          .map((q) => q.split("="))
-      );
-
-      // check if the url provided id and type of chat
-      if (search.id && search.type) {
-        const updateActiveChat = (data) => {
-          const newActiveChat = {
-            _id: data._id,
-            username: data.username,
-            initials: data.initials,
-            profilePicture: data.profilePicture,
-            status: data.status,
-            isOnline: false,
-            lastSeen: null,
-          };
-
-          setActiveChat(newActiveChat);
-          if (window.innerWidth <= 1024) setIsSidebarOn(false);
-        };
-
-        // search existing user data in chatlogs for handling the active chat
-        const userInMsgLog = msgLogs.content[search.id];
-        if (userInMsgLog) {
-          return updateActiveChat(userInMsgLog.user);
-        }
-
-        // search existing user data in contacts for handling the active chat
-        const targetInContact = contacts.find(
-          ({ user }) => user._id === search.id
-        );
-        if (targetInContact) {
-          return updateActiveChat(targetInContact.user, null);
-        }
-
-        // get user data from the server for handling the active chat
-        switch (search.type) {
-          // execute different code according to the search type
-          case "user":
-            // fetch the initials, profile picture, and username from the server
-            getUsersPreview(sessionStorage.getItem("token"), [search.id])
-              .then(([userPreview]) => updateActiveChat(userPreview))
-              .catch((err) => console.log(err));
-
-            break;
-
-          case "group":
-            break;
-
-          default:
-            break;
-        }
-      } else {
-        if (window.innerWidth <= 1024) {
-          setIsSidebarOn(true);
-          setTimeout(() => setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
-        } else {
-          setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
-        }
-      }
-    }
-  }, [location]); // to check if the url is directed to a certain chat
 
   useEffect(() => {
-    if (activeChat._id !== null) scrollToBottom(messageLogRef.current);
-  }, [activeChat, messageLogRef]); //scroll to bottom when active chat changes
+    if (activePrivateChat._id !== null) scrollToBottom(messageLogRef.current);
+  }, [activePrivateChat, messageLogRef]); //scroll to bottom when active chat changes
 
   useEffect(() => {
     socket.on("receive-msg", async (data) => {
@@ -242,7 +260,7 @@ export const ChatBox = () => {
             })
           : // if chat log doesn't exist for this user
             pushNewEntry({
-              activeChat,
+              activePrivateChat,
               targetId: message.by,
               message,
               token: sessionStorage.getItem("token"),
@@ -271,23 +289,23 @@ export const ChatBox = () => {
     });
 
     return () => socket.off("receive-msg");
-  }, [msgLogs, userState, activeChat]); // receiving message for recipient only code
+  }, [msgLogs, userState, activePrivateChat]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (!activeChat?._id) return;
-    if (!msgLogs?.content[activeChat._id]?.chatId) return;
-    if (!msgLogs?.content[activeChat._id]?.chat) return;
+    if (!activePrivateChat?._id) return;
+    if (!msgLogs?.content[activePrivateChat._id]?.chatId) return;
+    if (!msgLogs?.content[activePrivateChat._id]?.chat) return;
 
     // check if there is at least one message in the chat log
-    const lastMsgIdx = lastIdx(msgLogs.content[activeChat._id].chat);
+    const lastMsgIdx = lastIdx(msgLogs.content[activePrivateChat._id].chat);
     if (lastMsgIdx === -1) return;
 
     // check if the last message is by the other user
-    const lastMsg = msgLogs.content[activeChat._id].chat[lastMsgIdx];
+    const lastMsg = msgLogs.content[activePrivateChat._id].chat[lastMsgIdx];
     if (lastMsg?.by === userState?.user?._id) return;
 
     const updatedChatLogs = _.cloneDeep(msgLogs.content);
-    const { chat: newChat } = updatedChatLogs[activeChat._id];
+    const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
     const time = new Date().toISOString();
     const date = new Date().toLocaleDateString();
 
@@ -302,7 +320,7 @@ export const ChatBox = () => {
 
         if (lastMsg.by !== userState.user._id) {
           if (lastMsg.readAt === null) {
-            const { chatId } = msgLogs.content[activeChat._id];
+            const { chatId } = msgLogs.content[activePrivateChat._id];
             const token = sessionStorage.getItem("token");
             const msgsMaxLen = msgsInTimeLog.length - 1;
             const readMsgIds = [];
@@ -328,22 +346,28 @@ export const ChatBox = () => {
             removeMsgUnread({ msgUnread, setMsgUnread, chatId });
 
             // update the message read status to the server
-            socket.emit("read-msg", time, token, activeChat._id, readMsgIds);
+            socket.emit(
+              "read-msg",
+              time,
+              token,
+              activePrivateChat._id,
+              readMsgIds
+            );
           }
         }
       }
     }
-  }, [activeChat, msgLogs]); //set the message to read
+  }, [activePrivateChat, msgLogs]); //set the message to read
 
   useEffect(() => {
     socket.on("msg-on-read", (isRead, recipientId, time) => {
       if (isRead) {
         if (!msgLogs.content[recipientId]) return;
-        if (!msgLogs.content[activeChat._id]) return;
+        if (!msgLogs.content[activePrivateChat._id]) return;
 
         /* NEW MSG LOGS*/
         const updatedChatLogs = _.cloneDeep(msgLogs.content);
-        const { chat: newChat } = updatedChatLogs[activeChat._id];
+        const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
         const date = new Date().toLocaleDateString();
         const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
         const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
@@ -366,14 +390,14 @@ export const ChatBox = () => {
     });
 
     return () => socket.off("msg-on-read");
-  }, [msgLogs, activeChat]); //msg onread
+  }, [msgLogs, activePrivateChat]); //msg onread
 
   return (
     <>
-      <RenderIf conditionIs={!activeChat?.username}>
+      <RenderIf conditionIs={!activePrivateChat?.username}>
         <StartScreen />
       </RenderIf>
-      <RenderIf conditionIs={activeChat?.username}>
+      <RenderIf conditionIs={activePrivateChat?.username}>
         <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
           {/* invisible wall */}
           <div
