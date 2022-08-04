@@ -121,28 +121,31 @@ export default function MessageLogsContextProvider({ children }) {
 
 export const pushNewEntry = async ({
   targetId,
-  activeChat,
   message = null,
-  currentActiveChatId,
   msgLogs,
   msgLogsDispatch,
+  chatId = null,
 }) => {
   // dispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
   try {
-    console.log(activeChat);
-    const { lastMsg, isOnline, lastSeen, ...user } = activeChat;
-    const isActiveChat = currentActiveChatId === targetId;
+    const user = {};
+
+    const [userPreview] = await getUsersPreview(
+      sessionStorage.getItem("token"),
+      [targetId]
+    );
+    Object.assign(user, userPreview);
+
     const updatedChatLog = cloneDeep(msgLogs.content);
     const newChatLogContent = {
       user,
-      chatId: message.chatId,
+      chatId,
       chat: [
         {
           date: new Date(message.time).toLocaleDateString(),
           messages: [message],
         },
       ],
-      activeChat: isActiveChat,
     }; // assemble the final result object
 
     updatedChatLog[targetId] = newChatLogContent;

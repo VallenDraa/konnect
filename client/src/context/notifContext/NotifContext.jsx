@@ -4,12 +4,13 @@ import {
   useEffect,
   useContext,
   useState,
-} from 'react';
-import api from '../../utils/apiAxios/apiAxios';
-import NOTIF_CONTEXT_ACTIONS from './notifContextActions';
-import notifReducer from './notifContextReducer';
-import { UserContext } from '../user/userContext';
-import socket from '../../utils/socketClient/socketClient';
+} from "react";
+import api from "../../utils/apiAxios/apiAxios";
+import NOTIF_CONTEXT_ACTIONS from "./notifContextActions";
+import notifReducer from "./notifContextReducer";
+import { UserContext } from "../user/userContext";
+import socket from "../../utils/socketClient/socketClient";
+import { ContactsContext } from "../contactContext/ContactContext";
 
 const NOTIF_DEFAULT = {
   isStarting: false,
@@ -76,6 +77,7 @@ export default function NotifContextProvider({ children }) {
   });
   const { userState } = useContext(UserContext);
 
+  // useEffect(() => console.log(notifs), [notifs]);
   // get all notifications for initial loading
   useEffect(() => {
     if (
@@ -91,10 +93,10 @@ export default function NotifContextProvider({ children }) {
 
         notifsDispatch({ type: NOTIF_CONTEXT_ACTIONS.loading });
         const { data } = await api.get(
-          '/notification/get_all_notifications?full=true',
+          "/notification/get_all_notifications?full=true",
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           }
         );
@@ -156,13 +158,13 @@ export default function NotifContextProvider({ children }) {
   );
 }
 
-export const receiveSendAddContact = ({
+export function receiveSendAddContact({
   cb,
   notifs,
   notifsDispatch,
   notifActions,
-}) => {
-  socket.on('receive-send-add-contact', ({ success, notif, type }) => {
+}) {
+  socket.on("receive-send-add-contact", ({ success, notif, type }) => {
     if (success) {
       let updatedNotifs;
       // check if the notif is duplicate of a rejected one
@@ -188,17 +190,17 @@ export const receiveSendAddContact = ({
       if (cb) cb({ success, notif, type });
     }
   });
-};
+}
 
-export const receiveCancelAddContact = ({
+export function receiveCancelAddContact({
   cb,
   notifs,
   notifsDispatch,
   notifActions,
   userState,
-}) => {
+}) {
   socket.on(
-    'receive-cancel-add-contact',
+    "receive-cancel-add-contact",
     ({ senderId, recipientId, success, type }) => {
       if (success) {
         // check to see which id to use for removing the contact request
@@ -223,9 +225,9 @@ export const receiveCancelAddContact = ({
       }
     }
   );
-};
+}
 
-export const receiveContactRequestResponse = ({
+export function receiveContactRequestResponse({
   cb,
   contacts,
   setContacts,
@@ -234,9 +236,9 @@ export const receiveContactRequestResponse = ({
   notifActions,
   token,
   userState,
-}) => {
+}) {
   socket.on(
-    'receive-contact-request-response',
+    "receive-contact-request-response",
     async ({ recipientId, senderId, success, type, answer }) => {
       if (success) {
         const idToUse =
@@ -254,7 +256,7 @@ export const receiveContactRequestResponse = ({
           // update contacts if the recipient accepts the contact request
           setContacts([...contacts, { user: userPreview.data[0] }]);
 
-          setTimeout(() => socket.emit('refresh-msg-log'), 500);
+          setTimeout(() => socket.emit("refresh-msg-log"), 500);
         }
 
         // execute the passed in callback if it exist
@@ -263,7 +265,7 @@ export const receiveContactRequestResponse = ({
         // update the notifs
         const updatedNotifs = notifs.content;
         for (let i = updatedNotifs[type].length - 1; i >= 0; i--) {
-          if (updatedNotifs[type][i].type === 'contact_request') {
+          if (updatedNotifs[type][i].type === "contact_request") {
             if (updatedNotifs[type][i].by._id !== idToUse) continue;
 
             updatedNotifs[type][i].answer = answer;
@@ -277,4 +279,4 @@ export const receiveContactRequestResponse = ({
       }
     }
   );
-};
+}

@@ -22,16 +22,16 @@ export default function messages(socket) {
           to: message.to,
           timeSent: message.time,
           msgId: data.msgId,
+          chatId: data.chatId,
         });
 
         if (isTargetOnline) {
-          const newMsgData = {
+          socket.to(targetSocketId).emit("receive-msg", {
+            success: true,
             timeSent: message.time,
             message: { ...message, _id: data.msgId, isSent: true },
-            ...data,
-          };
-
-          socket.to(targetSocketId).emit("receive-msg", newMsgData);
+            chatId: data.chatId,
+          });
         }
       }
     } catch (error) {

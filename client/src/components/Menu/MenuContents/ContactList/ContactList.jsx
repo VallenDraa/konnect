@@ -46,14 +46,14 @@ const ContactList = () => {
         {groupedContacts.contents?.map(([letter, nameList], i) => {
           return (
             <div key={i} className="space-y-3 mb-3 p-3">
-              <span className="block sticky top-0 bg-blue-100 px-2 font-bold uppercase text-blue-400">
+              <span className="block sticky top-0 bg-gray-100 px-2 font-bold uppercase text-blue-400">
                 {letter}
               </span>
               {nameList.map((contact) => (
                 <Link
                   to={`/user/${contact.user.username}`}
                   key={contact}
-                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 mx-2 rounded-lg shadow
+                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-200 p-2 mx-2 rounded shadow
                             ${general?.animation ? "duration-200" : ""}`}
                 >
                   <img

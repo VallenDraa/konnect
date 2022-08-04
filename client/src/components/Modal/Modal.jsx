@@ -6,6 +6,7 @@ import { ModalContext } from "../../context/modal/modalContext";
 import RenderIf from "../../utils/React/RenderIf";
 import { UrlHistoryContext } from "../../pages/Home/Home";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import { NotifContext } from "../../context/notifContext/NotifContext";
 
 export const Modal = () => {
   const { modalState, modalDispatch } = useContext(ModalContext);

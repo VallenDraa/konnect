@@ -46,9 +46,9 @@ export default function Dropdown({
     "gap-x-1",
     "bg-gray-200",
     "hover:bg-gray-100",
-    "shadow",
-    "hover:shadow-lg",
-    "active:shadow-md",
+    "shadow-sm",
+    "hover:shadow-md",
+    "active:shadow",
     `${general?.animation ? `duration-200` : ``}`,
   ]);
   const [listDefaultClasses, setListDefaultClasses] = useState([

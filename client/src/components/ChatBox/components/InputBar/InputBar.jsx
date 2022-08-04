@@ -12,7 +12,10 @@ import {
 } from "../../../../context/messageLogs/MessageLogsContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import socket from "../../../../utils/socketClient/socketClient";
-import scrollToBottom from "../../../../utils/scroll/scrollToBottom";
+import {
+  scrollToBottom,
+  scrollToBottomSmooth,
+} from "../../../../utils/scroll/scrollToBottom";
 import { cloneDeep } from "lodash";
 import MESSAGE_LOGS_ACTIONS from "../../../../context/messageLogs/messageLogsActions";
 
@@ -55,9 +58,14 @@ export default function inputBar({ messageLogRef }) {
           targetId: activeChat._id,
           message: newMessageInput,
           msgLogs,
+          chatId: null,
           msgLogsDispatch,
         });
-    setTimeout(() => scrollToBottom(messageLogRef.current), 150);
+    setTimeout(() => {
+      general.animation
+        ? scrollToBottomSmooth(messageLogRef.current)
+        : scrollToBottom(messageLogRef.current);
+    }, 100);
 
     // reset the input bar
     setnewMessage("");
@@ -67,9 +75,10 @@ export default function inputBar({ messageLogRef }) {
   };
 
   useEffect(() => {
-    socket.on("msg-sent", ({ success, to, msgId, timeSent }) => {
+    socket.on("msg-sent", ({ success, to, msgId, timeSent, chatId }) => {
       if (!success) return;
       /* NEW MSG LOGS*/
+
       const updatedChatLogs = cloneDeep(msgLogs.content);
 
       if (updatedChatLogs[to]) {
@@ -94,6 +103,7 @@ export default function inputBar({ messageLogRef }) {
           }
         }
 
+        updatedChatLogs[activeChat._id].chatId = chatId;
         msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedChatLogs,
@@ -135,7 +145,7 @@ export default function inputBar({ messageLogRef }) {
         </RenderIf>
         {/* the input bar */}
         <input
-          onDoubleClick={() => scrollToBottom(messageLogRef.current)}
+          onDoubleClick={() => scrollToBottomSmooth(messageLogRef.current)}
           type="text"
           ref={inputRef}
           onChange={(e) => setnewMessage(e.target.value)}

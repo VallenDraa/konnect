@@ -135,13 +135,9 @@ export default function NotificationList() {
         {/* if notifs are fine */}
         <RenderIf conditionIs={!notifs.isLoading && !notifs.error}>
           <ul
-            className={` 
-                      ${
-                        notifs?.content[activeBox.name]?.length === 0
-                          ? ""
-                          : "border-t-2"
-                      }
-                      `}
+            className={`${
+              notifs?.content[activeBox.name]?.length === 0 ? "" : "border-t-2"
+            }`}
           >
             {/* if there are no notifications */}
             <RenderIf

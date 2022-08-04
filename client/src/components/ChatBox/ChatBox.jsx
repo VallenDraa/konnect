@@ -18,20 +18,21 @@ import {
   removeMsgUnread,
 } from "../../context/messageLogs/MessageLogsContext";
 import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
-import getScrollPercentage, {
-  isWindowScrollable,
-} from "../../utils/scroll/getScrollPercentage";
+import getScrollPercentage from "../../utils/scroll/getScrollPercentage";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
 import { SidebarContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
-import scrollToBottom from "../../utils/scroll/scrollToBottom";
+import {
+  scrollToBottom,
+  scrollToBottomSmooth,
+} from "../../utils/scroll/scrollToBottom";
 import _ from "lodash";
 import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
 import lastIdx from "../../utils/others/lastIdx";
-import { useCallback } from "react";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 
 const userOnlineStatusSwitcher = (status) => {
   if (status === "online") {
@@ -52,25 +53,17 @@ export const ChatBox = () => {
   const { userState } = useContext(UserContext);
   const { setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
-  const [willGoToBottom, setWillGoToBottom] = useState(false);
   const messageLogRef = useRef();
   const { contacts } = useContext(ContactsContext);
   const invisibleWallRef = useRef();
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
   const [currStatus, setCurrStatus] = useState({
     isOnline: false,
     lastSeen: null,
     hasFetch: false,
   }); // for stopping infinite re render
-  const checkWillGoToBottom = useCallback(
-    _.throttle(() => {
-      const scrollPercent = getScrollPercentage();
 
-      setWillGoToBottom(scrollPercent > 70 ? true : false);
-    }, 500),
-    []
-  ); // check if the page is atleast scrolled by 70%
-
-  // check if the activeChat is online
   useEffect(() => {
     if (!activeChat?._id) return;
 
@@ -90,9 +83,8 @@ export const ChatBox = () => {
       activeChat._id,
       sessionStorage.getItem("token")
     );
-  }, [activeChat, currStatus]);
+  }, [activeChat, currStatus]); // check if the activeChat is online
 
-  // receive the online status from server
   useEffect(() => {
     socket.on("receive-is-user-online", (userId, status) => {
       if (userId !== activeChat._id) return;
@@ -103,9 +95,8 @@ export const ChatBox = () => {
       setCurrStatus({ ...newOnlineStatus, hasFetch: true });
     });
     return () => socket.off("receive-is-user-online");
-  }, [activeChat]);
+  }, [activeChat]); // receive the online status from server
 
-  // refresh user online status
   useEffect(() => {
     socket.on("change-user-status", (userId, status) => {
       if (userId !== activeChat._id) return;
@@ -117,9 +108,8 @@ export const ChatBox = () => {
     });
 
     return () => socket.off("change-user-status");
-  }, [activeChat]);
+  }, [activeChat]); // refresh user online status
 
-  // INITIAL LOADING USE EFFECT
   useEffect(() => {
     const incompleteChatLog = msgLogs.content[activeChat._id];
 
@@ -160,10 +150,12 @@ export const ChatBox = () => {
         type: MESSAGE_LOGS_ACTIONS.loaded,
         payload: result,
       });
+
+      if (messageLogRef.current) scrollToBottom(messageLogRef.current);
     });
 
     return () => socket.off("a-chat-history-downloaded");
-  }, [msgLogs]); //recieve the downloaded chat log
+  }, [messageLogRef, msgLogs]); //receive the downloaded chat log
   useEffect(() => {
     if (location.pathname === "/chats") {
       const search = Object.fromEntries(
@@ -175,14 +167,13 @@ export const ChatBox = () => {
 
       // check if the url provided id and type of chat
       if (search.id && search.type) {
-        const updateActiveChat = (data, lastMessage) => {
+        const updateActiveChat = (data) => {
           const newActiveChat = {
             _id: data._id,
             username: data.username,
             initials: data.initials,
             profilePicture: data.profilePicture,
             status: data.status,
-            lastMessage: lastMessage || null,
             isOnline: false,
             lastSeen: null,
           };
@@ -194,17 +185,13 @@ export const ChatBox = () => {
         // search existing user data in chatlogs for handling the active chat
         const userInMsgLog = msgLogs.content[search.id];
         if (userInMsgLog) {
-          const lastTimeGroup = userInMsgLog.chat[lastIdx(userInMsgLog.chat)];
-          const lastMessage =
-            lastTimeGroup.messages[lastIdx(lastTimeGroup.messages)];
-
-          return updateActiveChat(userInMsgLog.user, lastMessage);
+          return updateActiveChat(userInMsgLog.user);
         }
 
         // search existing user data in contacts for handling the active chat
-        const targetInContact = contacts.find(({ user }) => {
-          return user._id === search.id;
-        });
+        const targetInContact = contacts.find(
+          ({ user }) => user._id === search.id
+        );
         if (targetInContact) {
           return updateActiveChat(targetInContact.user, null);
         }
@@ -229,43 +216,27 @@ export const ChatBox = () => {
       } else {
         if (window.innerWidth <= 1024) {
           setIsSidebarOn(true);
-          setTimeout(() => {
-            setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
-          }, 330);
+          setTimeout(() => setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
         } else {
           setActiveChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
         }
       }
     }
   }, [location]); // to check if the url is directed to a certain chat
-  // END OF INITIAL LOADING USE EFFECT
 
   useEffect(() => {
-    if (!messageLogRef.current) return;
-
-    scrollToBottom(messageLogRef.current);
-  }, [activeChat, messageLogRef]); // will go to the bottom of the screen when active chat changes
-
-  useEffect(() => setWillGoToBottom(isWindowScrollable()), [activeChat]); // see if window is scrollable when active user is changed
-
-  useEffect(() => {
-    messageLogRef.current?.addEventListener("scroll", checkWillGoToBottom);
-
-    return () =>
-      messageLogRef.current?.removeEventListener("scroll", checkWillGoToBottom);
-  }, [checkWillGoToBottom]); //automatically scroll down to the latest message
+    if (activeChat._id !== null) scrollToBottom(messageLogRef.current);
+  }, [activeChat, messageLogRef]); //scroll to bottom when active chat changes
 
   useEffect(() => {
     socket.on("receive-msg", async (data) => {
       const { message, chatId, success } = data;
-      const assembledMsg = { ...message, chatId };
-
       if (success) {
         // update the message logs
         msgLogs.content[message.by]
           ? pushNewMsgToEntry({
               targetId: message.by,
-              message: assembledMsg,
+              message,
               msgLogs,
               msgLogsDispatch,
             })
@@ -273,23 +244,29 @@ export const ChatBox = () => {
             pushNewEntry({
               activeChat,
               targetId: message.by,
-              message: assembledMsg,
+              message,
               token: sessionStorage.getItem("token"),
               msgLogs,
               msgLogsDispatch,
+              chatId,
             });
 
         // update the unread message notif
         incrementMsgUnread({ msgUnread, setMsgUnread, chatId });
 
-        // update the active chat last message so that when receiver see it, the message can be flag as read
-        setActiveChat({ ...activeChat, lastMessage: message });
-
         // play notification audio when receiving a message
         playAudio(newMsgSound);
 
-        // read msg if current active chat is the same user that sent the message
-        if (willGoToBottom) scrollToBottom(messageLogRef.current);
+        // scroll to the bottom of the screen if user is in chat mode
+        if (messageLogRef.current) {
+          if (getScrollPercentage(messageLogRef.current) > 70) {
+            setTimeout(() => {
+              general.animation
+                ? scrollToBottomSmooth(messageLogRef.current)
+                : scrollToBottom(messageLogRef.current);
+            }, 100);
+          }
+        }
       }
     });
 
@@ -299,7 +276,15 @@ export const ChatBox = () => {
   useEffect(() => {
     if (!activeChat?._id) return;
     if (!msgLogs?.content[activeChat._id]?.chatId) return;
-    if (activeChat?.lastMessage?.by === userState?.user?._id) return;
+    if (!msgLogs?.content[activeChat._id]?.chat) return;
+
+    // check if there is at least one message in the chat log
+    const lastMsgIdx = lastIdx(msgLogs.content[activeChat._id].chat);
+    if (lastMsgIdx === -1) return;
+
+    // check if the last message is by the other user
+    const lastMsg = msgLogs.content[activeChat._id].chat[lastMsgIdx];
+    if (lastMsg?.by === userState?.user?._id) return;
 
     const updatedChatLogs = _.cloneDeep(msgLogs.content);
     const { chat: newChat } = updatedChatLogs[activeChat._id];
@@ -310,9 +295,7 @@ export const ChatBox = () => {
       const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
 
       // if updatedTimeLogIdx is -1 it means there is no new message today
-      if (updatedTimeLogIdx === -1) {
-        scrollToBottom(messageLogRef.current);
-      } else {
+      if (updatedTimeLogIdx !== -1) {
         const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
         const finalMesIndex = msgsInTimeLog.length - 1;
         const lastMsg = msgsInTimeLog[finalMesIndex];
@@ -329,7 +312,6 @@ export const ChatBox = () => {
                 if (msgsInTimeLog[i].readAt !== null) break;
 
                 msgsInTimeLog[i].readAt = time;
-                console.log(msgsInTimeLog[i]);
                 readMsgIds.push(msgsInTimeLog[i]._id);
               }
             } else {
@@ -345,11 +327,8 @@ export const ChatBox = () => {
             // updated the msgUnread notifs
             removeMsgUnread({ msgUnread, setMsgUnread, chatId });
 
-            console.log(readMsgIds);
             // update the message read status to the server
             socket.emit("read-msg", time, token, activeChat._id, readMsgIds);
-
-            scrollToBottom(messageLogRef.current);
           }
         }
       }
@@ -370,16 +349,19 @@ export const ChatBox = () => {
         const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
         const msgsMaxLen = msgsInTimeLog.length - 1;
 
-        for (let i = msgsMaxLen; i > 0; i--) {
-          if (msgsInTimeLog[i].readAt !== null) break;
-          msgsInTimeLog[i].readAt = time;
+        if (msgsMaxLen > 0) {
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i].readAt !== null) break;
+            msgsInTimeLog[i].readAt = time;
+          }
+        } else {
+          msgsInTimeLog[0].readAt = time;
         }
 
         msgLogsDispatch({
           type: MESSAGE_LOGS_ACTIONS.updateLoaded,
           payload: updatedChatLogs,
         });
-        setTimeout(() => scrollToBottom(messageLogRef.current), 250);
       }
     });
 

@@ -1,5 +1,5 @@
-import { createContext, useReducer } from 'react';
-import modalReducer from './modalReducer';
+import { createContext, useReducer } from "react";
+import modalReducer from "./modalReducer";
 
 const modalInitialValue = {
   isActive: false,

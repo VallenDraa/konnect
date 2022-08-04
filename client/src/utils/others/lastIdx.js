@@ -1,3 +1,3 @@
 export default function lastIdx(arr) {
-  return arr.length - 1;
+  return arr ? arr.length - 1 : -1;
 }

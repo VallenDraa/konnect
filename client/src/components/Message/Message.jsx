@@ -5,6 +5,7 @@ import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import RenderIf from "../../utils/React/RenderIf";
 
 export const Message = ({
+  innerRef = null,
   state,
   msg,
   time,
@@ -19,6 +20,7 @@ export const Message = ({
 
   return (
     <li
+      ref={innerRef}
       aria-label="message"
       className={`h-max flex items-center mt-5 ${
         isSentByMe ? "justify-end" : ""

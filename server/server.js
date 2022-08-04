@@ -30,7 +30,8 @@ global.exemptedUserInfos = [
   "-__v",
   "-requests",
   "-notifications",
-  "-chats",
+  "-privates",
+  "-groups",
 ];
 
 if (process.env.NODE_ENV !== "production") {
@@ -80,7 +81,7 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
 
-  if (!isProduction) console.log(message);
+  if (!isProduction) console.log(stack);
 
   return res
     .status(status || 500)

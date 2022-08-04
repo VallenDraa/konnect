@@ -19,13 +19,18 @@ import addRequestSentReducer, {
 import { FaPaperPlane } from "react-icons/fa";
 import { UserContext } from "../../../../context/user/userContext";
 import { ImProfile } from "react-icons/im";
-import { ContactsContext } from "../../../../context/contactContext/ContactContext";
+import {
+  ContactsContext,
+  receiveRemoveContact,
+} from "../../../../context/contactContext/ContactContext";
 import {
   NotifContext,
   receiveCancelAddContact,
   receiveContactRequestResponse,
   receiveSendAddContact,
 } from "../../../../context/notifContext/NotifContext";
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const OthersProfileModalContent = ({ username }) => {
   const [otherUserData, setOtherUserData] = useState({});
@@ -42,6 +47,7 @@ export const OthersProfileModalContent = ({ username }) => {
   const [isAFriend, setIsAFriend] = useState(false); //check if the other user is already friends with me
   const [isRequesting, setIsRequesting] = useState(false); //check if i've already sent a contact request
   const [isRequested, setIsRequested] = useState(false); //check if a request has already been sent to me by the other user
+  const navigate = useNavigate();
 
   //for both sending and cancelling a contact request
   const handleSendContactRequest = () => {
@@ -55,6 +61,7 @@ export const OthersProfileModalContent = ({ username }) => {
 
     socket.emit("send-add-contact", payload);
   };
+
   const handleCancelContactRequest = () => {
     requestDispatch({ type: Start });
     requestDispatch({ type: Loading });
@@ -69,10 +76,10 @@ export const OthersProfileModalContent = ({ username }) => {
 
   // for removing a contact from the user data
   const handleRemoveContact = () => {
-    // console.log('remove');
     requestDispatch({ type: Start });
     const senderToken = sessionStorage.getItem("token");
     requestDispatch({ type: Loading });
+
     socket.emit(
       "remove-contact",
       userState.user._id,
@@ -148,6 +155,19 @@ export const OthersProfileModalContent = ({ username }) => {
     return () => socket.off("receive-contact-request-response");
   }, [userState, contacts, notifs]);
 
+  //handle removing other contact
+  useEffect(() => {
+    receiveRemoveContact({
+      setContacts,
+      cb: () => {
+        setIsAFriend(false);
+        requestDispatch({ type: Sent });
+      },
+    });
+
+    return () => socket.off("receive-remove-contact");
+  }, []);
+
   // fetch other user detail from the server
   useEffect(() => {
     setOtherUserData({});
@@ -174,8 +194,6 @@ export const OthersProfileModalContent = ({ username }) => {
     setTimeout(getOtherUserDetail, 500);
   }, [username]);
 
-  // useEffect(() => console.log(otherUserData), [otherUserData]);
-
   // turn initials to rgb
   useEffect(() => {
     if (!otherUserData?.initials) return;
@@ -183,34 +201,6 @@ export const OthersProfileModalContent = ({ username }) => {
 
     setRgb(newRgb);
   }, [otherUserData]);
-
-  // refresh userState after sending an add contact request
-  useEffect(() => {
-    socket.off("update-client-data");
-
-    socket.on("update-client-data", (response, ...args) => {
-      // console.log(args, response);
-      if (response.success) {
-        const { user, token } = response;
-
-        userDispatch({ type: USER_ACTIONS.updateSuccess, payload: user });
-        sessionStorage.setItem("token", token);
-        requestDispatch({ type: Sent });
-        setIsRequesting(false);
-        setIsRequested(false);
-
-        for (const arg of args) {
-          // console.log(arg);
-          arg.unfriend && setIsAFriend(false);
-        }
-      } else {
-        requestDispatch({ type: Error, payload: response.message });
-        console.log(response.message);
-      }
-    });
-
-    return () => socket.off("update-client-data");
-  }, []);
 
   // gets the other user data and determine the state of the action button next to the msg button
   useEffect(() => {

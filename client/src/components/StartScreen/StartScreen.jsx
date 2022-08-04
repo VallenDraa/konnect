@@ -12,7 +12,7 @@ export const StartScreen = () => {
   const { setIsSidebarOn } = useContext(SidebarContext);
 
   return (
-    <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 relative h-screen flex flex-col gap-3 items-center justify-center tracking-wide px-5">
+    <main className="basis-full lg:basis-3/4 shadow-inner bg-gray-100 relative h-screen flex flex-col gap-3 items-center justify-center px-5">
       <header className="bg-gray-50 absolute inset-x-0 z-10 shadow-inner py-2 px-5 border-b-2 top-0">
         <div className="flex flex-wrap justify-between items-center gap-2 max-w-screen-sm lg:max-w-full mx-auto">
           <div className="flex justify-between items-center grow sm:flex-grow-0 gap-3">

@@ -9,25 +9,29 @@ import PicturelessProfile from "../../../../../PicturelessProfile/PicturelessPro
 import socket from "../../../../../../utils/socketClient/socketClient";
 import RenderIf from "../../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../../context/settingsContext/SettingsContext";
+import { useCallback } from "react";
 
 export default function ContactNotif({ info, type }) {
   const { userState } = useContext(UserContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
-  const handleResponse = (answer, type) => {
-    if (type === "inbox") {
-      const payload = {
-        answer,
-        token: sessionStorage.getItem("token"),
-        senderId: info.by?._id,
-        recipientId: userState.user._id,
-      };
-      socket.emit("contact-requests-response", payload);
-    }
-  };
+  const handleResponse = useCallback(
+    (answer, type) => {
+      if (type === "inbox") {
+        const payload = {
+          answer,
+          token: sessionStorage.getItem("token"),
+          senderId: info.by?._id,
+          recipientId: userState.user._id,
+        };
+        socket.emit("contact-requests-response", payload);
+      }
+    },
+    [userState]
+  );
 
-  const cancelRequest = () => {
+  const cancelRequest = useCallback(() => {
     const payload = {
       token: sessionStorage.getItem("token"),
       senderId: userState.user._id,
@@ -35,14 +39,13 @@ export default function ContactNotif({ info, type }) {
     };
 
     socket.emit("cancel-add-contact", payload);
-  };
+  }, [userState]);
 
   return (
-    <Link
-      title={`Go to ${info.by?.username}'s profile`}
-      to={`/user/${info.by?.username}`}
-      className={`"block w-full hover:bg-gray-100  p-3 
-                ${general?.animation ? "duration-200" : ""}`}
+    <div
+      className={`"block w-full hover:bg-gray-100 p-3 ${
+        general?.animation ? "duration-200" : ""
+      }`}
     >
       <header className="flex justify-between mb-5">
         <span className="text-xxs text-gray-400 font-extrabold self-end">
@@ -56,11 +59,16 @@ export default function ContactNotif({ info, type }) {
       <main className={`flex items-center gap-3`}>
         <aside>
           <RenderIf conditionIs={!info.by?.profilePicture}>
-            <PicturelessProfile
-              width={info.answer !== null ? 40 : 50}
-              initials={info.by?.initials}
-              bgColor={() => generateRgb(info.by?.initials)}
-            />
+            <Link
+              title={`Go to ${info.by?.username}'s profile`}
+              to={`/user/${info.by?.username}`}
+            >
+              <PicturelessProfile
+                width={info.answer !== null ? 40 : 50}
+                initials={info.by?.initials}
+                bgColor={() => generateRgb(info.by?.initials)}
+              />
+            </Link>
           </RenderIf>
         </aside>
 
@@ -141,6 +149,6 @@ export default function ContactNotif({ info, type }) {
           </div>
         </RenderIf>
       </RenderIf>
-    </Link>
+    </div>
   );
 }

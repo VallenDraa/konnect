@@ -11,16 +11,13 @@ export default function Log({ messageLogRef }) {
   const { userState } = useContext(UserContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
-
-  // useEffect(() => console.log(msgLogs), [msgLogs]);
   return (
     <main className="bg-gray-100 flex flex-col grow">
       <ul
+        id="log"
         ref={messageLogRef}
         aria-label="message-log"
-        className={`relative flex flex-col h-0 grow pb-3 overflow-auto container mx-auto max-w-screen-sm lg:max-w-screen-lg ${
-          general?.animation ? "scroll-smooth" : ""
-        }`}
+        className={`relative flex flex-col h-0 grow pb-3 overflow-auto container mx-auto max-w-screen-sm lg:max-w-screen-lg`}
       >
         {msgLogs.content[activeChat._id] &&
           msgLogs?.content[activeChat._id].chat.map(({ date, messages }, i) => {
@@ -29,9 +26,6 @@ export default function Log({ messageLogRef }) {
                 <TimeSeparator now={new Date()} then={new Date(date)} />
 
                 {messages.map((msg, i) => {
-                  if (i === messages.length - 1) {
-                    console.log(msg);
-                  }
                   return (
                     <Fragment key={msg._id === null ? i : msg._id}>
                       <Message

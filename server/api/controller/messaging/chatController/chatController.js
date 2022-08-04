@@ -5,10 +5,10 @@ import createError from "../../../../utils/createError.js";
 export const getAllChatHistory = async (req, res, next) => {
   try {
     const { _id } = res.locals.tokenData;
-    const { chats } = await User.findById(_id).select("chats").lean();
+    const { privates } = await User.findById(_id).select("privates").lean();
 
-    if (chats.length > 0) {
-      const privateChats = await PrivateChat.where({ _id: { $in: chats } })
+    if (privates.length > 0) {
+      const privateChats = await PrivateChat.where({ _id: { $in: privates } })
         .populate([
           {
             path: "users",
@@ -105,6 +105,7 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
 
             // loop over the messages in the time group from the back
             for (let z = chatMaxIdx; z >= 0; i--) {
+              console.log(timeGroups[i].messages[z]);
               if (timeGroups[i].messages[z].by.toString() !== userId) {
                 if (timeGroups[i].messages[z].readAt) break;
 
@@ -142,7 +143,6 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
       { detail: {}, total: 0 }
     );
 
-    console.log(totalUnreadMsg);
     return totalUnreadMsg;
   } catch (error) {
     console.log(error);
@@ -152,10 +152,10 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
 export const getChatNotifications = async (req, res, next) => {
   try {
     const { _id } = res.locals.tokenData;
-    const { chats } = await User.findById(_id).select("chats").lean();
+    const { privates } = await User.findById(_id).select("privates").lean();
 
-    if (chats.length > 0) {
-      const totalUnreadMsg = await fetchUnreadMsgFromDb(chats, _id, next);
+    if (privates.length > 0) {
+      const totalUnreadMsg = await fetchUnreadMsgFromDb(privates, _id, next);
 
       res.json(totalUnreadMsg);
     } else {
@@ -170,11 +170,10 @@ export const getAllChatId = async (req, res, next) => {
   // new way
   try {
     const { _id } = res.locals.tokenData;
-    const { chats } = await User.findById(_id).select("chats").lean();
-
-    if (chats.length > 0) {
+    const { privates } = await User.findById(_id).select("privates").lean();
+    if (privates.length > 0) {
       const privateChats = await PrivateChat.where({
-        _id: { $in: chats },
+        _id: { $in: privates },
       })
         .select(["users", "_id", "chat"])
         .slice("chat", -1)
@@ -193,7 +192,7 @@ export const getAllChatId = async (req, res, next) => {
 
         return { chatId: pc._id, user, chat: pc.chat, preview: true };
       });
-      const unreadMsg = await fetchUnreadMsgFromDb(chats, _id, next);
+      const unreadMsg = await fetchUnreadMsgFromDb(privates, _id, next);
       const response = {
         currentUser: _id,
         messageLogs: [...formattedPC],

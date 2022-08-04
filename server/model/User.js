@@ -50,7 +50,7 @@ const UserSchema = new mongoose.Schema(
       },
     },
     groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
-    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: "private_chat" }],
+    privates: [{ type: mongoose.Schema.Types.ObjectId, ref: "private_chat" }],
     settings: {
       general: { type: Object, default: {} },
       calls: { type: Object, default: {} },

@@ -7,21 +7,26 @@ element.scrollHeight - is the pixels of the whole div.
 element.clientHeight - is the pixels that you see in your browser.
 
  */
+/**
+ *
+ * @param {HTMLElement} htmlElement
+ * @returns
+ */
 
-export default function getScrollPercentage() {
-  const pos = document.documentElement.scrollTop;
-  const scrollTopMax =
-    document.documentElement.scrollHeight -
-    document.documentElement.clientHeight;
+export default function getScrollPercentage(htmlElement) {
+  const pos = htmlElement.scrollTop;
+  const scrollTopMax = htmlElement.scrollHeight - htmlElement.clientHeight;
 
   const percentage = (pos / scrollTopMax) * 100;
 
   return percentage;
 }
 
-export const isWindowScrollable = () => {
-  return (
-    document.documentElement.scrollHeight >
-    document.documentElement.clientHeight
-  );
+/**
+ *
+ * @param {HTMLElement} htmlElement
+ * @returns
+ */
+export const isElementScrollable = (htmlElement) => {
+  return htmlElement.scrollHeight > htmlElement.clientHeight;
 };

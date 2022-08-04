@@ -116,25 +116,14 @@ export const unfriend = async (req, res, next) => {
 
   // remove the contact from my account
   try {
-    const me = await User.findById(myId).select(global.exemptedUserInfos);
+    await User.findByIdAndUpdate(myId, {
+      $pull: { contacts: { user: targetId } },
+    });
+    await User.findByIdAndUpdate(targetId, {
+      $pull: { contacts: { user: myId } },
+    });
 
-    // check if the target is still in the contact
-    const isStillInContact = me.contacts.some(
-      (contact) => contact.user.toString() === targetId
-    );
-    if (!isStillInContact) {
-      return createError(next, 404, "Invalid target id !");
-    }
-
-    me.contacts = me.contacts.filter(
-      (contact) => contact.user.toString() !== targetId
-    );
-
-    await me.save();
-
-    const token = renewToken(me._doc, process.env.JWT_SECRET);
-
-    res.json({ user: me._doc, token, success: true });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }

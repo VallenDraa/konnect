@@ -32,7 +32,7 @@ export const saveMessage = async (req, res, next) => {
       const { _id: newPcId } = await PrivateChat.create(newPrivateChat);
       await User.updateMany(
         { _id: { $in: [newMsg.by, newMsg.to] } },
-        { $push: { chats: newPcId } }
+        { $push: { privates: newPcId } }
       );
 
       return res.json({ chatId: newPcId, msgId: newMsg._id, success: true });

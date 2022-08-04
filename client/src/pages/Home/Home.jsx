@@ -4,26 +4,26 @@ import { ChatBox } from "../../components/ChatBox/ChatBox";
 import { Modal } from "../../components/modal/Modal";
 import { InitialLoadingScreen } from "../../components/InitialLoadingScreen/InitialLoadingScreen";
 import { ModalContext } from "../../context/modal/modalContext";
-import { ContactsContext } from "../../context/contactContext/ContactContext";
 import { useEffect } from "react";
 import { UserContext } from "../../context/user/userContext";
+import { ActiveChatContext } from "../../context/activeChat/ActiveChatContext";
+import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
+import { useLocation } from "react-router-dom";
+import socket from "../../utils/socketClient/socketClient";
+import USER_ACTIONS from "../../context/user/userAction";
+import MODAL_ACTIONS from "../../context/modal/modalActions";
+import locationForModal from "../../components/Modal/utils/locationForModal";
+import MiniModal from "../../components/MiniModal/MiniModal";
+import useUrlHistory from "../../utils/React/hooks/useUrlHistory/useUrlHistory";
+import ChatboxContextProvider from "../../context/chatBoxState/chatBoxContext";
+import { ContactsContext } from "../../context/contactContext/ContactContext";
 import {
   NotifContext,
   receiveCancelAddContact,
   receiveContactRequestResponse,
   receiveSendAddContact,
 } from "../../context/notifContext/NotifContext";
-import { ActiveChatContext } from "../../context/activeChat/ActiveChatContext";
-import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
-import { useLocation } from "react-router-dom";
-import socket from "../../utils/socketClient/socketClient";
-import USER_ACTIONS from "../../context/user/userAction";
 import NOTIF_CONTEXT_ACTIONS from "../../context/notifContext/notifContextActions";
-import MODAL_ACTIONS from "../../context/modal/modalActions";
-import locationForModal from "../../components/Modal/utils/locationForModal";
-import MiniModal from "../../components/MiniModal/MiniModal";
-import useUrlHistory from "../../utils/React/hooks/useUrlHistory/useUrlHistory";
-import ChatboxContextProvider from "../../context/chatBoxState/chatBoxContext";
 
 // url history context
 export const UrlHistoryContext = createContext(null);
@@ -37,10 +37,10 @@ export default function Home() {
   const { isLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
   const location = useLocation();
   const [urlHistory, urlHistoryError] = useUrlHistory();
+  const { pathname } = useLocation();
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
-  const { pathname } = useLocation();
 
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, "history error");
@@ -70,48 +70,6 @@ export default function Home() {
 
     return () => socket.off("login");
   }, []);
-
-  //update the notifs context when receiving a contact request
-  useEffect(() => {
-    receiveSendAddContact({
-      notifs,
-      notifsDispatch,
-      notifUnseen,
-      setNotifUnseen,
-      notifActions: NOTIF_CONTEXT_ACTIONS,
-    });
-
-    return () => socket.off("receive-send-add-contact");
-  }, [notifs, notifUnseen]);
-
-  // when a contact request is cancelled
-  useEffect(() => {
-    receiveCancelAddContact({
-      notifs,
-      notifsDispatch,
-      notifUnseen,
-      setNotifUnseen,
-      notifActions: NOTIF_CONTEXT_ACTIONS,
-      userState,
-    });
-
-    return () => socket.off("receive-cancel-add-contact");
-  }, [userState, notifs, notifUnseen]);
-
-  // update sender data when the recipient accepts or rejects a contact request
-  useEffect(() => {
-    receiveContactRequestResponse({
-      contacts,
-      setContacts,
-      notifs,
-      notifsDispatch,
-      notifActions: NOTIF_CONTEXT_ACTIONS,
-      token: sessionStorage.getItem("token"),
-      userState,
-    });
-
-    return () => socket.off("receive-contact-request-response");
-  }, [userState, contacts, notifs]);
 
   // refresh userState
   useEffect(() => {
@@ -148,6 +106,54 @@ export default function Home() {
     return () => socket.off("error");
   }, []);
 
+  //update the notifs context when receiving a contact request
+  useEffect(() => {
+    if (!modalState.isActive) {
+      receiveSendAddContact({
+        notifs,
+        notifsDispatch,
+        notifUnseen,
+        setNotifUnseen,
+        notifActions: NOTIF_CONTEXT_ACTIONS,
+      });
+
+      return () => socket.off("receive-send-add-contact");
+    }
+  }, [notifs, notifUnseen, modalState]);
+
+  // when a contact request is cancelled
+  useEffect(() => {
+    if (!modalState.isActive) {
+      receiveCancelAddContact({
+        notifs,
+        notifsDispatch,
+        notifUnseen,
+        setNotifUnseen,
+        notifActions: NOTIF_CONTEXT_ACTIONS,
+        userState,
+      });
+
+      return () => socket.off("receive-cancel-add-contact");
+    }
+  }, [userState, notifs, notifUnseen, modalState]);
+
+  // update sender data when the recipient accepts or rejects a contact request
+  useEffect(() => {
+    if (!modalState.isActive) {
+      receiveContactRequestResponse({
+        contacts,
+        setContacts,
+        notifs,
+        notifsDispatch,
+        notifActions: NOTIF_CONTEXT_ACTIONS,
+        token: sessionStorage.getItem("token"),
+        userState,
+      });
+
+      return () => socket.off("receive-contact-request-response");
+    }
+  }, [userState, contacts, notifs, modalState]);
+
   return (
     <>
       <SidebarContext.Provider value={{ isSidebarOn, setIsSidebarOn }}>
@@ -157,14 +163,12 @@ export default function Home() {
             <Modal />
             <InitialLoadingScreen />
             <div
-              className={`flex duration-200
-                       ${
-                         modalState.isActive
-                           ? //  lg:blur-sm
-                             ""
-                           : ""
-                       }
-                        `}
+              className={`flex duration-200 ${
+                modalState.isActive
+                  ? //  lg:blur-sm
+                    ""
+                  : ""
+              }`}
             >
               <ChatboxContextProvider>
                 <Sidebar urlHistory={urlHistory} />

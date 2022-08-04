@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 export default function contactRequest(socket) {
-  socket.on('send-add-contact', async (payload) => {
+  socket.on("send-add-contact", async (payload) => {
     const { recipientId, senderId, token } = payload;
     const isRecipientOnline = recipientId in global.onlineUsers;
     const recipientSocketId = isRecipientOnline
@@ -15,29 +15,35 @@ export default function contactRequest(socket) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      socket.emit('receive-send-add-contact', {
+      socket.emit("receive-send-add-contact", {
         success: data.success,
         notif: data.senderNotif,
-        type: 'outbox',
+        type: "outbox",
       });
       // check if the recipient is online
       if (isRecipientOnline) {
-        socket.to(recipientSocketId).emit('receive-send-add-contact', {
+        console.log(
+          "🚀 ~ file: sendContactRequestSocket.js ~ line 30 ~ socket.to ~ recipientSocketId",
+          recipientSocketId,
+          isRecipientOnline,
+          new Date().toLocaleTimeString()
+        );
+        socket.to(recipientSocketId).emit("receive-send-add-contact", {
           success: data.success,
           notif: data.recipientNotif,
-          type: 'inbox',
+          type: "inbox",
         });
       }
     } catch (error) {
       // console.error(error);
-      socket.emit('error', error);
+      socket.emit("error", error);
       if (isRecipientOnline) {
-        socket.to(recipientSocketId).emit('error', error);
+        socket.to(recipientSocketId).emit("error", error);
       }
     }
   });
 
-  socket.on('cancel-add-contact', async (payload) => {
+  socket.on("cancel-add-contact", async (payload) => {
     const { senderId, recipientId, token } = payload;
     const isRecipientOnline = recipientId in global.onlineUsers;
     const recipientSocketId = isRecipientOnline
@@ -51,26 +57,26 @@ export default function contactRequest(socket) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      socket.emit('receive-cancel-add-contact', {
+      socket.emit("receive-cancel-add-contact", {
         senderId,
         recipientId,
         success: data.success,
-        type: 'outbox',
+        type: "outbox",
       });
       // check if the recipient is online
       if (isRecipientOnline) {
-        socket.to(recipientSocketId).emit('receive-cancel-add-contact', {
+        socket.to(recipientSocketId).emit("receive-cancel-add-contact", {
           senderId,
           recipientId,
           success: data.success,
-          type: 'inbox',
+          type: "inbox",
         });
       }
     } catch (error) {
       // console.error(error);
-      socket.emit('error', error);
+      socket.emit("error", error);
       if (isRecipientOnline) {
-        socket.to(recipientSocketId).emit('error', error);
+        socket.to(recipientSocketId).emit("error", error);
       }
     }
   });

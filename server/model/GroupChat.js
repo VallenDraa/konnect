@@ -26,6 +26,6 @@ function usersLimit(val) {
   return val.length <= 2;
 }
 
-const GroupChat = mongoose.model("Group_Chat", GroupChatSchema);
+const GroupChat = mongoose.model("group_chat", GroupChatSchema);
 
 export default GroupChat;

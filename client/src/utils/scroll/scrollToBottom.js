@@ -2,11 +2,15 @@
  *
  * @param {HTMLElement} element
  */
+export function scrollToBottom(element) {
+  // console.trace("rigid");
+  element.scrollTop = element.scrollHeight;
+}
 
-export default function scrollToBottom(element) {
-  if (element.scrollTo) {
-    element.scrollTo({ top: element.scrollHeight });
-  } else {
-    element.scrollTop = element.scrollHeight;
-  }
+/**
+ *
+ * @param {HTMLElement} element
+ */
+export function scrollToBottomSmooth(element) {
+  element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
 }

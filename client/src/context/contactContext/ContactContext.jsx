@@ -10,6 +10,7 @@ import groupedContactsReducer, {
   GROUPED_CONTACTS_DEFAULT,
 } from "../../reducer/groupedContactsReducer/groupedContactsReducer";
 import getUsersContactsPreview from "../../utils/apis/getUserContactsPreview";
+import socket from "../../utils/socketClient/socketClient";
 import { UserContext } from "../user/userContext";
 
 export const ContactsContext = createContext([]);
@@ -87,6 +88,12 @@ export default function ContactsContextProvider({ children }) {
     });
   }, [contacts]);
 
+  useEffect(() => {
+    receiveRemoveContact({ setContacts });
+
+    return () => socket.off("receive-remove-contact");
+  }, []); //when someone remove this user from the other user's contact
+
   // useEffect(() => {
   //   console.log(
   //     "🚀 ~ file: ContactContext.jsx ~ line 111 ~ ContactsContextProvider ~ contacts",
@@ -104,4 +111,16 @@ export default function ContactsContextProvider({ children }) {
       {children}
     </ContactsContext.Provider>
   );
+}
+
+export function receiveRemoveContact({ setContacts, cb }) {
+  socket.on("receive-remove-contact", (data) => {
+    if (data.success) {
+      setContacts((c) => c.filter(({ user }) => user._id !== data.idToRemove));
+
+      if (cb) cb(data);
+    } else {
+      console.error(data);
+    }
+  });
 }

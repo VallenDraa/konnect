@@ -40,7 +40,7 @@ export const getUserDetail = async (req, res, next) => {
         "-settings",
         "-notifications",
         "-requests",
-        "-chats",
+        "-privates",
         "-updatedAt",
         "-__v",
         "-email",

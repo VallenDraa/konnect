@@ -35,16 +35,17 @@ export default function ChatBoxHeader({ invisibleWallRef }) {
   return (
     <header className="h-14 bg-gray-50 shadow-inner py-2 px-2 lg:px-5 border-b-2">
       <div className="max-w-screen-sm lg:max-w-full mx-auto flex justify-between items-center">
-        <div className="flex justify-between items-center  w-full">
+        <div className="flex justify-between items-center w-full">
           {/* sidebar btn (will show up when screen is <lg) */}
           <div className="flex items-center justify-between gap-2">
             <Link
               onClick={() => {
                 invisibleWallRef.current.classList.remove("hidden");
 
-                setTimeout(() => {
-                  invisibleWallRef.current.classList.add("hidden");
-                }, 330);
+                setTimeout(
+                  () => invisibleWallRef.current.classList.add("hidden"),
+                  400
+                );
               }}
               to="/chats"
               className={`block lg:hidden hover:text-blue-400 text-3xl ${

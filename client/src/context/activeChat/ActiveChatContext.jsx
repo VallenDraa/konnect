@@ -8,7 +8,6 @@ export const ACTIVE_PRIVATE_CHAT_DEFAULT = {
   initials: null,
   profilePicture: null,
   status: null,
-  lastMessage: null,
   isOnline: false,
   lastSeen: null,
 };
