@@ -4,7 +4,7 @@ import {
   deleteMessage,
   readMessage,
   saveMessage,
-} from "../controller/messaging/messagesController/messagesController.js";
+} from "../controller/messaging/privateMessagesController/privateMessagesController.js";
 const router = express.Router();
 
 router.put("/save_message", verifyToken, saveMessage);

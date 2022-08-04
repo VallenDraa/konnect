@@ -9,7 +9,7 @@ import contactsRoutes from "./api/routes/contactsRoutes.js";
 import requestRoutes from "./api/routes/requestRoutes.js";
 import notificationRoutes from "./api/routes/notificationRoutes.js";
 import userEditRoutes from "./api/routes/userEditRoutes.js";
-import messagesRoutes from "./api/routes/messagesRoutes.js";
+import privateMessagesRoutes from "./api/routes/privateMessagesRoutes.js";
 import chatRoutes from "./api/routes/chatRoutes.js";
 import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
@@ -53,7 +53,7 @@ app.use("/api/contacts", contactsRoutes);
 app.use("/api/request", requestRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/user", userEditRoutes);
-app.use("/api/messages", messagesRoutes);
+app.use("/api/messages/private", privateMessagesRoutes);
 app.use("/api/chat", chatRoutes);
 
 const dbConnect = async () => {

@@ -7,9 +7,10 @@ export const MessageSchema = new mongoose.Schema({
   content: mongoose.Schema.Types.Mixed,
   isSent: { type: Boolean, default: false },
   readAt: { type: Date, default: null },
+  beenReadBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   time: { type: Date, default: new Date() },
 });
 
-const Message = mongoose.model("message", MessageSchema);
+const PrivateMessage = mongoose.model("private_message", MessageSchema);
 
-export default Message;
+export default PrivateMessage;

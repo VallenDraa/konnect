@@ -7,7 +7,9 @@ const PrivateChatSchema = new mongoose.Schema(
     chat: [
       {
         date: String,
-        messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "message" }],
+        messages: [
+          { type: mongoose.Schema.Types.ObjectId, ref: "private_message" },
+        ],
       },
     ],
   },

@@ -1,35 +1,38 @@
 import User from "../../../../model/User.js";
 import PrivateChat from "../../../../model/PrivateChat.js";
 import createError from "../../../../utils/createError.js";
-import Message from "../../../../model/Message.js";
+import PrivateMessage from "../../../../model/PrivateMessage.js";
 
 export const saveMessage = async (req, res, next) => {
   try {
     //extract the message from the body and save it seperately to the database
     const { message } = req.body;
     if (message._id === null) delete message._id; //this will prevent null _id when creating a new message instance
-    const msgToPush = { ...message, isSent: true };
-    const newMsg = await Message.create(msgToPush);
-    const newMsgTimeGroup = new Date(newMsg.time).toLocaleDateString();
+    const newMsgTimeGroup = new Date(message.time).toLocaleDateString();
 
     // find the chat log according to the ids
     const [privateChat] = await PrivateChat.where({
       $or: [
-        { "users.0": newMsg.to, "users.1": newMsg.by },
-        { "users.0": newMsg.by, "users.1": newMsg.to },
+        { "users.0": message.to, "users.1": message.by },
+        { "users.0": message.by, "users.1": message.to },
       ],
     });
 
     // check if chat log exists
     if (!privateChat) {
       const newPrivateChat = {
-        "users.0": newMsg.by,
-        "users.1": newMsg.to,
-        chat: [{ date: newMsgTimeGroup, messages: [newMsg._id] }],
+        "users.0": message.by,
+        "users.1": message.to,
+        chat: [{ date: newMsgTimeGroup, messages: [message._id] }],
       };
 
       // get the new chat log id and push it to the chat list of the users that are chatting
       const { _id: newPcId } = await PrivateChat.create(newPrivateChat);
+
+      // contruct the message to save
+      const msgToPush = { ...message, isSent: true, chatId: newPcId };
+      const newMsg = await PrivateMessage.create(msgToPush);
+
       await User.updateMany(
         { _id: { $in: [newMsg.by, newMsg.to] } },
         { $push: { privates: newPcId } }
@@ -37,6 +40,10 @@ export const saveMessage = async (req, res, next) => {
 
       return res.json({ chatId: newPcId, msgId: newMsg._id, success: true });
     } else {
+      // contruct the message to save
+      const msgToPush = { ...message, isSent: true, chatId: privateChat._id };
+      const newMsg = await PrivateMessage.create(msgToPush);
+
       const lastTimeLogIdx = privateChat.chat.length - 1;
       const date = new Date(
         privateChat.chat[lastTimeLogIdx].date
@@ -67,7 +74,7 @@ export const readMessage = async (req, res, next) => {
   }
 
   try {
-    await Message.updateMany({ _id: { $in: msgIds } }, { readAt: time });
+    await PrivateMessage.updateMany({ _id: { $in: msgIds } }, { readAt: time });
 
     res.json({ success: true });
   } catch (error) {

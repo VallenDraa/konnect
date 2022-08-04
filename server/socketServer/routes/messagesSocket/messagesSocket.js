@@ -10,7 +10,7 @@ export default function messages(socket) {
     // save message to the database
     try {
       const { data } = await axios.put(
-        `${process.env.API_URL}/messages/save_message`,
+        `${process.env.API_URL}/messages/private/save_message`,
         { message },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -55,7 +55,7 @@ export default function messages(socket) {
 
       // set all passed in messages isRead field to true
       const { data } = await axios.put(
-        `${process.env.API_URL}/messages/read_message`,
+        `${process.env.API_URL}/messages/private/read_message`,
         { time, msgIds },
         { headers: { Authorization: `Bearer ${token}` } }
       );
