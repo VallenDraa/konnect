@@ -19,7 +19,10 @@ const MESSAGE_LOGS_DEFAULT = {
   isLoaded: false,
   isStartingUpdate: false,
   error: null,
-  content: {},
+  content: {
+    // if it is a private chat then use the user id as the key
+    // else just use the group id as the  key
+  },
 };
 
 export const MessageLogsContext = createContext(MESSAGE_LOGS_DEFAULT);
@@ -108,7 +111,7 @@ export default function MessageLogsContextProvider({ children }) {
   }, [userState, contacts, msgLogs]);
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider

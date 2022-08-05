@@ -64,7 +64,7 @@ export const Message = ({
             <RenderIf conditionIs={state.isSent}>
               <BiCheckDouble
                 className={`text-xl self-start ${
-                  state.readAt ? "text-blue-300" : "text-gray-400"
+                  state.readAt ? "text-blue-400" : "text-gray-400"
                 } ${general?.animation ? "animate-fade-in" : ""}`}
               />
             </RenderIf>

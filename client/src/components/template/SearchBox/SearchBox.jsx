@@ -19,8 +19,6 @@ export default function SearchBox({
   selectedCb,
   submitCb,
   submitBtn,
-  queryState,
-  selectedState,
 }) {
   // the object structure
   // [{user: { initials, username, profilePicture }}]

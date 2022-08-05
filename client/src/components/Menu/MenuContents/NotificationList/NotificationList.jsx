@@ -1,5 +1,4 @@
 import { useEffect, useContext, useState, Fragment } from "react";
-import { MdOutlineMoveToInbox, MdOutlineOutbox } from "react-icons/md";
 import { UserContext } from "../../../../context/user/userContext";
 import RenderIf from "../../../../utils/React/RenderIf";
 import api from "../../../../utils/apiAxios/apiAxios";
@@ -13,12 +12,8 @@ import NOTIF_CONTEXT_ACTIONS from "../../../../context/notifContext/notifContext
 import { cloneDeep } from "lodash";
 
 export default function NotificationList() {
-  const NOTIFICATION_TABS = [
-    { name: "inbox", icon: MdOutlineMoveToInbox },
-    { name: "outbox", icon: MdOutlineOutbox },
-  ];
-  const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
-  const { notifs, notifsDispatch } = useContext(NotifContext);
+  const { notifs, notifsDispatch, NOTIFICATION_TABS, activeBox, setActiveBox } =
+    useContext(NotifContext);
   const { userState } = useContext(UserContext);
   const location = useLocation();
   const [activeLocation, setActiveLocation] = useState(location);

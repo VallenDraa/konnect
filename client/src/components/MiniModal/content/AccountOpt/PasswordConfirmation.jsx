@@ -39,8 +39,7 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
       </header>
       <footer className="flex w-full gap-x-2 h-10 grow-[1] pt-3">
         <Pill
-          className={`h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0
-                    ${general?.animation ? "duration-200" : ""}`}
+          className={`h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
           type="button"
           onClick={() =>
             miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing })
@@ -49,7 +48,7 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
           Cancel
         </Pill>
         <Pill
-          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold duration-200 border-0"
+          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
           type="submit"
         >
           Change

@@ -123,7 +123,7 @@ const ProfileOpt = () => {
           </header>
 
           {/* user data */}
-          <footer className="py-3 space-y-8">
+          <footer className="py-1 space-y-8">
             <header
               style={{ flexDirection: isEditMode ? "column-reverse" : "row" }}
               className="flex justify-between items-center gap-3 px-5 flex-wrap-reverse"
@@ -150,7 +150,7 @@ const ProfileOpt = () => {
                 <Pill
                   onClick={() => setIsEditMode(!isEditMode)}
                   style={{ width: isEditMode ? "50%" : "100px" }}
-                  className={`text-base px-4 py-1 font-bold flex items-center gap-x-2
+                  className={`text-sm px-4 py-1 font-bold flex items-center gap-x-1.5
                   ${
                     !isEditMode
                       ? "bg-pink-400 hover:shadow-pink-100 hover:bg-pink-300 text-white"
@@ -177,7 +177,7 @@ const ProfileOpt = () => {
                     opacity: isEditMode ? "1" : "0",
                     width: isEditMode ? "50%" : "0%",
                   }}
-                  className="text-base font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 active:shadow-blue-100 text-white flex items-center gap-x-2"
+                  className="text-sm font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 active:shadow-blue-100 text-white flex items-center gap-x-1.5"
                 >
                   <FiSave />
                   Save

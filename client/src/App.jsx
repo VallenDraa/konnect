@@ -26,7 +26,7 @@ export const App = () => {
   }, [notifUnseen, msgUnread]);
 
   return (
-    <div className="text-gray-800 antialiased">
+    <div className="text-gray-800 antialiased font-sans">
       <BrowserRouter>
         <Routes>
           <Route

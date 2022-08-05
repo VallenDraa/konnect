@@ -10,7 +10,7 @@ import NOTIF_CONTEXT_ACTIONS from "./notifContextActions";
 import notifReducer from "./notifContextReducer";
 import { UserContext } from "../user/userContext";
 import socket from "../../utils/socketClient/socketClient";
-import { ContactsContext } from "../contactContext/ContactContext";
+import { MdOutlineMoveToInbox, MdOutlineOutbox } from "react-icons/md";
 
 const NOTIF_DEFAULT = {
   isStarting: false,
@@ -66,6 +66,11 @@ const NOTIF_DEFAULT = {
   //   },
 };
 
+const NOTIFICATION_TABS = [
+  { name: "inbox", icon: MdOutlineMoveToInbox },
+  { name: "outbox", icon: MdOutlineOutbox },
+];
+
 export const NotifContext = createContext(NOTIF_DEFAULT);
 
 export default function NotifContextProvider({ children }) {
@@ -76,8 +81,9 @@ export default function NotifContextProvider({ children }) {
     total: 0,
   });
   const { userState } = useContext(UserContext);
+  const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
 
-  // useEffect(() => console.log(notifs), [notifs]);
+  // useEffect(() => console.log(activeBox), [activeBox]);
   // get all notifications for initial loading
   useEffect(() => {
     if (
@@ -151,7 +157,15 @@ export default function NotifContextProvider({ children }) {
 
   return (
     <NotifContext.Provider
-      value={{ notifs, notifsDispatch, notifUnseen, setNotifUnseen }}
+      value={{
+        NOTIFICATION_TABS,
+        activeBox,
+        setActiveBox,
+        notifs,
+        notifsDispatch,
+        notifUnseen,
+        setNotifUnseen,
+      }}
     >
       {children}
     </NotifContext.Provider>
