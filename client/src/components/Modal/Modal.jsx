@@ -69,15 +69,17 @@ export const Modal = () => {
       <RenderIf conditionIs={modalState.isActive === true}>
         <div
           ref={modalWrapper}
-          className={`fixed z-40 inset-0 flex justify-center items-center 
-                    ${modalState.isActive ? "lg:bg-gray-900/40" : "bg-gray-100"}
-                    ${general?.animation ? "animate-fade-in" : ""}`}
+          className={`fixed z-40 inset-0 flex justify-center items-center ${
+            modalState.isActive ? "lg:bg-gray-900/40" : "bg-gray-100"
+          } ${general?.animation ? "animate-fade-in" : ""}`}
         >
           <div
             ref={modal}
-            className={`h-full lg:h-3/4 lg:max-h-[800px] relative flex flex-col z-100 lg:rounded-xl overflow-clip bg-gray-100
-                      ${general?.animation ? "animate-pop-in" : ""}`}
+            className={`h-full lg:h-3/4 lg:max-h-[800px] relative flex flex-col z-100 lg:rounded-xl overflow-clip bg-gray-100 ${
+              general?.animation ? "animate-pop-in" : ""
+            }`}
           >
+            {/* header for title and close button */}
             <header className="px-4 pt-3 h-14 container max-w-screen-sm mx-auto bg-white">
               <div className="flex justify-between relative">
                 <h1 className="font-semibold left-1/2 -translate-x-1/2 absolute text-lg">

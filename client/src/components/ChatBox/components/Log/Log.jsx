@@ -1,48 +1,22 @@
-import { Fragment, useContext } from "react";
+import { useContext } from "react";
+import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
 import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/ActivePrivateChatContext";
-import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
-import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
-import { UserContext } from "../../../../context/user/userContext";
-import { Message } from "../../../Message/Message";
-import TimeSeparator from "./components/TimeSeparator";
+import PrivateLog from "./components/PrivateLog";
+import GroupLog from "./components/GroupLog";
+import RenderIf from "../../../../utils/React/RenderIf";
+
 export default function Log({ messageLogRef }) {
-  const { msgLogs } = useContext(MessageLogsContext);
   const { activePrivateChat } = useContext(ActivePrivateChatContext);
-  const { userState } = useContext(UserContext);
-  const { settings } = useContext(SettingsContext);
-  const { general } = settings;
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
+
   return (
     <main className="bg-gray-100 flex flex-col grow">
-      <ul
-        id="log"
-        ref={messageLogRef}
-        aria-label="message-log"
-        className={`relative flex flex-col h-0 grow pb-3 overflow-auto container mx-auto max-w-screen-sm lg:max-w-screen-lg`}
-      >
-        {msgLogs.content[activePrivateChat._id] &&
-          msgLogs?.content[activePrivateChat._id].chat.map(
-            ({ date, messages }, i) => {
-              return (
-                <Fragment key={i}>
-                  <TimeSeparator now={new Date()} then={new Date(date)} />
-
-                  {messages.map((msg, i) => {
-                    return (
-                      <Fragment key={msg._id === null ? i : msg._id}>
-                        <Message
-                          state={{ isSent: msg.isSent, readAt: msg.readAt }}
-                          isSentByMe={msg.by === userState.user._id}
-                          msg={msg.content}
-                          time={new Date(msg.time)}
-                        />
-                      </Fragment>
-                    );
-                  })}
-                </Fragment>
-              );
-            }
-          )}
-      </ul>
+      <RenderIf conditionIs={activePrivateChat._id}>
+        <PrivateLog messageLogRef={messageLogRef} />
+      </RenderIf>
+      <RenderIf conditionIs={activeGroupChat !== ""}>
+        <GroupLog messageLogRef={messageLogRef} />
+      </RenderIf>
     </main>
   );
 }

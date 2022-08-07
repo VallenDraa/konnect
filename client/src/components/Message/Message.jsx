@@ -52,7 +52,7 @@ export const Message = ({
 
           <RenderIf conditionIs={isSentByMe}>
             {/* check if message hasn't been sent or read yet */}
-            <RenderIf conditionIs={!state.isSent && !state.readAt}>
+            <RenderIf conditionIs={!state.isSent && state.readAt.length === 0}>
               <AiOutlineLoading3Quarters
                 className={`self-start text-gray-400 ${
                   general?.animation ? "animate-spin animate-fade-in" : ""
@@ -64,7 +64,7 @@ export const Message = ({
             <RenderIf conditionIs={state.isSent}>
               <BiCheckDouble
                 className={`text-xl self-start ${
-                  state.readAt ? "text-blue-400" : "text-gray-400"
+                  state.readAt[0] ? "text-blue-400" : "text-gray-400"
                 } ${general?.animation ? "animate-fade-in" : ""}`}
               />
             </RenderIf>

@@ -162,14 +162,7 @@ export default function Home() {
             <MiniModal />
             <Modal />
             <InitialLoadingScreen />
-            <div
-              className={`flex duration-200 ${
-                modalState.isActive
-                  ? //  lg:blur-sm
-                    ""
-                  : ""
-              }`}
-            >
+            <div className={`flex duration-200`}>
               <ChatboxContextProvider>
                 <Sidebar urlHistory={urlHistory} />
                 <ChatBox activePrivateChat={activePrivateChat} />

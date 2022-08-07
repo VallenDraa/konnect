@@ -28,12 +28,12 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
       autoComplete="new-password"
       className="flex flex-col grow text-center p-5"
     >
-      <header className="flex flex-col w-full grow-[20]">
+      <header className="flex flex-col w-full grow-[20] relative">
         <header className="space-y-1">
           <h3 className="font-bold text-base text-gray-800 pt-2">{title}</h3>
           <p className="text-xs text-gray-400">{caption}</p>
         </header>
-        <footer className="mt-[20%]">
+        <footer className="absolute inset-x-0 top-1/2">
           <Input type="password" customState={[password, setPassword]} />
         </footer>
       </header>

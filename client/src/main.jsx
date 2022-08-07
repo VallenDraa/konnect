@@ -14,6 +14,7 @@ import NotifContextProvider from "./context/notifContext/NotifContext";
 import SettingsContextProvider from "./context/settingsContext/SettingsContext";
 import TitleContextProvider from "./context/titleContext/TitleContext";
 import ActivePrivateChatContextProvider from "./context/activePrivateChat/ActivePrivateChatContext";
+import ActiveGroupChatContextProvider from "./context/activeGroupChat/ActiveGroupChatContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <TitleContextProvider>
@@ -28,7 +29,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                     <MiniModalContextProvider>
                       <MessageLogsContextProvider>
                         <ActivePrivateChatContextProvider>
-                          <App />
+                          <ActiveGroupChatContextProvider>
+                            <App />
+                          </ActiveGroupChatContextProvider>
                         </ActivePrivateChatContextProvider>
                       </MessageLogsContextProvider>
                     </MiniModalContextProvider>

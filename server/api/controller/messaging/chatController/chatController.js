@@ -1,14 +1,18 @@
-import PrivateChat from "../../../../model/PrivateChat.js";
-import User from "../../../../model/User.js";
+import PrivateChat from "../../../../model/private/PrivateChat.js";
 import createError from "../../../../utils/createError.js";
+import User from "../../../../model/User.js";
 
 export const getAllChatHistory = async (req, res, next) => {
   try {
     const { _id } = res.locals.tokenData;
-    const { privates } = await User.findById(_id).select("privates").lean();
+    const { privateChats: pcIds } = await User.findById(_id)
+      .select("privateChats")
+      .lean();
 
-    if (privates.length > 0) {
-      const privateChats = await PrivateChat.where({ _id: { $in: privates } })
+    if (pcIds.length > 0) {
+      const privateChats = await PrivateChat.where({
+        _id: { $in: pcIds },
+      })
         .populate([
           {
             path: "users",
@@ -152,10 +156,16 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
 export const getChatNotifications = async (req, res, next) => {
   try {
     const { _id } = res.locals.tokenData;
-    const { privates } = await User.findById(_id).select("privates").lean();
+    const { privateChats } = await User.findById(_id)
+      .select("privateChats")
+      .lean();
 
-    if (privates.length > 0) {
-      const totalUnreadMsg = await fetchUnreadMsgFromDb(privates, _id, next);
+    if (privateChats.length > 0) {
+      const totalUnreadMsg = await fetchUnreadMsgFromDb(
+        privateChats,
+        _id,
+        next
+      );
 
       res.json(totalUnreadMsg);
     } else {
@@ -170,11 +180,11 @@ export const getAllChatId = async (req, res, next) => {
   // new way
   try {
     const { _id } = res.locals.tokenData;
-    const { privates } = await User.findById(_id).select("privates").lean();
-    if (privates.length > 0) {
-      const privateChats = await PrivateChat.where({
-        _id: { $in: privates },
-      })
+    const { privateChats: pcIds } = await User.findById(_id)
+      .select("privateChats")
+      .lean();
+    if (pcIds.length > 0) {
+      const privateChats = await PrivateChat.where({ _id: { $in: pcIds } })
         .select(["users", "_id", "chat"])
         .slice("chat", -1)
         .populate([
@@ -192,7 +202,7 @@ export const getAllChatId = async (req, res, next) => {
 
         return { chatId: pc._id, user, chat: pc.chat, preview: true };
       });
-      const unreadMsg = await fetchUnreadMsgFromDb(privates, _id, next);
+      const unreadMsg = await fetchUnreadMsgFromDb(privateChats, _id, next);
       const response = {
         currentUser: _id,
         messageLogs: [...formattedPC],

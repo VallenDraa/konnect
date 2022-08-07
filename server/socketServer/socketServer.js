@@ -4,6 +4,7 @@ import authentication, {
 import contactRequestRespond from "./routes/contactsRelated/contactRequestRespondSocket/contactRequestRespondSocket.js";
 import contactRequest from "./routes/contactsRelated/sendContactRequestSocket/sendContactRequestSocket.js";
 import unfriend from "./routes/contactsRelated/unfriendSocket/unfriendSocket.js";
+import groupEdit from "./routes/groupsRelated/groupEditSocket.js";
 import messages from "./routes/messagesSocket/messagesSocket.js";
 import onlineStatus from "./routes/onlineStatus/onlineStatus.js";
 
@@ -20,5 +21,6 @@ export default function socketInit(io) {
     contactRequest(socket);
     contactRequestRespond(socket);
     unfriend(socket);
+    groupEdit(socket);
   });
 }

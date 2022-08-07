@@ -1,11 +1,17 @@
 import { ImFileVideo } from "react-icons/im";
-import { BsFileEarmarkImage } from "react-icons/bs";
+import { BsFileEarmarkImage, BsLink45Deg } from "react-icons/bs";
 import { IoCall } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
 import RenderIf from "../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
+import { closeChatLog } from "../../../../ChatBox/ChatBox";
+import { SidebarContext } from "../../../../../pages/Home/Home";
+import {
+  ActivePrivateChatContext,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
+} from "../../../../../context/activePrivateChat/ActivePrivateChatContext";
 
 export const ChatPreview = ({
   user,
@@ -18,10 +24,21 @@ export const ChatPreview = ({
   const { msgUnread } = useContext(MessageLogsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
+  const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
 
   return (
     <li>
       <Link
+        onClick={() =>
+          isActive &&
+          closeChatLog({
+            ACTIVE_PRIVATE_CHAT_DEFAULT,
+            isSidebarOn,
+            setActivePrivateChat,
+            setIsSidebarOn,
+          })
+        }
         to={isActive ? "/chats" : `/chats?id=${user._id}&type=private`}
         className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
           isActive
@@ -87,6 +104,12 @@ export const ChatPreview = ({
                 {lastMessage.msgType === "call" && (
                   <>
                     <IoCall />
+                    {lastMessage.content}
+                  </>
+                )}
+                {lastMessage.msgType === "link" && (
+                  <>
+                    <BsLink45Deg />
                     {lastMessage.content}
                   </>
                 )}

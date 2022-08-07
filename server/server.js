@@ -3,17 +3,18 @@ import express from "express";
 import cors from "cors";
 import { createServer } from "http";
 import mongoose from "mongoose";
+import { Server } from "socket.io";
 import authRoutes from "./api/routes/authRoutes.js";
 import userQueryRoutes from "./api/routes/userQueryRoutes.js";
-import contactsRoutes from "./api/routes/contactsRoutes.js";
+import contactsRoutes from "./api/routes/contactRoutes.js";
 import requestRoutes from "./api/routes/requestRoutes.js";
 import notificationRoutes from "./api/routes/notificationRoutes.js";
 import userEditRoutes from "./api/routes/userEditRoutes.js";
 import privateMessagesRoutes from "./api/routes/privateMessagesRoutes.js";
+import groupRoutes from "./api/routes/groupRoutes.js";
 import chatRoutes from "./api/routes/chatRoutes.js";
 import cookieParser from "cookie-parser";
-import { Server } from "socket.io";
-import socketInit from "./socketServer/ioServer.js";
+import socketInit from "./socketServer/socketServer.js";
 
 const app = express();
 export const httpServer = createServer(app);
@@ -30,8 +31,8 @@ global.exemptedUserInfos = [
   "-__v",
   "-requests",
   "-notifications",
-  "-privates",
-  "-groups",
+  "-privateChats",
+  "-groupChats",
 ];
 
 if (process.env.NODE_ENV !== "production") {
@@ -40,7 +41,7 @@ if (process.env.NODE_ENV !== "production") {
     cors({
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
-      origin: ["http://localhost:3000", "http://localhost:3000"],
+      origin: ["http://localhost:3000"],
     })
   );
 }
@@ -49,7 +50,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/query/user", userQueryRoutes);
-app.use("/api/contacts", contactsRoutes);
+app.use("/api/group", groupRoutes);
+app.use("/api/contact", contactsRoutes);
 app.use("/api/request", requestRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/user", userEditRoutes);

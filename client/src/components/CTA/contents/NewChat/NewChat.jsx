@@ -1,7 +1,7 @@
-import { IoChatbubbles } from 'react-icons/io5';
-import findUsersFromContact from '../../../../utils/apis/findUsersFromContact';
-import SearchBox from '../../../template/SearchBox/SearchBox';
-import { useNavigate } from 'react-router-dom';
+import { IoChatbubbles } from "react-icons/io5";
+import findUsersFromContact from "../../../../utils/apis/findUsersFromContact";
+import SearchBox from "../../../template/SearchBox/SearchBox";
+import { useNavigate } from "react-router-dom";
 
 export default function NewChat() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function NewChat() {
         }
       }}
       searchCb={(query) =>
-        findUsersFromContact(query, sessionStorage.getItem('token'))
+        findUsersFromContact(query, sessionStorage.getItem("token"))
       }
       multipleSelect={false}
     />

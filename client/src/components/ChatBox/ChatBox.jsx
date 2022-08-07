@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import RenderIf from "../../utils/React/RenderIf";
 import { StartScreen } from "../StartScreen/StartScreen";
 import socket from "../../utils/socketClient/socketClient";
@@ -21,7 +21,7 @@ import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
 import getScrollPercentage from "../../utils/scroll/getScrollPercentage";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
-import { SidebarContext, UrlHistoryContext } from "../../pages/Home/Home";
+import { SidebarContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
@@ -34,7 +34,7 @@ import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
 import lastIdx from "../../utils/others/lastIdx";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import { useCallback } from "react";
-import MENUS from "../Menu/MENUS";
+import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
 
 const userOnlineStatusSwitcher = (status) => {
   if (status === "online") {
@@ -47,10 +47,28 @@ const userOnlineStatusSwitcher = (status) => {
   }
 };
 
+export const closeChatLog = ({
+  isSidebarOn,
+  setIsSidebarOn,
+  setActivePrivateChat,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
+}) => {
+  if (window.innerWidth <= 1024) {
+    if (isSidebarOn) return;
+    setIsSidebarOn(true);
+    setTimeout(() => setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
+  } else {
+    setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+  }
+};
+
 export const ChatBox = () => {
   const newMsgSound = new Audio(newMsgSfx);
   const { activePrivateChat, setActivePrivateChat } = useContext(
     ActivePrivateChatContext
+  );
+  const { activeGroupChat, setActiveGroupChat } = useContext(
+    ActiveGroupChatContext
   );
   const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
     useContext(MessageLogsContext);
@@ -69,15 +87,6 @@ export const ChatBox = () => {
     lastSeen: null,
     hasFetch: false,
   });
-  const closeChatLog = useCallback(() => {
-    if (window.innerWidth <= 1024) {
-      if (isSidebarOn) return;
-      setIsSidebarOn(true);
-      setTimeout(() => setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
-    } else {
-      setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
-    }
-  }, [isSidebarOn]);
 
   const updateActivePrivateChat = useCallback((data) => {
     const newActivePrivateChat = {
@@ -91,8 +100,14 @@ export const ChatBox = () => {
     };
 
     setActivePrivateChat(newActivePrivateChat);
+    setActiveGroupChat(ACTIVE_GROUP_CHAT_DEFAULT);
     if (window.innerWidth <= 1024) setIsSidebarOn(false);
   }, []);
+
+  const updateActiveGroupChat = useCallback((data) => {
+    setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+    if (window.innerWidth <= 1024) setIsSidebarOn(false);
+  });
 
   useEffect(() => {
     const url = location.pathname + location.search;
@@ -107,7 +122,12 @@ export const ChatBox = () => {
 
       // check if the url provided id and type of chat
       if (!search.id && !search.type) {
-        closeChatLog();
+        closeChatLog({
+          ACTIVE_PRIVATE_CHAT_DEFAULT,
+          isSidebarOn,
+          setActivePrivateChat,
+          setIsSidebarOn,
+        });
       } else {
         switch (search.type) {
           case "private":
@@ -130,22 +150,30 @@ export const ChatBox = () => {
             getUsersPreview(sessionStorage.getItem("token"), [search.id])
               .then(([userPreview]) => updateActivePrivateChat(userPreview))
               .catch((err) => {
-                closeChatLog();
+                closeChatLog({
+                  ACTIVE_PRIVATE_CHAT_DEFAULT,
+                  isSidebarOn,
+                  setActivePrivateChat,
+                  setIsSidebarOn,
+                });
                 navigate("/chats");
               });
             break;
           case "group":
+            updateActiveGroupChat();
+
             break;
           default:
-            closeChatLog();
+            closeChatLog({
+              ACTIVE_PRIVATE_CHAT_DEFAULT,
+              isSidebarOn,
+              setActivePrivateChat,
+              setIsSidebarOn,
+            });
             navigate("/chats");
             break;
         }
       }
-    }
-
-    if (url === "/chats") {
-      closeChatLog();
     }
   }, [location]); // to check if the url is directed to a certain chat
 
@@ -394,10 +422,10 @@ export const ChatBox = () => {
 
   return (
     <>
-      <RenderIf conditionIs={!activePrivateChat?.username}>
+      <RenderIf conditionIs={!activePrivateChat?._id && activeGroupChat === ""}>
         <StartScreen />
       </RenderIf>
-      <RenderIf conditionIs={activePrivateChat?.username}>
+      <RenderIf conditionIs={activePrivateChat?._id || activeGroupChat !== ""}>
         <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
           {/* invisible wall */}
           <div

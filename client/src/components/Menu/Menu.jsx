@@ -37,10 +37,13 @@ export const Menu = ({
       const child = [...menuListRef.current.children].find(
         (c) => c.textContent === activeMenu
       );
-      const { left: cLeft, right: cRight } = child.getBoundingClientRect();
 
-      menuUnderlineRef.current.style.left = `${cLeft - pLeft}px`;
-      menuUnderlineRef.current.style.right = `${pRight - cRight}px`;
+      if (child) {
+        const { left: cLeft, right: cRight } = child.getBoundingClientRect();
+
+        menuUnderlineRef.current.style.left = `${cLeft - pLeft}px`;
+        menuUnderlineRef.current.style.right = `${pRight - cRight}px`;
+      }
     }, 150),
     [menuUnderlineRef, activeMenu]
   );
@@ -92,7 +95,7 @@ export const Menu = ({
             <NotifBadge
               size={18}
               style={{ right: "5px", top: "-1px" }}
-              textOffset={{ right: "0px", top: !isMobile ? "0.5px" : "" }}
+              textOffset={{ right: "0px", top: "0px" }}
               isActive={
                 msgUnread.total !== 0 && typeof msgUnread.total === "number"
               }
@@ -211,7 +214,7 @@ export const Menu = ({
                     <Menu.activeIcon className="text-2xl lg:text-xl" />
                   </RenderIf>
 
-                  <NotifBadgeSwitcher MenuName={Menu.name} />
+                  <NotifBadgeSwitcher menuName={Menu.name} />
 
                   <span className="capitalize text-xxs">{Menu.name}</span>
                 </Link>

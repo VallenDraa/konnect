@@ -1,7 +1,7 @@
 import User from "../../../../model/User.js";
-import PrivateChat from "../../../../model/PrivateChat.js";
+import PrivateChat from "../../../../model/private/PrivateChat.js";
+import PrivateMessage from "../../../../model/private/PrivateMessage.js";
 import createError from "../../../../utils/createError.js";
-import PrivateMessage from "../../../../model/PrivateMessage.js";
 
 export const saveMessage = async (req, res, next) => {
   try {
@@ -20,25 +20,33 @@ export const saveMessage = async (req, res, next) => {
 
     // check if chat log exists
     if (!privateChat) {
+      // construct the new private chat
       const newPrivateChat = {
         "users.0": message.by,
         "users.1": message.to,
-        chat: [{ date: newMsgTimeGroup, messages: [message._id] }],
+        chat: [{ date: newMsgTimeGroup, messages: [] }],
       };
-
-      // get the new chat log id and push it to the chat list of the users that are chatting
-      const { _id: newPcId } = await PrivateChat.create(newPrivateChat);
+      const newSavedPc = await PrivateChat.create(newPrivateChat);
 
       // contruct the message to save
-      const msgToPush = { ...message, isSent: true, chatId: newPcId };
+      const msgToPush = { ...message, isSent: true, chatId: newSavedPc._id };
       const newMsg = await PrivateMessage.create(msgToPush);
 
+      // push the new message to the newly created private chat
+      newSavedPc.chat[0].messages.push(newMsg._id);
+      await newSavedPc.save();
+
+      // get the new chat log id and push it to the chat list of the users that are chatting
       await User.updateMany(
         { _id: { $in: [newMsg.by, newMsg.to] } },
-        { $push: { privates: newPcId } }
+        { $push: { privateChats: newSavedPc._id } }
       );
 
-      return res.json({ chatId: newPcId, msgId: newMsg._id, success: true });
+      return res.status(201).json({
+        chatId: newSavedPc._id,
+        msgId: newMsg._id,
+        success: true,
+      });
     } else {
       // contruct the message to save
       const msgToPush = { ...message, isSent: true, chatId: privateChat._id };
@@ -57,7 +65,9 @@ export const saveMessage = async (req, res, next) => {
           });
 
       await privateChat.save();
-      res.json({ chatId: privateChat._id, msgId: newMsg._id, success: true });
+      res
+        .status(201)
+        .json({ chatId: privateChat._id, msgId: newMsg._id, success: true });
     }
   } catch (error) {
     console.error(error);

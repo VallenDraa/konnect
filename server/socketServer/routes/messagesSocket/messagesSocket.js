@@ -9,7 +9,7 @@ export default function messages(socket) {
 
     // save message to the database
     try {
-      const { data } = await axios.put(
+      const { data } = await axios.post(
         `${process.env.API_URL}/messages/private/save_message`,
         { message },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -35,7 +35,6 @@ export default function messages(socket) {
         }
       }
     } catch (error) {
-      console.log(error);
       socket.emit("msg-sent", false, {
         timeSent: message.time,
         to: message.to,

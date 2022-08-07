@@ -1,4 +1,4 @@
-import User from '../../../model/User.js';
+import User from "../../../model/User.js";
 
 export const findUsersFromContact = async (req, res, next) => {
   const { query } = req.query;
@@ -9,10 +9,10 @@ export const findUsersFromContact = async (req, res, next) => {
 
     // get all the users from the contact that match the query
     const { contacts } = await User.findById(_id)
-      .select('contacts.user')
+      .select("contacts.user")
       .populate({
-        path: 'contacts.user',
-        select: ['username', 'initials', 'profilePicture', 'status'],
+        path: "contacts.user",
+        select: ["username", "initials", "profilePicture", "status"],
         match: { username: { $regex: query } },
       });
 
@@ -30,10 +30,10 @@ export const getUserContactsPreview = async (req, res, next) => {
 
     // find the user first
     const { contacts } = await User.findById(_id)
-      .select(['contacts', '-_id'])
+      .select(["contacts", "-_id"])
       .populate({
-        path: 'contacts.user',
-        select: ['username', 'profilePicture', 'initials', 'status'],
+        path: "contacts.user",
+        select: ["username", "profilePicture", "initials", "status"],
       });
 
     res.json({ contacts });

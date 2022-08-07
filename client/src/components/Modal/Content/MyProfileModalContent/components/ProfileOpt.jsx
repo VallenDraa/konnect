@@ -79,14 +79,16 @@ const ProfileOpt = () => {
     if (!miniModalState.isActive) {
       miniModalDispatch({
         type: MINI_MODAL_ACTIONS.show,
-        payload: (
-          <PasswordConfirmation
-            cb={handleUserEdit}
-            title="Enter Password"
-            caption="Enter your password to edit your profile"
-            payload={payload}
-          />
-        ),
+        payload: {
+          content: (
+            <PasswordConfirmation
+              cb={handleUserEdit}
+              title="Enter Password"
+              caption="Enter your password to edit your profile"
+              payload={payload}
+            />
+          ),
+        },
       });
     }
   };
@@ -130,7 +132,7 @@ const ProfileOpt = () => {
             >
               {/* username and date joined */}
               <div className="flex grow flex-wrap-reverse items-center gap-x-2 overflow-hidden max-w-full">
-                <h2 className="text-4xl lg:text-3xl font-semibold mt-2">
+                <h2 className="text-4xl lg:text-3xl font-semibold mt-2 break-all">
                   {userState.user.username}
                 </h2>
                 {/* date joined */}
@@ -142,6 +144,7 @@ const ProfileOpt = () => {
               {/* buttons */}
               <div
                 style={{
+                  marginTop: isEditMode ? "0.5rem" : "",
                   gap: isEditMode ? "0.5rem" : "0",
                   width: isEditMode ? "100%" : "50%",
                 }}

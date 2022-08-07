@@ -7,8 +7,8 @@ import {
 } from "../controller/messaging/privateMessagesController/privateMessagesController.js";
 const router = express.Router();
 
-router.put("/save_message", verifyToken, saveMessage);
+router.post("/save_message", verifyToken, saveMessage);
 router.put("/read_message", verifyToken, readMessage);
-router.put("/delete_message", verifyToken, deleteMessage);
+router.delete("/delete_message", verifyToken, deleteMessage);
 
 export default router;

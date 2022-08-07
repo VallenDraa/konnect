@@ -1,4 +1,4 @@
-import MINI_MODAL_ACTIONS from './miniModalActions';
+import MINI_MODAL_ACTIONS from "./miniModalActions";
 
 export default function miniModalReducer(state, { type, payload }) {
   switch (type) {
@@ -6,12 +6,16 @@ export default function miniModalReducer(state, { type, payload }) {
       return {
         isActive: true,
         isClosing: false,
-        content: payload,
+        title: payload.title,
+        closeButton: payload.closeButton,
+        content: payload.content,
       };
     case MINI_MODAL_ACTIONS.close:
       return {
         isActive: false,
         isClosing: false,
+        title: null,
+        closeButton: false,
         content: null,
       };
     case MINI_MODAL_ACTIONS.closing:

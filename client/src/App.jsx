@@ -8,6 +8,7 @@ import RenderIf from "./utils/React/RenderIf";
 import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
 import { NotifContext } from "./context/notifContext/NotifContext";
 import { TitleContext } from "./context/titleContext/TitleContext";
+import ActiveChatHandlerProvider from "./context/activeChatHandler/ActiveChatHandler";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -26,58 +27,72 @@ export const App = () => {
   }, [notifUnseen, msgUnread]);
 
   return (
-    <div className="text-gray-800 antialiased font-sans">
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={userState.user ? <Home /> : <Navigate to="/register" />}
-          >
+    <ActiveChatHandlerProvider>
+      <div className="text-gray-800 antialiased font-sans">
+        <BrowserRouter>
+          <Routes>
             <Route
-              path="/user/:username"
+              path="/"
               element={userState.user ? <Home /> : <Navigate to="/register" />}
+            >
+              <Route
+                path="/user/:username"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+              <Route
+                path="/search"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+              <Route
+                path="/contacts"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+              <Route
+                path="/chats"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+              <Route
+                path="/new/:type"
+                element={
+                  userState.user ? <Home /> : <Navigate to="/register" />
+                }
+              />
+            </Route>
+            <Route
+              path="/login"
+              element={
+                <>
+                  <RenderIf conditionIs={userState.user}>
+                    <Navigate to="/" />
+                  </RenderIf>
+                  <RenderIf conditionIs={!userState.user}>
+                    <Login user={{ userState, userDispatch }} />
+                  </RenderIf>
+                </>
+              }
             />
             <Route
-              path="/notifications"
-              element={userState.user ? <Home /> : <Navigate to="/register" />}
+              path="/register"
+              element={userState.user ? <Navigate to="/" /> : <Register />}
             />
-            <Route
-              path="/search"
-              element={userState.user ? <Home /> : <Navigate to="/register" />}
-            />
-            <Route
-              path="/contacts"
-              element={userState.user ? <Home /> : <Navigate to="/register" />}
-            />
-            <Route
-              path="/chats"
-              element={userState.user ? <Home /> : <Navigate to="/register" />}
-            />
-            <Route
-              path="/new/:type"
-              element={userState.user ? <Home /> : <Navigate to="/register" />}
-            />
-          </Route>
-          <Route
-            path="/login"
-            element={
-              <>
-                <RenderIf conditionIs={userState.user}>
-                  <Navigate to="/" />
-                </RenderIf>
-                <RenderIf conditionIs={!userState.user}>
-                  <Login user={{ userState, userDispatch }} />
-                </RenderIf>
-              </>
-            }
-          />
-          <Route
-            path="/register"
-            element={userState.user ? <Navigate to="/" /> : <Register />}
-          />
-          <Route path="*" element={<Navigate to="/chats" />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+            <Route path="*" element={<Navigate to="/chats" />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </ActiveChatHandlerProvider>
   );
 };
