@@ -33,10 +33,18 @@ export const makeGroup = async (req, res, next) => {
     const { _id } = await GroupChat.create({ admins, members, name });
     const newGc = await GroupChat.findById(_id).populate(["admins", "members"]);
 
-    const newNotice = await GroupMessage.create({
+    const newNoticeMsg = await GroupMessage.create({
       chatId: newGc._id,
-      content: `${admins[0].username} created a new group`,
+      content: `${newGc.admins[0].username} created a new group`,
+      msgType: "notice",
     });
+
+    const newTimeGroup = {
+      date: new Date(newNoticeMsg.time).toLocaleDateString(),
+      messages: [newNoticeMsg._id],
+    };
+
+    await GroupChat.updateOne({ _id }, { $push: { chat: newTimeGroup } });
 
     // update the groupchats list in users db
     await User.updateMany(
@@ -48,10 +56,14 @@ export const makeGroup = async (req, res, next) => {
       const { _id, ...extras } = newGc._doc;
       return res
         .status(201)
-        .json({ chatId: _id, ...extras, newNotice, success: true });
+        .json({ chatId: _id, ...extras, newNotic, success: true });
     }
 
-    res.status(201).json({ chatId: newGc._id, newNotice, success: true });
+    res.status(201).json({
+      chatId: newGc._id,
+      newNotice: { ...newTimeGroup, messages: [newNoticeMsg] },
+      success: true,
+    });
   } catch (error) {
     next(error);
   }

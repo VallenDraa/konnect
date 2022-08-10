@@ -88,7 +88,7 @@ export const ChatBox = () => {
     hasFetch: false,
   });
 
-  const updateActivePrivateChat = useCallback((data) => {
+  const updateActivePrivateChat = (data) => {
     const newActivePrivateChat = {
       _id: data._id,
       username: data.username,
@@ -100,14 +100,14 @@ export const ChatBox = () => {
     };
 
     setActivePrivateChat(newActivePrivateChat);
-    setActiveGroupChat(ACTIVE_GROUP_CHAT_DEFAULT);
+    setActiveGroupChat("");
     if (window.innerWidth <= 1024) setIsSidebarOn(false);
-  }, []);
+  };
 
-  const updateActiveGroupChat = useCallback((data) => {
+  const updateActiveGroupChat = (data) => {
     setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
     if (window.innerWidth <= 1024) setIsSidebarOn(false);
-  });
+  };
 
   useEffect(() => {
     const url = location.pathname + location.search;
@@ -148,7 +148,9 @@ export const ChatBox = () => {
             // get user data from the server for handling the active chat
             // fetch the initials, profile picture, and username from the server
             getUsersPreview(sessionStorage.getItem("token"), [search.id])
-              .then(([userPreview]) => updateActivePrivateChat(userPreview))
+              .then(([userPreview]) => {
+                updateActivePrivateChat(userPreview);
+              })
               .catch((err) => {
                 closeChatLog({
                   ACTIVE_PRIVATE_CHAT_DEFAULT,

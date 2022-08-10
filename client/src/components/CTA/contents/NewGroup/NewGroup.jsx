@@ -30,12 +30,15 @@ export default function NewGroup() {
   const { makeNewGroup } = useContext(ActiveChatHandlerContext);
 
   useEffect(() => {
-    socket.on("receive-make-new-group", ({ success, chatId, name, users }) => {
-      if (success) {
-        makeNewGroup(chatId, name, users);
-        navigate(`/chats?id=${chatId}bar&type=group`);
+    socket.on(
+      "receive-make-new-group",
+      ({ success, chatId, name, users, newNotice }) => {
+        if (success) {
+          makeNewGroup(chatId, name, users, newNotice);
+          navigate(`/chats?id=${chatId}bar&type=group`);
+        }
       }
-    });
+    );
 
     return () => socket.off("receive-make-new-group");
   }, []); //make new group

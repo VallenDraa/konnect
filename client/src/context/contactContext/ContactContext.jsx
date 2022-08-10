@@ -12,6 +12,8 @@ import groupedContactsReducer, {
 import getUsersContactsPreview from "../../utils/apis/getUserContactsPreview";
 import socket from "../../utils/socketClient/socketClient";
 import { UserContext } from "../user/userContext";
+import _ from "lodash";
+import { CachedUserContext } from "../cachedUser/CachedUserContext";
 
 export const ContactsContext = createContext([]);
 
@@ -22,6 +24,7 @@ export default function ContactsContextProvider({ children }) {
     groupedContactsReducer,
     GROUPED_CONTACTS_DEFAULT
   );
+  const { setCachedUsers } = useContext(CachedUserContext);
 
   // get all the contact data from the current logged in user initial load
   useEffect(() => {
@@ -29,12 +32,17 @@ export default function ContactsContextProvider({ children }) {
     const getAllContacts = async () => {
       try {
         const result = [];
-        const data = await getUsersContactsPreview(
+        const { contacts: fetchedContacts } = await getUsersContactsPreview(
           sessionStorage.getItem("token")
         );
 
-        if (data.contacts.length > 0) {
-          for (const contact of data.contacts) {
+        setCachedUsers((prev) => ({
+          ...prev,
+          ..._.keyBy(fetchedContacts, "_id"),
+        }));
+
+        if (fetchedContacts.length > 0) {
+          for (const contact of fetchedContacts) {
             result.push(contact);
           }
           setContacts(result);

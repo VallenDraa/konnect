@@ -15,32 +15,29 @@ export default function ActiveChatHandlerProvider({ children }) {
   const { setActiveGroupChat } = useContext(ActiveGroupChatContext);
   const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
 
-  const makeNewGroup = useCallback(
-    (chatId, name, users, newNotice) => {
-      const updatedMsgLogs = cloneDeep(msgLogs.content);
+  const makeNewGroup = (chatId, name, users, newNotice) => {
+    const updatedMsgLogs = cloneDeep(msgLogs.content);
 
-      updatedMsgLogs[chatId] = {
-        chatId,
-        name,
-        admins: users.admins,
-        members: users.members,
-        chat: [newNotice],
-        type: "group",
-      };
-      // make a new group message log
-      msgLogsDispatch({
-        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-        payload: updatedMsgLogs,
-      });
+    updatedMsgLogs[chatId] = {
+      chatId,
+      name,
+      admins: users.admins,
+      members: users.members,
+      chat: [newNotice],
+      type: "group",
+    };
+    // make a new group message log
+    msgLogsDispatch({
+      type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+      payload: updatedMsgLogs,
+    });
 
-      // set the active group
-      setActiveGroupChat(chatId);
+    // set the active group
+    setActiveGroupChat(chatId);
 
-      // deactive private chat
-      setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
-    },
-    [msgLogs]
-  );
+    // deactive private chat
+    setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+  };
 
   return (
     <ActiveChatHandlerContext.Provider value={{ makeNewGroup }}>

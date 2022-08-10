@@ -1,18 +1,30 @@
 import PrivateChat from "../../../../model/private/PrivateChat.js";
 import createError from "../../../../utils/createError.js";
 import User from "../../../../model/User.js";
+import GroupChat from "../../../../model/group/GroupChat.js";
 
 export const getAllChatHistory = async (req, res, next) => {
   try {
     const { _id } = res.locals.tokenData;
-    const { privateChats: pcIds } = await User.findById(_id)
-      .select("privateChats")
+    const { privateChats: pcIds, groupChats: gcIds } = await User.findById(_id)
+      .select("privateChats", "groupChats")
       .lean();
 
+    const chats = [];
+
+    // if both chats are empty returns an empty result
+    if (pcIds.length === 0 && gcIds.length === 0) {
+      const response = {
+        currentUser: _id,
+        messageLogs: [],
+        success: true,
+      };
+
+      return res.json(response);
+    }
+
     if (pcIds.length > 0) {
-      const privateChats = await PrivateChat.where({
-        _id: { $in: pcIds },
-      })
+      const privateChats = await PrivateChat.where({ _id: { $in: pcIds } })
         .populate([
           {
             path: "users",
@@ -22,50 +34,84 @@ export const getAllChatHistory = async (req, res, next) => {
         ])
         .lean();
 
-      // formatting the result
-      const formattedPC = privateChats.map((pc) => {
-        const user = pc.users.filter((user) => user._id.toString() !== _id)[0];
-
-        return { chatId: pc._id, user, chat: pc.chat, type: pc.type };
-      });
-
-      const response = {
-        currentUser: _id,
-        messageLogs: [...formattedPC],
-        success: true,
-      };
-
-      res.json(response);
-    } else {
-      const response = {
-        currentUser: _id,
-        messageLogs: [],
-        success: true,
-      };
-
-      res.json(response);
+      chats.push(...privateChats);
     }
+
+    if (gcIds.length > 0) {
+      const groupChats = await GroupChat.where({ _id: { $in: gcIds } })
+        .populate([
+          {
+            path: "admins",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          {
+            path: "members",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          "chat.messages",
+        ])
+        .lean();
+
+      chats.push(...groupChats);
+    }
+
+    // formatting the result
+    const formattedChats = chats.map((c) => {
+      switch (c.type) {
+        case "private":
+          const [user] = c.users.filter((user) => user._id.toString() !== _id);
+          return {
+            chatId: c._id,
+            user,
+            chat: c.chat,
+            type: c.type,
+          };
+
+        case "group":
+          return {
+            name: c.name,
+            profilePicture: c.profilePicture,
+            chatId: c._id,
+            admins: c.admins,
+            members: c.members,
+            chat: c.chat,
+            type: c.type,
+          };
+
+        default:
+          return createError(next, 400, "Invalid chat type !");
+      }
+    });
+
+    const response = {
+      currentUser: _id,
+      messageLogs: [...formattedChats],
+      success: true,
+    };
+
+    res.json(response);
   } catch (error) {
     next(error);
   }
 };
 
 export const getChatHistory = async (req, res, next) => {
-  const { pcIds, gcIds } = req.query;
-  const parsedPcIds = pcIds.split(","); //private chat ids
-  const parsedGcIds = gcIds.split(","); //group chat ids
-  const { _id } = res.locals.tokenData;
-
-  // check if client passed in at least one type of chat id
-  if (parsedGcIds.length <= 0 && parsedPcIds.length <= 0) {
-    return createError(
-      next,
-      409,
-      "Please provide one or more chat ids to proceed !"
-    );
-  }
-
   try {
+    const { pcIds, gcIds } = req.query;
+    console.log(req.query);
+    const parsedPcIds = pcIds.split(","); //private chat ids
+    const parsedGcIds = gcIds.split(","); //group chat ids
+    const { _id } = res.locals.tokenData;
+
+    // check if client passed in at least one type of chat id
+    if (parsedGcIds.length <= 0 && parsedPcIds.length <= 0) {
+      return createError(
+        next,
+        409,
+        "Please provide one or more chat ids to proceed !"
+      );
+    }
+
     // get the private chat ids that the client requested
     let privateChats = [];
     let groupChats = [];
@@ -89,14 +135,9 @@ export const getChatHistory = async (req, res, next) => {
   }
 };
 
-async function fetchUnreadMsgFromDb(chatIds, userId, next) {
+async function fetchUnreadMsgFromDb(chats, userId, next) {
   try {
-    const pc = await PrivateChat.where({ _id: { $in: chatIds } })
-      .select("chat")
-      .populate("chat.messages")
-      .lean();
-
-    const totalUnreadMsg = pc.reduce(
+    const totalUnreadMsg = chats.reduce(
       (p, c) => {
         const timeGroups = c.chat;
         const timeGroupMaxIdx = timeGroups.length - 1;
@@ -109,7 +150,8 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
 
             // loop over the messages in the time group from the back
             for (let z = chatMaxIdx; z >= 0; i--) {
-              console.log(timeGroups[i].messages[z]);
+              if (timeGroups[i].messages[z].msgType === "notice") continue;
+
               if (timeGroups[i].messages[z].by.toString() !== userId) {
                 if (timeGroups[i].messages[z].readAt) break;
 
@@ -122,12 +164,15 @@ async function fetchUnreadMsgFromDb(chatIds, userId, next) {
 
           // loop over the messages in the time group from the back4
           if (chatMaxIdx === 0) {
+            if (timeGroups[0].messages[0].msgType === "notice") return p;
             if (timeGroups[0].messages[0].by.toString() === userId) return p;
             if (timeGroups[0].messages[0].readAt) return p;
 
             newDetail[c._id]++;
           } else {
             for (let z = chatMaxIdx; z >= 0; z--) {
+              if (timeGroups[0].messages[z].msgType === "notice") continue;
+
               if (timeGroups[0].messages[z].by.toString() !== userId) {
                 if (timeGroups[0].messages[z].readAt) break;
 
@@ -180,12 +225,26 @@ export const getAllChatId = async (req, res, next) => {
   // new way
   try {
     const { _id } = res.locals.tokenData;
-    const { privateChats: pcIds } = await User.findById(_id)
-      .select("privateChats")
+    const { privateChats: pcIds, groupChats: gcIds } = await User.findById(_id)
+      .select(["privateChats", "groupChats"])
       .lean();
+    const chats = [];
+
+    // if both chats are empty returns an empty result
+    if (pcIds.length === 0 && gcIds.length === 0) {
+      const response = {
+        currentUser: _id,
+        unreadMsg: { detail: {}, total: 0 },
+
+        messageLogs: [],
+        success: true,
+      };
+
+      return res.json(response);
+    }
+
     if (pcIds.length > 0) {
       const privateChats = await PrivateChat.where({ _id: { $in: pcIds } })
-        .select(["users", "_id", "chat"])
         .slice("chat", -1)
         .populate([
           {
@@ -196,31 +255,67 @@ export const getAllChatId = async (req, res, next) => {
         ])
         .lean();
 
-      // formatting the result
-      const formattedPC = privateChats.map((pc) => {
-        const user = pc.users.filter((user) => user._id.toString() !== _id)[0];
-
-        return { chatId: pc._id, user, chat: pc.chat, preview: true };
-      });
-      const unreadMsg = await fetchUnreadMsgFromDb(privateChats, _id, next);
-      const response = {
-        currentUser: _id,
-        messageLogs: [...formattedPC],
-        unreadMsg,
-        success: true,
-      };
-
-      res.json(response);
-    } else {
-      const response = {
-        currentUser: _id,
-        unreadMsg: { detail: {}, total: 0 },
-        messageLogs: [],
-        success: true,
-      };
-
-      res.json(response);
+      chats.push(...privateChats);
     }
+
+    if (gcIds.length > 0) {
+      const groupChats = await GroupChat.where({ _id: { $in: gcIds } })
+        .slice("chat", -1)
+        .populate([
+          {
+            path: "admins",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          {
+            path: "members",
+            select: ["username", "status", "initials", "profilePicture"],
+          },
+          "chat.messages",
+        ])
+        .lean();
+
+      chats.push(...groupChats);
+    }
+
+    // formatting the result
+    const formattedChats = chats.map((c) => {
+      switch (c.type) {
+        case "private":
+          const [user] = c.users.filter((user) => user._id.toString() !== _id);
+
+          return {
+            chatId: c._id,
+            user,
+            chat: c.chat,
+            type: c.type,
+            preview: true,
+          };
+
+        case "group":
+          return {
+            name: c.name,
+            profilePicture: c.profilePicture,
+            chatId: c._id,
+            admins: c.admins,
+            members: c.members,
+            chat: c.chat,
+            type: c.type,
+            preview: true,
+          };
+        default:
+          return createError(next, 400, "Invalid chat type !");
+      }
+    });
+
+    const unreadMsg = await fetchUnreadMsgFromDb(formattedChats, _id, next);
+    const response = {
+      currentUser: _id,
+      messageLogs: [...formattedChats],
+      unreadMsg,
+      success: true,
+    };
+
+    res.json(response);
   } catch (error) {
     next(error);
   }

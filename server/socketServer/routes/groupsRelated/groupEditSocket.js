@@ -1,5 +1,4 @@
 import axios from "axios";
-import { createErrorNonExpress } from "../../../utils/createError.js";
 
 export default function groupEdit(socket) {
   socket.on("make-new-group", async (name, users, token) => {

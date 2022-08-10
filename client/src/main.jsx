@@ -15,32 +15,35 @@ import SettingsContextProvider from "./context/settingsContext/SettingsContext";
 import TitleContextProvider from "./context/titleContext/TitleContext";
 import ActivePrivateChatContextProvider from "./context/activePrivateChat/ActivePrivateChatContext";
 import ActiveGroupChatContextProvider from "./context/activeGroupChat/ActiveGroupChatContext";
+import CachedUserContextProvider from "./context/cachedUser/CachedUserContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <TitleContextProvider>
     <IsLoginViaRefreshContextProvider>
       <UserContextProvider>
-        <SettingsContextProvider>
-          <ContactsContextProvider>
-            <NotifContextProvider>
-              <IsAuthorizedContextProvider>
-                <IsLoadingContextProvider>
-                  <ModalContextProvider>
-                    <MiniModalContextProvider>
-                      <MessageLogsContextProvider>
-                        <ActivePrivateChatContextProvider>
-                          <ActiveGroupChatContextProvider>
-                            <App />
-                          </ActiveGroupChatContextProvider>
-                        </ActivePrivateChatContextProvider>
-                      </MessageLogsContextProvider>
-                    </MiniModalContextProvider>
-                  </ModalContextProvider>
-                </IsLoadingContextProvider>
-              </IsAuthorizedContextProvider>
-            </NotifContextProvider>
-          </ContactsContextProvider>
-        </SettingsContextProvider>
+        <CachedUserContextProvider>
+          <SettingsContextProvider>
+            <ContactsContextProvider>
+              <NotifContextProvider>
+                <IsAuthorizedContextProvider>
+                  <IsLoadingContextProvider>
+                    <ModalContextProvider>
+                      <MiniModalContextProvider>
+                        <MessageLogsContextProvider>
+                          <ActivePrivateChatContextProvider>
+                            <ActiveGroupChatContextProvider>
+                              <App />
+                            </ActiveGroupChatContextProvider>
+                          </ActivePrivateChatContextProvider>
+                        </MessageLogsContextProvider>
+                      </MiniModalContextProvider>
+                    </ModalContextProvider>
+                  </IsLoadingContextProvider>
+                </IsAuthorizedContextProvider>
+              </NotifContextProvider>
+            </ContactsContextProvider>
+          </SettingsContextProvider>
+        </CachedUserContextProvider>
       </UserContextProvider>
     </IsLoginViaRefreshContextProvider>
   </TitleContextProvider>

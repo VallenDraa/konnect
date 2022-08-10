@@ -6,6 +6,7 @@ export const GroupMessageSchema = new mongoose.Schema({
   msgType: {
     type: String,
     enum: ["notice", "text", "image", "video", "link", "call"],
+    default: "text",
   },
   content: mongoose.Schema.Types.Mixed,
   isSent: { type: Boolean, default: false },

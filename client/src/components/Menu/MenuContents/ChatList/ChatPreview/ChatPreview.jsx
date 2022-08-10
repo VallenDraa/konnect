@@ -1,4 +1,5 @@
 import { ImFileVideo } from "react-icons/im";
+import { VscMegaphone } from "react-icons/vsc";
 import { BsFileEarmarkImage, BsLink45Deg } from "react-icons/bs";
 import { IoCall } from "react-icons/io5";
 import { Link } from "react-router-dom";
@@ -15,6 +16,8 @@ import {
 
 export const ChatPreview = ({
   user,
+  type,
+  groupName,
   chatId,
   lastMessage,
   timeSentArg,
@@ -39,7 +42,7 @@ export const ChatPreview = ({
             setIsSidebarOn,
           })
         }
-        to={isActive ? "/chats" : `/chats?id=${user._id}&type=private`}
+        to={isActive ? "/chats" : `/chats?id=${chatId}&type=${type}`}
         className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
           isActive
             ? "bg-blue-100 font-semibold"
@@ -51,7 +54,7 @@ export const ChatPreview = ({
             <div className=" h-12 w-12 relative">
               <img
                 src="https://picsum.photos/200/200"
-                alt={user.username}
+                alt={type === "private" ? user.username : groupName}
                 className="rounded-full absolute inset-0 z-10"
               />
               {/* notifications*/}
@@ -78,7 +81,7 @@ export const ChatPreview = ({
                     : "group-hover:text-pink-700"
                 } ${general?.animation ? "duration-200" : ""}`}
               >
-                {user.username}
+                {type === "private" ? user.username : groupName}
               </span>
               <span
                 className={`text-sm truncate text-gray-500 relative z-10 flex items-center gap-1 
@@ -110,6 +113,12 @@ export const ChatPreview = ({
                 {lastMessage.msgType === "link" && (
                   <>
                     <BsLink45Deg />
+                    {lastMessage.content}
+                  </>
+                )}
+                {lastMessage.msgType === "notice" && (
+                  <>
+                    <VscMegaphone />
                     {lastMessage.content}
                   </>
                 )}

@@ -22,8 +22,8 @@ export default function PrivateLog({ messageLogRef }) {
       aria-label="message-log"
       className={`relative flex flex-col h-0 grow pb-3 overflow-auto container mx-auto max-w-screen-sm lg:max-w-screen-lg`}
     >
-      {msgLogs.content[activeGroupChat._id] &&
-        msgLogs?.content[activeGroupChat._id]?.chat?.map(
+      {msgLogs.content[activeGroupChat] &&
+        msgLogs?.content[activeGroupChat]?.chat?.map(
           ({ date, messages }, i) => {
             return (
               <Fragment key={i}>

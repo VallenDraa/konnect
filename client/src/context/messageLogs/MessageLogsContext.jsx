@@ -47,12 +47,34 @@ export default function MessageLogsContextProvider({ children }) {
           const result = {};
 
           for (const log of messageLogs) {
-            result[log.user._id] = {
-              chat: log.chat,
-              user: log.user,
-              chatId: log.chatId,
-              preview: log.preview,
-            };
+            switch (log.type) {
+              case "private":
+                result[log.user._id] = {
+                  chat: log.chat,
+                  user: log.user,
+                  type: log.type,
+                  chatId: log.chatId,
+                  preview: log.preview,
+                };
+                break;
+
+              case "group":
+                result[log.chatId] = {
+                  name: log.name,
+                  profilePicture: log.profilePicture,
+                  chat: log.chat,
+                  admins: log.admins,
+                  members: log.members,
+                  type: log.type,
+                  chatId: log.chatId,
+                  preview: log.preview,
+                };
+                break;
+
+              default:
+                console.log(log);
+                break;
+            }
           }
 
           msgLogsDispatch({
