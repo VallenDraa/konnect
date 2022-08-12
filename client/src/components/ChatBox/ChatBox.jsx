@@ -31,9 +31,7 @@ import {
 } from "../../utils/scroll/scrollToBottom";
 import _ from "lodash";
 import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
-import lastIdx from "../../utils/others/lastIdx";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
-import { useCallback } from "react";
 import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
 
 const userOnlineStatusSwitcher = (status) => {
@@ -326,12 +324,8 @@ export const ChatBox = () => {
     if (!msgLogs?.content[activePrivateChat._id]?.chatId) return;
     if (!msgLogs?.content[activePrivateChat._id]?.chat) return;
 
-    // check if there is at least one message in the chat log
-    const lastMsgIdx = lastIdx(msgLogs.content[activePrivateChat._id].chat);
-    if (lastMsgIdx === -1) return;
-
-    // check if the last message is by the other user
-    const lastMsg = msgLogs.content[activePrivateChat._id].chat[lastMsgIdx];
+    // check if there is at least one message in the chat log & if the last message is by the other user
+    const lastMsg = _.last(msgLogs.content[activePrivateChat._id].chat);
     if (lastMsg?.by === userState?.user?._id) return;
 
     const updatedChatLogs = _.cloneDeep(msgLogs.content);

@@ -1,5 +1,12 @@
 import api from "../apiAxios/apiAxios";
 
+/**
+ *
+ * @param {String} token
+ * @param {Array} userIds
+ * @returns
+ */
+
 export default async function getUsersPreview(token, userIds) {
   try {
     const { data } = await api.get(

@@ -32,20 +32,22 @@ export default function ContactsContextProvider({ children }) {
     const getAllContacts = async () => {
       try {
         const result = [];
+        const cachedContacts = {};
         const { contacts: fetchedContacts } = await getUsersContactsPreview(
           sessionStorage.getItem("token")
         );
 
-        setCachedUsers((prev) => ({
-          ...prev,
-          ..._.keyBy(fetchedContacts, "_id"),
-        }));
-
         if (fetchedContacts.length > 0) {
           for (const contact of fetchedContacts) {
             result.push(contact);
+            cachedContacts[contact.user._id] = contact.user;
           }
+
           setContacts(result);
+          setCachedUsers((prev) => ({
+            ...prev,
+            ...cachedContacts,
+          }));
         } else {
           setContacts([]);
         }

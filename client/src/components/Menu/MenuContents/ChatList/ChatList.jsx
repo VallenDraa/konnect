@@ -4,8 +4,7 @@ import RenderIf from "../../../../utils/React/RenderIf";
 import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/ActivePrivateChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
-import { cloneDeep } from "lodash";
-import lastIdx from "../../../../utils/others/lastIdx";
+import _ from "lodash";
 
 export default function ChatList() {
   const { activePrivateChat } = useContext(ActivePrivateChatContext);
@@ -18,7 +17,14 @@ export default function ChatList() {
   useEffect(() => {
     if (!msgLogs || !msgLogs.content) return;
 
-    const newEntries = Object.entries(cloneDeep(msgLogs.content));
+    const cloned = _.cloneDeep(msgLogs.content);
+    const newEntries = Object.entries(cloned).sort((a, b) => {
+      const content = 1;
+      const { messages: prevMsgs } = _.last(a[content].chat);
+      const { messages: currMsgs } = _.last(b[content].chat);
+
+      return new Date(_.last(currMsgs).time) - new Date(_.last(prevMsgs).time);
+    });
     // check if the new message logs and current one is the same
     if (
       JSON.stringify(Object.fromEntries(newEntries)) !==
@@ -26,7 +32,7 @@ export default function ChatList() {
     ) {
       setLogsEntries(newEntries);
     }
-  }, [msgLogs, logsEntries]);
+  }, [msgLogs]);
   // useEffect(() => {
   //   console.log(logsEntries);
   // }, [logsEntries]);
@@ -61,47 +67,48 @@ export default function ChatList() {
           {/* if chat history exists */}
           <RenderIf conditionIs={logsEntries.length > 0}>
             {logsEntries.map(([_id, log]) => {
-              const lastMsgIdx = lastIdx(log.chat[lastIdx(log.chat)].messages);
+              // prove one time group exists
+              const lastTimeGroup = _.last(log.chat);
+              if (!lastTimeGroup) return;
 
-              if (lastMsgIdx !== -1) {
-                const lastMsg =
-                  log.chat[lastIdx(log.chat)].messages[lastMsgIdx];
+              // prove one message exists
+              const lastMsg = _.last(lastTimeGroup.messages);
+              if (!lastMsg) return;
 
-                switch (log.type) {
-                  case "private":
-                    return (
-                      <ChatPreview
-                        type="private"
-                        chatId={log.user._id}
-                        key={_id}
-                        lastMessage={lastMsg}
-                        timeSentArg={chatPreviewTimeStatus(
-                          new Date(),
-                          new Date(lastMsg.time)
-                        )}
-                        user={log.user}
-                        isActive={_id === activePrivateChat?._id}
-                      />
-                    );
+              switch (log.type) {
+                case "private":
+                  return (
+                    <ChatPreview
+                      type="private"
+                      chatId={log.user._id}
+                      key={_id}
+                      lastMessage={lastMsg}
+                      timeSentArg={chatPreviewTimeStatus(
+                        new Date(),
+                        new Date(lastMsg.time)
+                      )}
+                      user={log.user}
+                      isActive={_id === activePrivateChat?._id}
+                    />
+                  );
 
-                  case "group":
-                    return (
-                      <ChatPreview
-                        type="group"
-                        groupName={log.name}
-                        chatId={_id}
-                        key={_id}
-                        lastMessage={lastMsg}
-                        timeSentArg={chatPreviewTimeStatus(
-                          new Date(),
-                          new Date(lastMsg.time)
-                        )}
-                        isActive={_id === activePrivateChat?._id}
-                      />
-                    );
-                  default:
-                    break;
-                }
+                case "group":
+                  return (
+                    <ChatPreview
+                      type="group"
+                      groupName={log.name}
+                      chatId={_id}
+                      key={_id}
+                      lastMessage={lastMsg}
+                      timeSentArg={chatPreviewTimeStatus(
+                        new Date(),
+                        new Date(lastMsg.time)
+                      )}
+                      isActive={_id === activePrivateChat?._id}
+                    />
+                  );
+                default:
+                  break;
               }
             })}
           </RenderIf>
