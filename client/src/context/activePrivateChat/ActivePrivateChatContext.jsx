@@ -32,9 +32,9 @@ export default function ActivePrivateChatContextProvider({ children }) {
     }));
   }, [activePrivateChat]);
 
-  // useEffect(() => {
-  //   console.log(activePrivateChat);
-  // }, [activePrivateChat]);
+  useEffect(() => {
+    console.log(activePrivateChat);
+  }, [activePrivateChat]);
 
   return (
     <ActivePrivateChatContext.Provider

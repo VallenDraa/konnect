@@ -44,7 +44,7 @@ export const Menu = ({
         menuUnderlineRef.current.style.left = `${cLeft - pLeft}px`;
         menuUnderlineRef.current.style.right = `${pRight - cRight}px`;
       }
-    }, 150),
+    }, 200),
     [menuUnderlineRef, activeMenu]
   );
 

@@ -21,7 +21,7 @@ import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
 import getScrollPercentage from "../../utils/scroll/getScrollPercentage";
 import newMsgSfx from "../../audio/newMsgSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
-import { SidebarContext } from "../../pages/Home/Home";
+import { CloseChatLogContext, SidebarContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
@@ -33,6 +33,7 @@ import _ from "lodash";
 import ChatBoxHeader from "./components/ChatBoxHeader/ChatBoxHeader";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
+import lastIdx from "../../utils/others/lastIdx";
 
 const userOnlineStatusSwitcher = (status) => {
   if (status === "online") {
@@ -42,21 +43,6 @@ const userOnlineStatusSwitcher = (status) => {
     return new Date(status).getMonth().toString() === NaN.toString()
       ? { isOnline: false, lastSeen: null }
       : { isOnline: false, lastSeen: status };
-  }
-};
-
-export const closeChatLog = ({
-  isSidebarOn,
-  setIsSidebarOn,
-  setActivePrivateChat,
-  ACTIVE_PRIVATE_CHAT_DEFAULT,
-}) => {
-  if (window.innerWidth <= 1024) {
-    if (isSidebarOn) return;
-    setIsSidebarOn(true);
-    setTimeout(() => setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT), 400);
-  } else {
-    setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
   }
 };
 
@@ -71,12 +57,14 @@ export const ChatBox = () => {
   const { msgLogs, msgLogsDispatch, msgUnread, setMsgUnread } =
     useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
-  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
+  const { setIsSidebarOn } = useContext(SidebarContext);
   const location = useLocation();
   const messageLogRef = useRef();
-  const { contacts } = useContext(ContactsContext);
+
   const invisibleWallRef = useRef();
+  const { contacts } = useContext(ContactsContext);
   const { settings } = useContext(SettingsContext);
+  const { closeChatLog } = useContext(CloseChatLogContext);
   const { general } = settings;
   const navigate = useNavigate();
   const [currStatus, setCurrStatus] = useState({
@@ -98,12 +86,14 @@ export const ChatBox = () => {
     };
 
     setActivePrivateChat(newActivePrivateChat);
-    setActiveGroupChat("");
+    setActiveGroupChat(null);
     if (window.innerWidth <= 1024) setIsSidebarOn(false);
   };
 
-  const updateActiveGroupChat = (data) => {
+  const updateActiveGroupChat = (chatId) => {
     setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+    setActiveGroupChat(chatId);
+
     if (window.innerWidth <= 1024) setIsSidebarOn(false);
   };
 
@@ -120,12 +110,7 @@ export const ChatBox = () => {
 
       // check if the url provided id and type of chat
       if (!search.id && !search.type) {
-        closeChatLog({
-          ACTIVE_PRIVATE_CHAT_DEFAULT,
-          isSidebarOn,
-          setActivePrivateChat,
-          setIsSidebarOn,
-        });
+        closeChatLog();
       } else {
         switch (search.type) {
           case "private":
@@ -150,26 +135,16 @@ export const ChatBox = () => {
                 updateActivePrivateChat(userPreview);
               })
               .catch((err) => {
-                closeChatLog({
-                  ACTIVE_PRIVATE_CHAT_DEFAULT,
-                  isSidebarOn,
-                  setActivePrivateChat,
-                  setIsSidebarOn,
-                });
+                closeChatLog();
                 navigate("/chats");
               });
             break;
           case "group":
-            updateActiveGroupChat();
+            updateActiveGroupChat(search.id);
 
             break;
           default:
-            closeChatLog({
-              ACTIVE_PRIVATE_CHAT_DEFAULT,
-              isSidebarOn,
-              setActivePrivateChat,
-              setIsSidebarOn,
-            });
+            closeChatLog();
             navigate("/chats");
             break;
         }
@@ -276,7 +251,8 @@ export const ChatBox = () => {
 
   useEffect(() => {
     socket.on("receive-msg", async (data) => {
-      const { message, chatId, success } = data;
+      const { message, chatId, success, chatType } = data;
+
       if (success) {
         // update the message logs
         msgLogs.content[message.by]
@@ -294,11 +270,15 @@ export const ChatBox = () => {
               token: sessionStorage.getItem("token"),
               msgLogs,
               msgLogsDispatch,
-              chatId,
+              chatId: chatType === "group" ? chatId : message.by,
             });
 
         // update the unread message notif
-        incrementMsgUnread({ msgUnread, setMsgUnread, chatId });
+        incrementMsgUnread({
+          msgUnread,
+          setMsgUnread,
+          chatId: chatType === "group" ? chatId : message.by,
+        });
 
         // play notification audio when receiving a message
         playAudio(newMsgSound);
@@ -320,64 +300,58 @@ export const ChatBox = () => {
   }, [msgLogs, userState, activePrivateChat]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (!activePrivateChat?._id) return;
-    if (!msgLogs?.content[activePrivateChat._id]?.chatId) return;
-    if (!msgLogs?.content[activePrivateChat._id]?.chat) return;
+    if (!activePrivateChat?._id && !activeGroupChat) return;
+
+    const logTargetId = activeGroupChat
+      ? activeGroupChat
+      : activePrivateChat?._id;
+
+    if (!msgLogs?.content[logTargetId]?.chat) return;
 
     // check if there is at least one message in the chat log & if the last message is by the other user
-    const lastMsg = _.last(msgLogs.content[activePrivateChat._id].chat);
+    const lastMsg = _.last(msgLogs.content[logTargetId].chat);
     if (lastMsg?.by === userState?.user?._id) return;
 
     const updatedChatLogs = _.cloneDeep(msgLogs.content);
-    const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
     const time = new Date().toISOString();
-    const date = new Date().toLocaleDateString();
+    const { chat: newChat } = updatedChatLogs[logTargetId];
 
     if (newChat.length > 0) {
-      const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+      const maxTimeLogsIdx = lastIdx(newChat);
+      const readMsgIds = [];
+      const token = sessionStorage.getItem("token");
 
-      // if updatedTimeLogIdx is -1 it means there is no new message today
-      if (updatedTimeLogIdx !== -1) {
-        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-        const finalMesIndex = msgsInTimeLog.length - 1;
-        const lastMsg = msgsInTimeLog[finalMesIndex];
+      for (let i = maxTimeLogsIdx; i >= 0; i--) {
+        const msgsInTimeLog = newChat[i].messages;
+        const lastMsg = _.last(msgsInTimeLog);
 
         if (lastMsg.by !== userState.user._id) {
-          if (lastMsg.readAt === null) {
-            const { chatId } = msgLogs.content[activePrivateChat._id];
-            const token = sessionStorage.getItem("token");
-            const msgsMaxLen = msgsInTimeLog.length - 1;
-            const readMsgIds = [];
+          if (lastMsg.readAt !== null) break;
 
-            if (msgsMaxLen > 0) {
-              for (let i = msgsMaxLen; i > 0; i--) {
-                if (msgsInTimeLog[i].readAt !== null) break;
+          const msgsMaxLen = msgsInTimeLog.length - 1;
 
-                msgsInTimeLog[i].readAt = time;
-                readMsgIds.push(msgsInTimeLog[i]._id);
-              }
-            } else {
-              msgsInTimeLog[0].readAt = time;
-              readMsgIds.push(msgsInTimeLog[0]._id);
+          if (msgsMaxLen > 0) {
+            for (let i = msgsMaxLen; i > 0; i--) {
+              if (msgsInTimeLog[i].readAt !== null) break;
+
+              msgsInTimeLog[i].readAt = time;
+              readMsgIds.push(msgsInTimeLog[i]._id);
             }
-
-            msgLogsDispatch({
-              type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-              payload: updatedChatLogs,
-            });
-
-            // updated the msgUnread notifs
-            removeMsgUnread({ msgUnread, setMsgUnread, chatId });
-
-            // update the message read status to the server
-            socket.emit(
-              "read-msg",
-              time,
-              token,
-              activePrivateChat._id,
-              readMsgIds
-            );
+          } else {
+            msgsInTimeLog[0].readAt = time;
+            readMsgIds.push(msgsInTimeLog[0]._id);
           }
+
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+            payload: updatedChatLogs,
+          });
+
+          // updated the msgUnread notifs
+          removeMsgUnread({ msgUnread, setMsgUnread, chatId: logTargetId });
+
+          // update the message read status to the server
+          socket.emit("read-msg", time, token, logTargetId, readMsgIds);
         }
       }
     }
@@ -418,10 +392,10 @@ export const ChatBox = () => {
 
   return (
     <>
-      <RenderIf conditionIs={!activePrivateChat?._id && activeGroupChat === ""}>
+      <RenderIf conditionIs={!activePrivateChat?._id && !activeGroupChat}>
         <StartScreen />
       </RenderIf>
-      <RenderIf conditionIs={activePrivateChat?._id || activeGroupChat !== ""}>
+      <RenderIf conditionIs={activePrivateChat?._id || activeGroupChat}>
         <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
           {/* invisible wall */}
           <div

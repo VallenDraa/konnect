@@ -6,7 +6,10 @@ import { InitialLoadingScreen } from "../../components/InitialLoadingScreen/Init
 import { ModalContext } from "../../context/modal/modalContext";
 import { useEffect } from "react";
 import { UserContext } from "../../context/user/userContext";
-import { ActivePrivateChatContext } from "../../context/activePrivateChat/ActivePrivateChatContext";
+import {
+  ActivePrivateChatContext,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
+} from "../../context/activePrivateChat/ActivePrivateChatContext";
 import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
 import { useLocation } from "react-router-dom";
 import socket from "../../utils/socketClient/socketClient";
@@ -24,13 +27,20 @@ import {
   receiveSendAddContact,
 } from "../../context/notifContext/NotifContext";
 import NOTIF_CONTEXT_ACTIONS from "../../context/notifContext/notifContextActions";
+import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
 
 // url history context
 export const UrlHistoryContext = createContext(null);
 export const SidebarContext = createContext(null);
+export const CloseChatLogContext = createContext(null);
 
 export default function Home() {
-  const { activePrivateChat } = useContext(ActivePrivateChatContext);
+  const { activePrivateChat, setActivePrivateChat } = useContext(
+    ActivePrivateChatContext
+  );
+  const { activeGroupChat, setActiveGroupChat } = useContext(
+    ActiveGroupChatContext
+  );
   const { modalState, modalDispatch } = useContext(ModalContext);
   const [isSidebarOn, setIsSidebarOn] = useState(window.innerWidth <= 1024); //will come to effect when screen is smaller than <lg
   const { userState, userDispatch } = useContext(UserContext);
@@ -41,6 +51,25 @@ export default function Home() {
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
+
+  const closeChatLog = () => {
+    const delay = window.innerWidth <= 1024 ? 400 : 0;
+
+    if (window.innerWidth <= 1024) {
+      if (isSidebarOn) return;
+      setIsSidebarOn(true);
+    }
+
+    setTimeout(() => {
+      // disable active private chat if it is not empty
+      if (activePrivateChat._id !== null) {
+        setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+      }
+
+      // disable active group chat if it is not empty
+      if (activeGroupChat) setActiveGroupChat(null);
+    }, delay);
+  };
 
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, "history error");
@@ -164,8 +193,10 @@ export default function Home() {
             <InitialLoadingScreen />
             <div className={`flex duration-200`}>
               <ChatboxContextProvider>
-                <Sidebar urlHistory={urlHistory} />
-                <ChatBox activePrivateChat={activePrivateChat} />
+                <CloseChatLogContext.Provider value={{ closeChatLog }}>
+                  <Sidebar urlHistory={urlHistory} />
+                  <ChatBox activePrivateChat={activePrivateChat} />
+                </CloseChatLogContext.Provider>
               </ChatboxContextProvider>
             </div>
           </div>

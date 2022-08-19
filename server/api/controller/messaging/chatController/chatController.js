@@ -98,7 +98,6 @@ export const getAllChatHistory = async (req, res, next) => {
 export const getChatHistory = async (req, res, next) => {
   try {
     const { pcIds, gcIds } = req.query;
-    console.log(req.query);
     const parsedPcIds = pcIds.split(","); //private chat ids
     const parsedGcIds = gcIds.split(","); //group chat ids
     const { _id } = res.locals.tokenData;
@@ -137,11 +136,14 @@ export const getChatHistory = async (req, res, next) => {
 
 async function fetchUnreadMsgFromDb(chats, userId, next) {
   try {
+    console.log(chats);
     const totalUnreadMsg = chats.reduce(
       (p, c) => {
+        const unreadId = c.type === "private" ? c.user._id : c.chatId;
         const timeGroups = c.chat;
         const timeGroupMaxIdx = timeGroups.length - 1;
-        const newDetail = { [c._id]: 0 };
+        const newDetail = { [unreadId]: 0 };
+
         // check if the length is more than 0
         if (timeGroupMaxIdx > 0) {
           // loop over the time group from the back
@@ -155,7 +157,7 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
               if (timeGroups[i].messages[z].by.toString() !== userId) {
                 if (timeGroups[i].messages[z].readAt) break;
 
-                newDetail[c._id]++;
+                newDetail[unreadId]++;
               }
             }
           }
@@ -168,7 +170,7 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
             if (timeGroups[0].messages[0].by.toString() === userId) return p;
             if (timeGroups[0].messages[0].readAt) return p;
 
-            newDetail[c._id]++;
+            newDetail[unreadId]++;
           } else {
             for (let z = chatMaxIdx; z >= 0; z--) {
               if (timeGroups[0].messages[z].msgType === "notice") continue;
@@ -176,7 +178,7 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
               if (timeGroups[0].messages[z].by.toString() !== userId) {
                 if (timeGroups[0].messages[z].readAt) break;
 
-                newDetail[c._id]++;
+                newDetail[unreadId]++;
               }
             }
           }
@@ -185,9 +187,9 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
         // assemble the final result
         const newTotals = {
           detail: { ...p.detail, ...newDetail },
-          total: p.total + newDetail[c._id],
+          total: p.total + newDetail[unreadId],
         };
-        return newDetail[c._id] > 0 ? newTotals : p;
+        return newDetail[unreadId] > 0 ? newTotals : p;
       },
       { detail: {}, total: 0 }
     );

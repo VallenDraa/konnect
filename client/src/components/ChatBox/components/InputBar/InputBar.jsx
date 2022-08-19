@@ -18,6 +18,7 @@ import {
 } from "../../../../utils/scroll/scrollToBottom";
 import { cloneDeep } from "lodash";
 import MESSAGE_LOGS_ACTIONS from "../../../../context/messageLogs/messageLogsActions";
+import { useLocation } from "react-router-dom";
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
@@ -28,11 +29,15 @@ export default function inputBar({ messageLogRef }) {
   const inputRef = useRef();
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const { search } = useLocation();
 
   const handleNewMessage = (e) => {
     e.preventDefault();
     if (newMessage === "") return;
     if (isEmojiBarOn) setIsEmojiBarOn(false);
+
+    // get the message type from the url
+    const [key, chatType] = search.split("&")[1].split("=");
 
     const newMessageInput = {
       _id: null,
@@ -71,7 +76,12 @@ export default function inputBar({ messageLogRef }) {
     setnewMessage("");
     // send the message to the server
     // add a "to" field to the final object to indicate who the message is for
-    socket.emit("new-msg", newMessageInput, sessionStorage.getItem("token"));
+    socket.emit(
+      "new-msg",
+      newMessageInput,
+      chatType,
+      sessionStorage.getItem("token")
+    );
   };
 
   useEffect(() => {

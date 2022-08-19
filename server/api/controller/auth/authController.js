@@ -1,19 +1,19 @@
-import UserModel from '../../../model/User.js';
-import createError from '../../../utils/createError.js';
-import bcrypt from 'bcrypt';
-import { renewToken } from './tokenController.js';
-import emojiTest from '../../../utils/emojiTest.js';
+import UserModel from "../../../model/User.js";
+import createError from "../../../utils/createError.js";
+import bcrypt from "bcrypt";
+import { renewToken } from "./tokenController.js";
+import emojiTest from "../../../utils/emojiTest.js";
 
 export const register = async (req, res, next) => {
   const isUsingEmoji = emojiTest(Object.values(req.body));
-  if (isUsingEmoji) return createError(next, 400, 'Refrain from using emoji');
+  if (isUsingEmoji) return createError(next, 400, "Refrain from using emoji");
 
   const { username, password, email } = req.body;
 
   const initials = username
-    .split(' ')
+    .split(" ")
     .map((word, i) => i < 3 && word.substring(0, 1))
-    .join('');
+    .join("");
 
   try {
     // check if the inputted username or email has already been taken
@@ -26,7 +26,7 @@ export const register = async (req, res, next) => {
         return createError(
           next,
           409,
-          'Username or Email has been taken, please choose another one !',
+          "Username or Email has been taken, please choose another one !",
           { success: false }
         );
       }
@@ -60,7 +60,7 @@ export const login = async (req, res, next) => {
       .lean();
 
     if (user === null) {
-      return createError(next, 401, 'Username or password is invalid !');
+      return createError(next, 401, "Username or password is invalid !");
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -72,10 +72,9 @@ export const login = async (req, res, next) => {
       const token = renewToken(otherData, secret);
       res.json({ token, user: otherData });
     } else {
-      return createError(next, 401, 'Username or password is invalid !');
+      return createError(next, 401, "Username or password is invalid !");
     }
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };

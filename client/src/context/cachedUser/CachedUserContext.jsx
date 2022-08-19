@@ -10,8 +10,9 @@ export const CachedUserContext = createContext(CACHED_USER_DEFAULT);
 export default function CachedUserContextProvider({ children }) {
   const [cachedUsers, setCachedUsers] = useState(CACHED_USER_DEFAULT);
 
-  const exists = async (ids) => {
-    if (typeof ids !== "string" && typeof ids !== "object") {
+  const fetchCachedUsers = async (ids) => {
+    if (typeof ids !== "string" && !Array.isArray(ids)) {
+      return console.error("Please provide the correct parameter type");
     }
     const token = sessionStorage.getItem("token");
 
@@ -56,10 +57,12 @@ export default function CachedUserContextProvider({ children }) {
     }
   };
 
-  useEffect(() => console.log(cachedUsers), [cachedUsers]);
+  // useEffect(() => console.log(cachedUsers), [cachedUsers]);
 
   return (
-    <CachedUserContext.Provider value={{ cachedUsers, setCachedUsers, exists }}>
+    <CachedUserContext.Provider
+      value={{ cachedUsers, setCachedUsers, fetchCachedUsers }}
+    >
       {children}
     </CachedUserContext.Provider>
   );

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { createErrorNonExpress } from "../../../utils/createError.js";
 
 export default function messages(socket) {
-  socket.on("new-msg", async (message, token) => {
+  socket.on("new-msg-private", async (message, chatType, token) => {
     const isTargetOnline = message.to in global.onlineUsers;
     const targetSocketId = global.onlineUsers[message.to];
 
@@ -31,6 +31,7 @@ export default function messages(socket) {
             timeSent: message.time,
             message: { ...message, _id: data.msgId, isSent: true },
             chatId: data.chatId,
+            chatType,
           });
         }
       }

@@ -13,9 +13,9 @@ export const UserContext = createContext(userInitialValue);
 export default function UserContextProvider({ children }) {
   const [userState, userDispatch] = useReducer(userReducer, userInitialValue);
 
-  useEffect(() => {
-    console.log(userState);
-  }, [userState]);
+  // useEffect(() => {
+  //   console.log(userState);
+  // }, [userState]);
 
   return (
     <UserContext.Provider value={{ userState, userDispatch }}>

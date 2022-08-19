@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { createContext, useRef } from 'react';
+import { createContext, useRef } from "react";
 
 export const ChatboxContext = createContext(null);
 

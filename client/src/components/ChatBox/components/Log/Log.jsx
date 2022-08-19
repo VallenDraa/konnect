@@ -14,7 +14,7 @@ export default function Log({ messageLogRef }) {
       <RenderIf conditionIs={activePrivateChat._id}>
         <PrivateLog messageLogRef={messageLogRef} />
       </RenderIf>
-      <RenderIf conditionIs={activeGroupChat !== ""}>
+      <RenderIf conditionIs={activeGroupChat}>
         <GroupLog messageLogRef={messageLogRef} />
       </RenderIf>
     </main>

@@ -5,13 +5,17 @@ import { Link } from "react-router-dom";
 import { ActiveGroupChatContext } from "../../../../../context/activeGroupChat/ActiveGroupChatContext";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
+import { CloseChatLogContext } from "../../../../../pages/Home/Home";
 import RenderIf from "../../../../../utils/React/RenderIf";
 
 export default function GroupChatHeader({ invisibleWallRef }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
-  const { activeGroupChat } = useContext(ActiveGroupChatContext);
+  const { activeGroupChat, setActiveGroupChat } = useContext(
+    ActiveGroupChatContext
+  );
   const { msgLogs } = useContext(MessageLogsContext);
+  const { closeChatLog } = useContext(CloseChatLogContext);
 
   return (
     <RenderIf conditionIs={msgLogs.content[activeGroupChat]}>
@@ -22,8 +26,9 @@ export default function GroupChatHeader({ invisibleWallRef }) {
             <div className="flex items-center justify-between gap-2">
               <Link
                 onClick={() => {
-                  invisibleWallRef.current.classList.remove("hidden");
+                  closeChatLog();
 
+                  invisibleWallRef.current.classList.remove("hidden");
                   setTimeout(
                     () => invisibleWallRef.current.classList.add("hidden"),
                     400

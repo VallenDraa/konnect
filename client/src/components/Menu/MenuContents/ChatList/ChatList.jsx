@@ -5,9 +5,11 @@ import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 import _ from "lodash";
+import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
 
 export default function ChatList() {
   const { activePrivateChat } = useContext(ActivePrivateChatContext);
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const [logsEntries, setLogsEntries] = useState(
     msgLogs?.content ? Object.entries(msgLogs?.content) : []
@@ -80,7 +82,7 @@ export default function ChatList() {
                   return (
                     <ChatPreview
                       type="private"
-                      chatId={log.user._id}
+                      chatId={_id}
                       key={_id}
                       lastMessage={lastMsg}
                       timeSentArg={chatPreviewTimeStatus(
@@ -97,14 +99,14 @@ export default function ChatList() {
                     <ChatPreview
                       type="group"
                       groupName={log.name}
-                      chatId={_id}
+                      chatId={log.chatId}
                       key={_id}
                       lastMessage={lastMsg}
                       timeSentArg={chatPreviewTimeStatus(
                         new Date(),
                         new Date(lastMsg.time)
                       )}
-                      isActive={_id === activePrivateChat?._id}
+                      isActive={_id === activeGroupChat}
                     />
                   );
                 default:

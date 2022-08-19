@@ -7,12 +7,7 @@ import { useContext } from "react";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
 import RenderIf from "../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
-import { closeChatLog } from "../../../../ChatBox/ChatBox";
-import { SidebarContext } from "../../../../../pages/Home/Home";
-import {
-  ActivePrivateChatContext,
-  ACTIVE_PRIVATE_CHAT_DEFAULT,
-} from "../../../../../context/activePrivateChat/ActivePrivateChatContext";
+import { CloseChatLogContext } from "../../../../../pages/Home/Home";
 
 export const ChatPreview = ({
   user,
@@ -27,21 +22,12 @@ export const ChatPreview = ({
   const { msgUnread } = useContext(MessageLogsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
-  const { isSidebarOn, setIsSidebarOn } = useContext(SidebarContext);
-  const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
+  const { closeChatLog } = useContext(CloseChatLogContext);
 
   return (
     <li>
       <Link
-        onClick={() =>
-          isActive &&
-          closeChatLog({
-            ACTIVE_PRIVATE_CHAT_DEFAULT,
-            isSidebarOn,
-            setActivePrivateChat,
-            setIsSidebarOn,
-          })
-        }
+        onClick={() => isActive && closeChatLog()}
         to={isActive ? "/chats" : `/chats?id=${chatId}&type=${type}`}
         className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
           isActive
