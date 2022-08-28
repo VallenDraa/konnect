@@ -136,7 +136,6 @@ export const getChatHistory = async (req, res, next) => {
 
 async function fetchUnreadMsgFromDb(chats, userId, next) {
   try {
-    console.log(chats);
     const totalUnreadMsg = chats.reduce(
       (p, c) => {
         const unreadId = c.type === "private" ? c.user._id : c.chatId;
@@ -224,7 +223,6 @@ export const getChatNotifications = async (req, res, next) => {
 };
 
 export const getAllChatId = async (req, res, next) => {
-  // new way
   try {
     const { _id } = res.locals.tokenData;
     const { privateChats: pcIds, groupChats: gcIds } = await User.findById(_id)
@@ -310,15 +308,15 @@ export const getAllChatId = async (req, res, next) => {
     });
 
     const unreadMsg = await fetchUnreadMsgFromDb(formattedChats, _id, next);
-    const response = {
+
+    res.json({
       currentUser: _id,
       messageLogs: [...formattedChats],
       unreadMsg,
       success: true,
-    };
-
-    res.json(response);
+    });
   } catch (error) {
+    console.error(error);
     next(error);
   }
 };

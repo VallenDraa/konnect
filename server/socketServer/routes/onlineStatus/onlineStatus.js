@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export default function onlineStatus(socket) {
+export default function onlineStatusSocket(socket) {
   socket.on("is-user-online", (userId, token) => {
     try {
       let status;

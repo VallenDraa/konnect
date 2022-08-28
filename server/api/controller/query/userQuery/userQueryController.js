@@ -54,3 +54,18 @@ export const getUserDetail = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAllGroupId = async (req, res, next) => {
+  try {
+    const { userIds } = req.body;
+
+    const groupChats = await User.findMany({ _id: { $in: userIds } })
+      .lean()
+      .select("groupChats")
+      .populate("groupChats");
+
+    res.json({ groupChats, success: true });
+  } catch (error) {
+    next(error);
+  }
+};

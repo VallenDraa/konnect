@@ -4,7 +4,7 @@ import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLo
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 import { UserContext } from "../../../../../context/user/userContext";
 import { chatPreviewTimeStatus } from "../../../../../utils/dates/dates";
-import { Message } from "../../../../Message/Message";
+import PrivateMessage from "../../../../Message/PrivateMessage";
 import Notice from "../../../../Message/Notice";
 
 export default function PrivateLog({ messageLogRef }) {
@@ -31,12 +31,11 @@ export default function PrivateLog({ messageLogRef }) {
 
                 {messages.map((msg, i) => {
                   return (
-                    <Fragment key={msg._id === null ? i : msg._id}>
-                      <Message
+                    <Fragment key={msg._id || i}>
+                      <PrivateMessage
                         state={{
                           isSent: msg.isSent,
-                          readAt: [msg.readAt],
-                          isGroup: false,
+                          readAt: msg.readAt,
                         }}
                         isSentByMe={msg.by === userState.user._id}
                         msg={msg.content}

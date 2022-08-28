@@ -7,7 +7,7 @@ import { ActivePrivateChatContext } from "../../../../context/activePrivateChat/
 import { UserContext } from "../../../../context/user/userContext";
 import {
   MessageLogsContext,
-  pushNewEntry,
+  pushNewPrivateEntry,
   pushNewMsgToEntry,
 } from "../../../../context/messageLogs/MessageLogsContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
@@ -16,13 +16,14 @@ import {
   scrollToBottom,
   scrollToBottomSmooth,
 } from "../../../../utils/scroll/scrollToBottom";
-import { cloneDeep } from "lodash";
-import MESSAGE_LOGS_ACTIONS from "../../../../context/messageLogs/messageLogsActions";
+
 import { useLocation } from "react-router-dom";
+import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
   const { activePrivateChat } = useContext(ActivePrivateChatContext);
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
   const { userState } = useContext(UserContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const [newMessage, setnewMessage] = useState("");
@@ -39,33 +40,48 @@ export default function inputBar({ messageLogRef }) {
     // get the message type from the url
     const [key, chatType] = search.split("&")[1].split("=");
 
-    const newMessageInput = {
-      _id: null,
-      by: userState.user._id,
-      to: activePrivateChat._id,
-      msgType: "text",
-      content: newMessage,
-      isSent: false,
-      readAt: null,
-      time: new Date().toISOString(),
-    };
+    const newMessageInput =
+      chatType === "private"
+        ? {
+            _id: null,
+            by: userState.user._id,
+            to: activePrivateChat._id,
+            msgType: "text",
+            content: newMessage,
+            isSent: false,
+            readAt: null,
+            time: new Date().toISOString(),
+          }
+        : {
+            _id: null,
+            chatId: activeGroupChat,
+            by: userState.user._id,
+            msgType: "text",
+            content: newMessage,
+            isSent: false,
+            beenReadBy: [],
+            time: new Date().toISOString(),
+          };
 
     // update the message logs
-    msgLogs.content[activePrivateChat._id]
+    // check whether the active chat is private or group
+    msgLogs.content[activePrivateChat._id || activeGroupChat]
       ? pushNewMsgToEntry({
-          targetId: activePrivateChat._id,
+          targetId: activePrivateChat._id || activeGroupChat,
           message: newMessageInput,
           msgLogs,
           msgLogsDispatch,
         })
-      : pushNewEntry({
-          activePrivateChat,
-          targetId: activePrivateChat._id,
+      : pushNewPrivateEntry({
+          type: chatType,
+          targetId: activePrivateChat._id || activeGroupChat,
           message: newMessageInput,
+          token: sessionStorage.getItem("token"),
           msgLogs,
-          chatId: null,
+          chatId: activeGroupChat || null,
           msgLogsDispatch,
         });
+
     setTimeout(() => {
       general.animation
         ? scrollToBottomSmooth(messageLogRef.current)
@@ -74,8 +90,8 @@ export default function inputBar({ messageLogRef }) {
 
     // reset the input bar
     setnewMessage("");
+
     // send the message to the server
-    // add a "to" field to the final object to indicate who the message is for
     socket.emit(
       "new-msg",
       newMessageInput,
@@ -83,46 +99,6 @@ export default function inputBar({ messageLogRef }) {
       sessionStorage.getItem("token")
     );
   };
-
-  useEffect(() => {
-    socket.on("msg-sent", ({ success, to, msgId, timeSent, chatId }) => {
-      if (!success) return;
-      /* NEW MSG LOGS*/
-
-      const updatedChatLogs = cloneDeep(msgLogs.content);
-
-      if (updatedChatLogs[to]) {
-        const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
-        const date = new Date().toLocaleDateString();
-        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
-        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-        const msgsMaxLen = msgsInTimeLog.length - 1;
-
-        if (msgsMaxLen > 0) {
-          for (let i = msgsMaxLen; i > 0; i--) {
-            if (msgsInTimeLog[i].time !== timeSent) continue;
-
-            msgsInTimeLog[i].isSent = true;
-            msgsInTimeLog[i]._id = msgId;
-            break;
-          }
-        } else {
-          if (msgsInTimeLog[msgsMaxLen].time === timeSent) {
-            msgsInTimeLog[msgsMaxLen].isSent = true;
-            msgsInTimeLog[msgsMaxLen]._id = msgId;
-          }
-        }
-
-        updatedChatLogs[activePrivateChat._id].chatId = chatId;
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedChatLogs,
-        });
-      }
-    });
-
-    return () => socket.off("msg-sent");
-  }, [msgLogs]); // for changing the message state indicator
 
   const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 

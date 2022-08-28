@@ -1,7 +1,7 @@
 import { createErrorNonExpress } from "../../../../utils/createError.js";
 import axios from "axios";
 
-export default function unfriend(socket) {
+export default function unfriendSocket(socket) {
   socket.on("remove-contact", async (myId, targetId, token) => {
     const isTargetOnline = targetId in global.onlineUsers;
     const targetSocketId = isTargetOnline ? global.onlineUsers[targetId] : null;
@@ -21,12 +21,10 @@ export default function unfriend(socket) {
         });
 
         if (isTargetOnline) {
-          socket
-            .to(targetSocketId)
-            .emit("receive-remove-contact", {
-              success: true,
-              idToRemove: myId,
-            });
+          socket.to(targetSocketId).emit("receive-remove-contact", {
+            success: true,
+            idToRemove: myId,
+          });
         }
       } else {
         const { message, status } = senderData.data;

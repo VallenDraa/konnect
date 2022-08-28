@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default function contactRequest(socket) {
+export default function contactRequestSocket(socket) {
   socket.on("send-add-contact", async (payload) => {
     const { recipientId, senderId, token } = payload;
     const isRecipientOnline = recipientId in global.onlineUsers;

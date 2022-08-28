@@ -5,8 +5,11 @@ import { SettingsContext } from "../../../../../context/settingsContext/Settings
 import { UserContext } from "../../../../../context/user/userContext";
 import { chatPreviewTimeStatus } from "../../../../../utils/dates/dates";
 import RenderIf from "../../../../../utils/React/RenderIf";
-import { Message } from "../../../../Message/Message";
 import Notice from "../../../../Message/Notice";
+import GroupMessage from "../../../../Message/GroupMessage";
+import { CachedUserContext } from "../../../../../context/cachedUser/CachedUserContext";
+import { useEffect } from "react";
+import { useState } from "react";
 
 export default function PrivateLog({ messageLogRef }) {
   const { msgLogs } = useContext(MessageLogsContext);
@@ -35,8 +38,12 @@ export default function PrivateLog({ messageLogRef }) {
                   return (
                     <Fragment key={msg._id === null ? i : msg._id}>
                       <RenderIf conditionIs={msg.msgType !== "notice"}>
-                        <Message
-                          state={{ isSent: msg.isSent, readAt: msg.readAt }}
+                        <GroupMessage
+                          state={{
+                            isSent: msg.isSent,
+                            beenReadBy: msg.beenReadBy,
+                          }}
+                          sender={msg.by}
                           isSentByMe={msg.by === userState.user._id}
                           msg={msg.content}
                           time={new Date(msg.time)}

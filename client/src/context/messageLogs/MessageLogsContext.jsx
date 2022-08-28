@@ -75,6 +75,9 @@ export default function MessageLogsContextProvider({ children }) {
                   chatId: log.chatId,
                   preview: log.preview,
                 };
+
+                // automatically join the group chat room via websocket
+                socket.emit("join-room", log.chatId);
                 break;
 
               default:
@@ -138,8 +141,8 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off("refresh-msg-log");
   }, [userState, contacts, msgLogs]);
 
-  useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  // useEffect(() => console.log(msgUnread), [msgUnread]);
+  useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider
@@ -155,9 +158,11 @@ export default function MessageLogsContextProvider({ children }) {
   );
 }
 
-export const pushNewEntry = async ({
+export const pushNewPrivateEntry = async ({
+  type, //private or group
   targetId,
   message = null,
+  token,
   msgLogs,
   msgLogsDispatch,
   chatId = null,
@@ -166,10 +171,7 @@ export const pushNewEntry = async ({
   try {
     const user = {};
 
-    const [userPreview] = await getUsersPreview(
-      sessionStorage.getItem("token"),
-      [targetId]
-    );
+    const [userPreview] = await getUsersPreview(token, [targetId]);
     Object.assign(user, userPreview);
 
     const updatedChatLog = cloneDeep(msgLogs.content);
@@ -182,6 +184,7 @@ export const pushNewEntry = async ({
           messages: [message],
         },
       ],
+      type,
     }; // assemble the final result object
 
     updatedChatLog[targetId] = newChatLogContent;

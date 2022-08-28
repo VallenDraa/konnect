@@ -23,7 +23,7 @@ export default function CachedUserContextProvider({ children }) {
         if (user) {
           return user;
         } else {
-          const newCachedUser = await getUsersPreview(token, [ids]);
+          const [newCachedUser] = await getUsersPreview(token, [ids]);
           setCachedUsers((prev) => ({ ...prev, [ids]: newCachedUser }));
 
           return newCachedUser;
@@ -57,7 +57,7 @@ export default function CachedUserContextProvider({ children }) {
     }
   };
 
-  // useEffect(() => console.log(cachedUsers), [cachedUsers]);
+  useEffect(() => console.log(cachedUsers), [cachedUsers]);
 
   return (
     <CachedUserContext.Provider

@@ -41,6 +41,7 @@ export const register = async (req, res, next) => {
         initials,
         password: hashedPW,
         email,
+        settings: { general: { animation: true } },
       });
     } catch (error) {
       next(error);

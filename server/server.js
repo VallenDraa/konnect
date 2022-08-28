@@ -11,6 +11,7 @@ import requestRoutes from "./api/routes/requestRoutes.js";
 import notificationRoutes from "./api/routes/notificationRoutes.js";
 import userEditRoutes from "./api/routes/userEditRoutes.js";
 import privateMessagesRoutes from "./api/routes/privateMessagesRoutes.js";
+import groupMessagesRoutes from "./api/routes/groupMessagesRoutes.js";
 import groupRoutes from "./api/routes/groupRoutes.js";
 import chatRoutes from "./api/routes/chatRoutes.js";
 import cookieParser from "cookie-parser";
@@ -21,7 +22,6 @@ export const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: ["http://localhost:3000"] },
 });
-socketInit(io);
 
 // can be accessed and edited from anywhere
 global.onlineUsers = {};
@@ -45,6 +45,7 @@ if (process.env.NODE_ENV !== "production") {
     })
   );
 }
+
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,15 +57,8 @@ app.use("/api/request", requestRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/user", userEditRoutes);
 app.use("/api/messages/private", privateMessagesRoutes);
+app.use("/api/messages/group", groupMessagesRoutes);
 app.use("/api/chat", chatRoutes);
-
-const dbConnect = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 app.get("/api", (req, res) => {
   res.send("this is the konnect API & web sockets");
@@ -83,17 +77,30 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
 
-  if (!isProduction) console.log(stack);
+  if (!isProduction) console.error(stack);
 
   return res
     .status(status || 500)
     .json(isProduction ? TEMPLATE : { stack, ...TEMPLATE });
 });
 
-httpServer.listen(process.env.PORT || 3001, () => {
-  dbConnect();
-  mongoose.connection.on("disconnected", () => console.log("db disconnected"));
-  mongoose.connection.on("connected", () => console.log("db connected"));
-  console.log("listening on 3001");
+httpServer.listen(process.env.PORT || 3001, async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    mongoose.connection.on("disconnected", () =>
+      console.log("db disconnected")
+    );
+    mongoose.connection.on("connected", () => {
+      console.log("db connected");
+    });
+
+    console.log("listening on 3001");
+    socketInit(io);
+  } catch (error) {
+    console.log(
+      "🚀 ~ file: server.js ~ line 104 ~ httpServer.listen ~ error",
+      error
+    );
+  }
 });
-// instrument(io, { auth: false });

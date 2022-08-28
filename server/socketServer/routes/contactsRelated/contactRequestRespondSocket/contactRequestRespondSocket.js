@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
-export default function contactRequestRespond(socket) {
-  socket.on('contact-requests-response', async (payload) => {
+export default function contactRequestRespondSocket(socket) {
+  socket.on("contact-requests-response", async (payload) => {
     const { recipientId, senderId, answer } = payload;
     const isSenderOnline = senderId in global.onlineUsers;
 
@@ -13,28 +13,28 @@ export default function contactRequestRespond(socket) {
         { headers: { Authorization: `Bearer ${payload.token}` } }
       );
 
-      socket.emit('receive-contact-request-response', {
+      socket.emit("receive-contact-request-response", {
         ...payload,
         ...data,
-        type: 'inbox',
+        type: "inbox",
       });
       // check if sender is online
       if (isSenderOnline) {
         socket
           .to(global.onlineUsers[senderId])
-          .emit('receive-contact-request-response', {
+          .emit("receive-contact-request-response", {
             ...payload,
             ...data,
-            type: 'outbox',
+            type: "outbox",
           });
       }
     } catch (error) {
       console.error(error);
-      socket.emit('receive-contact-request-response', error);
+      socket.emit("receive-contact-request-response", error);
       if (isSenderOnline) {
         socket
           .to(global.onlineUsers[senderId])
-          .emit('receive-contact-request-response', error);
+          .emit("receive-contact-request-response", error);
       }
     }
   });

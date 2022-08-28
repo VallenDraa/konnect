@@ -215,7 +215,7 @@ export const Sidebar = ({ urlHistory }) => {
                     ${settings?.general?.menuSwiping ? "cursor-grab" : ""}`}
             onActiveIndexChange={({ activeIndex }) => navigateMenu(activeIndex)}
           >
-            <SwiperSlide className="no-swipe">
+            <SwiperSlide className="no-swipe relative">
               <ChatList
                 contacts={userState.user.contacts}
                 setIsSidebarOn={setIsSidebarOn}

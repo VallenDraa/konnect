@@ -1,22 +1,42 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { BiCheck, BiCheckDouble } from "react-icons/bi";
+import { BiCheckDouble } from "react-icons/bi";
+import { CachedUserContext } from "../../context/cachedUser/CachedUserContext";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
+import { UserContext } from "../../context/user/userContext";
 import RenderIf from "../../utils/React/RenderIf";
 
-export const Message = ({
+export default function GroupMessage({
   innerRef = null,
   state,
   msg,
   time,
   isSentByMe,
-  // ,state
-}) => {
+  sender,
+}) {
   const formattedTime = time
     .toTimeString()
     .slice(0, time.toTimeString().lastIndexOf(":"));
   const { settings } = useContext(SettingsContext);
+  const { userState } = useContext(UserContext);
   const { general } = settings;
+  const { fetchCachedUsers } = useContext(CachedUserContext);
+  const [senderUsername, setSenderUsername] = useState(sender);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (sender === userState.user._id) {
+          setSenderUsername(userState.user.username);
+        } else {
+          const { username } = await fetchCachedUsers(sender);
+          setSenderUsername(username);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+  }, []);
 
   return (
     <li
@@ -29,11 +49,15 @@ export const Message = ({
       }`}
     >
       <div
-        className={`max-w-[75%] rounded-lg shadow p-3 space-y-2 min-w-[100px] ${
+        className={`max-w-[75%] flex flex-col relative rounded-lg shadow space-y-2 min-w-[100px] p-2 ${
           isSentByMe ? "bg-white" : " bg-gray-300"
         }`}
       >
-        <span className={`text-gray-800 leading-5 lg:leading-6  self-start`}>
+        <span className="text-xxs px-1  text-gray-600 absolute -top-5 inset-x-0 truncate">
+          {senderUsername}
+        </span>
+
+        <span className={`text-gray-800 leading-5 lg:leading-6 self-start`}>
           {msg}
         </span>
 
@@ -51,21 +75,20 @@ export const Message = ({
           </time>
 
           <RenderIf conditionIs={isSentByMe}>
-            {/* check if message hasn't been sent or read yet */}
-            <RenderIf conditionIs={!state.isSent && state.readAt.length === 0}>
+            <RenderIf
+              conditionIs={!state?.isSent && state?.beenReadBy?.length === 0}
+            >
               <AiOutlineLoading3Quarters
                 className={`self-start text-gray-400 ${
                   general?.animation ? "animate-spin animate-fade-in" : ""
                 }`}
               />
             </RenderIf>
-
-            {/* check if message has been sent but not read yet */}
-            <RenderIf conditionIs={state.isSent}>
+            <RenderIf conditionIs={state?.isSent}>
               <BiCheckDouble
-                className={`text-xl self-start ${
-                  state.readAt[0] ? "text-blue-400" : "text-gray-400"
-                } ${general?.animation ? "animate-fade-in" : ""}`}
+                className={`text-xl self-start text-gray-400 ${
+                  general?.animation ? "animate-fade-in" : ""
+                }`}
               />
             </RenderIf>
           </RenderIf>
@@ -73,4 +96,4 @@ export const Message = ({
       </div>
     </li>
   );
-};
+}

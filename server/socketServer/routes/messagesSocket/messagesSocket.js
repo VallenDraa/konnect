@@ -2,20 +2,17 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 import { createErrorNonExpress } from "../../../utils/createError.js";
 
-export default function messages(socket) {
-  socket.on("new-msg-private", async (message, chatType, token) => {
-    const isTargetOnline = message.to in global.onlineUsers;
-    const targetSocketId = global.onlineUsers[message.to];
-
+export default function messagesSocket(socket) {
+  socket.on("new-msg", async (message, chatType, token) => {
     // save message to the database
     try {
       const { data } = await axios.post(
-        `${process.env.API_URL}/messages/private/save_message`,
+        `${process.env.API_URL}/messages/${chatType}/save_message`,
         { message },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // send the chat id, timesent, and new msg id if everything is daijoubu
+      // send the chat id, timesent, and new msg id if everythiBng is daijoubu
       if (data.success) {
         socket.emit("msg-sent", {
           success: true,
@@ -25,29 +22,29 @@ export default function messages(socket) {
           chatId: data.chatId,
         });
 
-        if (isTargetOnline) {
-          socket.to(targetSocketId).emit("receive-msg", {
+        socket
+          .to(global.onlineUsers[message.to] || message.chatId)
+          .emit("receive-msg", {
             success: true,
             timeSent: message.time,
             message: { ...message, _id: data.msgId, isSent: true },
             chatId: data.chatId,
             chatType,
           });
-        }
       }
     } catch (error) {
+      console.error(error);
       socket.emit("msg-sent", false, {
         timeSent: message.time,
         to: message.to,
       });
-      console.error(error);
       socket.emit("error", error);
     }
 
     // save message to reciever and send the message if target is online
   });
 
-  socket.on("read-msg", async (time, token, senderId, msgIds) => {
+  socket.on("private-read-msg", async (time, token, senderId, msgIds) => {
     try {
       if (new Date(time).getMonth().toString() === NaN.toString()) {
         throw createErrorNonExpress(400, "invalid time arguments");
@@ -65,10 +62,34 @@ export default function messages(socket) {
 
       if (isSenderOnline) {
         const senderSocketId = global.onlineUsers[senderId];
-        const { _id } = jwt.decode(token); //this'll be the recipient id
+        const { _id: recipientId } = jwt.decode(token);
 
-        socket.to(senderSocketId).emit("msg-on-read", data.success, _id, time);
+        socket
+          .to(senderSocketId)
+          .emit("private-msg-on-read", data.success, recipientId, time);
       }
+    } catch (e) {
+      console.log(e);
+      socket.emit("error", e);
+    }
+  });
+
+  socket.on("group-read-msg", async (time, token, groupId, userId, msgIds) => {
+    try {
+      if (new Date(time).getMonth().toString() === NaN.toString()) {
+        throw createErrorNonExpress(400, "invalid time arguments");
+      }
+
+      // set all passed in messages isRead field to true
+      // const { data } = await axios.put(
+      //   `${process.env.API_URL}/messages/group/read_message`,
+      //   { time, msgIds },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      // check if sender is online
+
+      socket.to(groupId).emit("group-msg-on-read", true, groupId, userId, time);
     } catch (e) {
       console.log(e);
       socket.emit("error", e);

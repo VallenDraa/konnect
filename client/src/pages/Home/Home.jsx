@@ -11,7 +11,7 @@ import {
   ACTIVE_PRIVATE_CHAT_DEFAULT,
 } from "../../context/activePrivateChat/ActivePrivateChatContext";
 import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import socket from "../../utils/socketClient/socketClient";
 import USER_ACTIONS from "../../context/user/userAction";
 import MODAL_ACTIONS from "../../context/modal/modalActions";
@@ -27,7 +27,11 @@ import {
   receiveSendAddContact,
 } from "../../context/notifContext/NotifContext";
 import NOTIF_CONTEXT_ACTIONS from "../../context/notifContext/notifContextActions";
-import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
+import {
+  ActiveGroupChatContext,
+  makeNewGroup,
+} from "../../context/activeGroupChat/ActiveGroupChatContext";
+import { MessageLogsContext } from "../../context/messageLogs/MessageLogsContext";
 
 // url history context
 export const UrlHistoryContext = createContext(null);
@@ -51,13 +55,14 @@ export default function Home() {
   const { contacts, setContacts } = useContext(ContactsContext);
   const { notifs, notifsDispatch, notifUnseen, setNotifUnseen } =
     useContext(NotifContext);
+  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
+  const navigate = useNavigate();
 
   const closeChatLog = () => {
     const delay = window.innerWidth <= 1024 ? 400 : 0;
 
     if (window.innerWidth <= 1024) {
-      if (isSidebarOn) return;
-      setIsSidebarOn(true);
+      if (!isSidebarOn) setIsSidebarOn(true);
     }
 
     setTimeout(() => {
@@ -74,6 +79,37 @@ export default function Home() {
   useEffect(() => {
     urlHistoryError && console.log(urlHistoryError, "history error");
   }, [urlHistoryError]);
+
+  useEffect(() => {
+    socket.on(
+      "receive-make-new-group",
+      ({ success, chatId, name, users, newNotice, initiator }) => {
+        if (success) {
+          makeNewGroup({
+            chatId,
+            name,
+            users,
+            newNotice,
+            msgLogs,
+            msgLogsDispatch,
+          });
+          socket.emit("join-room", chatId);
+
+          // redirect the page to the group chat if this user is the one that creates the group
+          if (initiator) {
+            // set the active group
+            setActiveGroupChat(chatId);
+
+            // deactive private chat
+            setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+            navigate(`/chats?id=${chatId}&type=group`);
+          }
+        }
+      }
+    );
+
+    return () => socket.off("receive-make-new-group");
+  }, [msgLogs]); //make new group
 
   // join the chat-tab room when the url contains /chats
   useEffect(() => {

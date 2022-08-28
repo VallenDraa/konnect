@@ -7,6 +7,20 @@ import { chatPreviewTimeStatus } from "../../../../utils/dates/dates";
 import _ from "lodash";
 import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
 
+const EmptyPlaceholder = () => {
+  return (
+    <div className="text-center space-y-10 mt-10 p-3">
+      <span className="block font-semibold text-xl lg:text-lg text-gray-500">
+        Chat List Is Empty
+      </span>
+      <span className="text-gray-400 text-xs">
+        Go start a chat by pressing{" "}
+        <span className="font-semibold text-gray-500">New Chat !</span>
+      </span>
+    </div>
+  );
+};
+
 export default function ChatList() {
   const { activePrivateChat } = useContext(ActivePrivateChatContext);
   const { activeGroupChat } = useContext(ActiveGroupChatContext);
@@ -27,6 +41,7 @@ export default function ChatList() {
 
       return new Date(_.last(currMsgs).time) - new Date(_.last(prevMsgs).time);
     });
+
     // check if the new message logs and current one is the same
     if (
       JSON.stringify(Object.fromEntries(newEntries)) !==
@@ -35,87 +50,65 @@ export default function ChatList() {
       setLogsEntries(newEntries);
     }
   }, [msgLogs]);
-  // useEffect(() => {
-  //   console.log(logsEntries);
-  // }, [logsEntries]);
-
-  const EmptyPlaceholder = () => {
-    return (
-      <div className="text-center space-y-10 mt-10 p-3">
-        <span className="block font-semibold text-xl lg:text-lg text-gray-500">
-          Chat List Is Empty
-        </span>
-        <span className="text-gray-400 text-xs">
-          Go start a chat by pressing{" "}
-          <span className="font-semibold text-gray-500">New Chat !</span>
-        </span>
-      </div>
-    );
-  };
 
   // determine what to return base on logsEntries length
-  if (logsEntries.length === 0) {
-    return <EmptyPlaceholder />;
-  } else {
-    const allChatIsEmpty = logsEntries.every(
-      ([key, value]) => value.chat?.length === 0
-    );
+  if (logsEntries.length === 0) return <EmptyPlaceholder />;
 
-    if (allChatIsEmpty) {
-      return <EmptyPlaceholder />;
-    } else {
-      return (
-        <ul className="p-3 flex flex-col gap-y-4">
-          {/* if chat history exists */}
-          <RenderIf conditionIs={logsEntries.length > 0}>
-            {logsEntries.map(([_id, log]) => {
-              // prove one time group exists
-              const lastTimeGroup = _.last(log.chat);
-              if (!lastTimeGroup) return;
+  const allChatIsEmpty = logsEntries.every(
+    ([key, value]) => value.chat?.length === 0
+  );
+  return allChatIsEmpty ? (
+    <EmptyPlaceholder />
+  ) : (
+    <ul className="p-3 space-y-4 absolute inset-0 overflow-auto">
+      {/* if chat history exists */}
+      <RenderIf conditionIs={logsEntries.length > 0}>
+        {logsEntries.map(([_id, log]) => {
+          // prove one time group exists
+          const lastTimeGroup = _.last(log.chat);
+          if (!lastTimeGroup) return;
 
-              // prove one message exists
-              const lastMsg = _.last(lastTimeGroup.messages);
-              if (!lastMsg) return;
+          // prove one message exists
+          const lastMsg = _.last(lastTimeGroup.messages);
+          if (!lastMsg) return;
 
-              switch (log.type) {
-                case "private":
-                  return (
-                    <ChatPreview
-                      type="private"
-                      chatId={_id}
-                      key={_id}
-                      lastMessage={lastMsg}
-                      timeSentArg={chatPreviewTimeStatus(
-                        new Date(),
-                        new Date(lastMsg.time)
-                      )}
-                      user={log.user}
-                      isActive={_id === activePrivateChat?._id}
-                    />
-                  );
+          switch (log.type) {
+            case "private":
+              return (
+                <ChatPreview
+                  type="private"
+                  chatId={_id}
+                  key={_id}
+                  lastMessage={lastMsg}
+                  timeSentArg={chatPreviewTimeStatus(
+                    new Date(),
+                    new Date(lastMsg.time)
+                  )}
+                  user={log.user}
+                  isActive={_id === activePrivateChat?._id}
+                />
+              );
 
-                case "group":
-                  return (
-                    <ChatPreview
-                      type="group"
-                      groupName={log.name}
-                      chatId={log.chatId}
-                      key={_id}
-                      lastMessage={lastMsg}
-                      timeSentArg={chatPreviewTimeStatus(
-                        new Date(),
-                        new Date(lastMsg.time)
-                      )}
-                      isActive={_id === activeGroupChat}
-                    />
-                  );
-                default:
-                  break;
-              }
-            })}
-          </RenderIf>
-        </ul>
-      );
-    }
-  }
+            case "group":
+              return (
+                <ChatPreview
+                  type="group"
+                  groupName={log.name}
+                  chatId={log.chatId}
+                  key={_id}
+                  lastMessage={lastMsg}
+                  timeSentArg={chatPreviewTimeStatus(
+                    new Date(),
+                    new Date(lastMsg.time)
+                  )}
+                  isActive={_id === activeGroupChat}
+                />
+              );
+            default:
+              break;
+          }
+        })}
+      </RenderIf>
+    </ul>
+  );
 }

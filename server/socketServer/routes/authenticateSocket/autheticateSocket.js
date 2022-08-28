@@ -1,7 +1,7 @@
 import Authenticate from "./authenticateClass.js";
 import axios from "axios";
 
-export default function authentication(socket) {
+export default function authenticationSocket(socket) {
   socket.on("login", async ({ userId, token }, cb) => {
     const userTarget = new Authenticate(userId, socket.id);
 

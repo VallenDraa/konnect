@@ -13,7 +13,7 @@ import {
 import {
   incrementMsgUnread,
   MessageLogsContext,
-  pushNewEntry,
+  pushNewPrivateEntry,
   pushNewMsgToEntry,
   removeMsgUnread,
 } from "../../context/messageLogs/MessageLogsContext";
@@ -25,6 +25,7 @@ import { CloseChatLogContext, SidebarContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
 import InputBar from "./components/InputBar/InputBar";
 import Log from "./components/Log/Log";
+import { cloneDeep, findLast } from "lodash";
 import {
   scrollToBottom,
   scrollToBottomSmooth,
@@ -140,8 +141,9 @@ export const ChatBox = () => {
               });
             break;
           case "group":
-            updateActiveGroupChat(search.id);
-
+            msgLogs.content[search.id]
+              ? updateActiveGroupChat(search.id)
+              : navigate("/chats");
             break;
           default:
             closeChatLog();
@@ -250,34 +252,76 @@ export const ChatBox = () => {
   }, [activePrivateChat, messageLogRef]); //scroll to bottom when active chat changes
 
   useEffect(() => {
+    socket.on("msg-sent", ({ success, to, msgId, timeSent, chatId }) => {
+      if (!success) return;
+      /* NEW MSG LOGS*/
+
+      const updatedChatLogs = cloneDeep(msgLogs.content);
+      const updateLogId = activePrivateChat._id || activeGroupChat;
+
+      if (updatedChatLogs[to || chatId]) {
+        const { chat: newChat } = updatedChatLogs[updateLogId];
+        const date = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const msgsMaxLen = msgsInTimeLog.length - 1;
+
+        if (msgsMaxLen > 0) {
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i].time !== timeSent) continue;
+
+            msgsInTimeLog[i].isSent = true;
+            msgsInTimeLog[i]._id = msgId;
+            break;
+          }
+        } else {
+          if (msgsInTimeLog[msgsMaxLen].time === timeSent) {
+            msgsInTimeLog[msgsMaxLen].isSent = true;
+            msgsInTimeLog[msgsMaxLen]._id = msgId;
+          }
+        }
+
+        updatedChatLogs[updateLogId].chatId = chatId;
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedChatLogs,
+        });
+      }
+    });
+
+    return () => socket.off("msg-sent");
+  }, [msgLogs]); // for changing the message state indicator
+
+  useEffect(() => {
     socket.on("receive-msg", async (data) => {
       const { message, chatId, success, chatType } = data;
+      const targetId = chatType === "private" ? message.by : chatId;
 
       if (success) {
         // update the message logs
-        msgLogs.content[message.by]
+        msgLogs.content[targetId]
           ? pushNewMsgToEntry({
-              targetId: message.by,
+              targetId,
               message,
               msgLogs,
               msgLogsDispatch,
             })
           : // if chat log doesn't exist for this user
-            pushNewEntry({
-              activePrivateChat,
-              targetId: message.by,
+            pushNewPrivateEntry({
+              type: chatType,
+              targetId,
               message,
               token: sessionStorage.getItem("token"),
               msgLogs,
               msgLogsDispatch,
-              chatId: chatType === "group" ? chatId : message.by,
+              chatId,
             });
 
         // update the unread message notif
         incrementMsgUnread({
           msgUnread,
           setMsgUnread,
-          chatId: chatType === "group" ? chatId : message.by,
+          chatId: targetId,
         });
 
         // play notification audio when receiving a message
@@ -297,24 +341,21 @@ export const ChatBox = () => {
     });
 
     return () => socket.off("receive-msg");
-  }, [msgLogs, userState, activePrivateChat]); // receiving message for recipient only code
+  }, [msgLogs, userState]); // receiving message for recipient only code
 
   useEffect(() => {
-    if (!activePrivateChat?._id && !activeGroupChat) return;
-
-    const logTargetId = activeGroupChat
-      ? activeGroupChat
-      : activePrivateChat?._id;
-
-    if (!msgLogs?.content[logTargetId]?.chat) return;
+    if (!activePrivateChat?._id) return;
+    if (!msgLogs?.content[activePrivateChat?._id]?.chat) return;
 
     // check if there is at least one message in the chat log & if the last message is by the other user
-    const lastMsg = _.last(msgLogs.content[logTargetId].chat);
+    const lastTimeLog = _.last(msgLogs.content[activePrivateChat._id].chat);
+    const lastMsg = _.last(lastTimeLog.messages);
+
     if (lastMsg?.by === userState?.user?._id) return;
 
     const updatedChatLogs = _.cloneDeep(msgLogs.content);
     const time = new Date().toISOString();
-    const { chat: newChat } = updatedChatLogs[logTargetId];
+    const { chat: newChat } = updatedChatLogs[activePrivateChat._id];
 
     if (newChat.length > 0) {
       const maxTimeLogsIdx = lastIdx(newChat);
@@ -326,19 +367,20 @@ export const ChatBox = () => {
         const lastMsg = _.last(msgsInTimeLog);
 
         if (lastMsg.by !== userState.user._id) {
-          if (lastMsg.readAt !== null) break;
-
           const msgsMaxLen = msgsInTimeLog.length - 1;
+          if (lastMsg?.readAt !== null) break;
 
           if (msgsMaxLen > 0) {
             for (let i = msgsMaxLen; i > 0; i--) {
-              if (msgsInTimeLog[i].readAt !== null) break;
+              if (msgsInTimeLog[i]?.readAt !== null) break;
 
               msgsInTimeLog[i].readAt = time;
+
               readMsgIds.push(msgsInTimeLog[i]._id);
             }
           } else {
             msgsInTimeLog[0].readAt = time;
+
             readMsgIds.push(msgsInTimeLog[0]._id);
           }
 
@@ -348,17 +390,96 @@ export const ChatBox = () => {
           });
 
           // updated the msgUnread notifs
-          removeMsgUnread({ msgUnread, setMsgUnread, chatId: logTargetId });
+          removeMsgUnread({
+            msgUnread,
+            setMsgUnread,
+            chatId: activePrivateChat._id,
+          });
 
           // update the message read status to the server
-          socket.emit("read-msg", time, token, logTargetId, readMsgIds);
+          socket.emit(
+            "private-read-msg",
+            time,
+            token,
+            activePrivateChat._id,
+            readMsgIds
+          );
         }
       }
     }
-  }, [activePrivateChat, msgLogs]); //set the message to read
+  }, [activePrivateChat, msgLogs]); //set the message to read for private chat
 
   useEffect(() => {
-    socket.on("msg-on-read", (isRead, recipientId, time) => {
+    if (!activeGroupChat) return;
+
+    // check if there is at least one message in the chat log & if the last message is by the other user
+    const lastTimeLog = _.last(msgLogs.content[activeGroupChat].chat);
+    const latestMsg = _.last(lastTimeLog.messages);
+    const userId = userState?.user?._id;
+    const totalMembersNoSender =
+      msgLogs.content[activeGroupChat].members.length +
+      msgLogs.content[activeGroupChat].admins.length;
+
+    if (latestMsg?.msgType === "notice") return;
+    if (latestMsg?.by === userId) return;
+    if (latestMsg?.beenReadBy?.find(({ user }) => user === userId)) return;
+
+    const updatedChatLogs = _.cloneDeep(msgLogs.content);
+    const time = new Date().toISOString();
+    const { chat: newChat } = updatedChatLogs[activeGroupChat];
+
+    if (newChat.length > 0) {
+      const maxTimeLogsIdx = lastIdx(newChat);
+      const readMsgIds = [];
+      const token = sessionStorage.getItem("token");
+
+      for (let i = maxTimeLogsIdx; i >= 0; i--) {
+        const msgsInTimeLog = newChat[i].messages;
+        const lastMsg = _.last(msgsInTimeLog);
+
+        if (lastMsg.by !== userState.user._id) {
+          const msgsMaxLen = msgsInTimeLog.length - 1;
+
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i]?.beenReadBy?.find((i) => i.user === userId))
+              break;
+
+            msgsInTimeLog[i].beenReadBy.push({
+              user: userState.user._id,
+              readAt: time,
+            });
+
+            readMsgIds.push(msgsInTimeLog[i]._id);
+          }
+
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+            payload: updatedChatLogs,
+          });
+
+          // updated the msgUnread notifs
+          removeMsgUnread({
+            msgUnread,
+            setMsgUnread,
+            chatId: activeGroupChat,
+          });
+
+          // update the message read status to the server
+          socket.emit(
+            "group-read-msg",
+            time,
+            token,
+            activeGroupChat,
+            userState.user._id,
+            readMsgIds
+          );
+        }
+      }
+    }
+  }, [activeGroupChat, msgLogs]); //set the message to read for group chat
+
+  useEffect(() => {
+    socket.on("private-msg-on-read", (isRead, recipientId, time) => {
       if (isRead) {
         if (!msgLogs.content[recipientId]) return;
         if (!msgLogs.content[activePrivateChat._id]) return;
@@ -387,8 +508,49 @@ export const ChatBox = () => {
       }
     });
 
-    return () => socket.off("msg-on-read");
-  }, [msgLogs, activePrivateChat]); //msg onread
+    return () => socket.off("private-msg-on-read");
+  }, [msgLogs, activePrivateChat]); //private msg onread
+
+  useEffect(() => {
+    socket.on("group-msg-on-read", (isRead, groupId, userId, time) => {
+      if (isRead) {
+        if (!msgLogs.content[groupId]) return;
+        if (!msgLogs.content[activeGroupChat]) return;
+
+        /* NEW MSG LOGS*/
+        const updatedChatLogs = _.cloneDeep(msgLogs.content);
+        const { chat: newChat } = updatedChatLogs[activeGroupChat];
+        const date = new Date().toLocaleDateString();
+        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+        const msgsMaxLen = msgsInTimeLog.length - 1;
+
+        if (msgsMaxLen > 0) {
+          for (let i = msgsMaxLen; i > 0; i--) {
+            if (msgsInTimeLog[i]?.beenReadBy?.find((i) => i.user === userId))
+              break;
+
+            msgsInTimeLog[i].beenReadBy.push({
+              user: userId,
+              readAt: time,
+            });
+          }
+        } else {
+          msgsInTimeLog[0].beenReadBy.push({
+            user: userId,
+            readAt: time,
+          });
+        }
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: updatedChatLogs,
+        });
+      }
+    });
+
+    return () => socket.off("group-msg-on-read");
+  }, [msgLogs, activeGroupChat]); //group msg onread
 
   return (
     <>
