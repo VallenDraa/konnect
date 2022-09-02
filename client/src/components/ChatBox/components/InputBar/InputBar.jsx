@@ -40,28 +40,18 @@ export default function inputBar({ messageLogRef }) {
     // get the message type from the url
     const [key, chatType] = search.split("&")[1].split("=");
 
+    const msgInterface = {
+      _id: null,
+      chatId: activeGroupChat,
+      by: userState.user._id,
+      msgType: "text",
+      content: newMessage,
+      isSent: false,
+      time: new Date().toISOString(),
+    };
+
     const newMessageInput =
-      chatType === "private"
-        ? {
-            _id: null,
-            by: userState.user._id,
-            to: activePrivateChat._id,
-            msgType: "text",
-            content: newMessage,
-            isSent: false,
-            readAt: null,
-            time: new Date().toISOString(),
-          }
-        : {
-            _id: null,
-            chatId: activeGroupChat,
-            by: userState.user._id,
-            msgType: "text",
-            content: newMessage,
-            isSent: false,
-            beenReadBy: [],
-            time: new Date().toISOString(),
-          };
+      chatType === "private" ? { ...msgInterface, readAt: null } : msgInterface;
 
     // update the message logs
     // check whether the active chat is private or group

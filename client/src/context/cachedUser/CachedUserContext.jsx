@@ -57,7 +57,7 @@ export default function CachedUserContextProvider({ children }) {
     }
   };
 
-  useEffect(() => console.log(cachedUsers), [cachedUsers]);
+  // useEffect(() => console.log(cachedUsers), [cachedUsers]);
 
   return (
     <CachedUserContext.Provider

@@ -7,9 +7,11 @@ import { chatPreviewTimeStatus } from "../../../../../utils/dates/dates";
 import RenderIf from "../../../../../utils/React/RenderIf";
 import Notice from "../../../../Message/Notice";
 import GroupMessage from "../../../../Message/GroupMessage";
-import { CachedUserContext } from "../../../../../context/cachedUser/CachedUserContext";
-import { useEffect } from "react";
-import { useState } from "react";
+
+const showSender = (i, messages) => {
+  if (i === 0) return true;
+  return messages[i - 1].by === messages[i].by ? false : true;
+};
 
 export default function PrivateLog({ messageLogRef }) {
   const { msgLogs } = useContext(MessageLogsContext);
@@ -39,14 +41,13 @@ export default function PrivateLog({ messageLogRef }) {
                     <Fragment key={msg._id === null ? i : msg._id}>
                       <RenderIf conditionIs={msg.msgType !== "notice"}>
                         <GroupMessage
-                          state={{
-                            isSent: msg.isSent,
-                            beenReadBy: msg.beenReadBy,
-                          }}
-                          sender={msg.by}
-                          isSentByMe={msg.by === userState.user._id}
-                          msg={msg.content}
-                          time={new Date(msg.time)}
+                          key={msg._id}
+                          msg={msg}
+                          showSender={
+                            msg.by === userState.user._id
+                              ? false
+                              : showSender(i, messages)
+                          }
                         />
                       </RenderIf>
                       <RenderIf conditionIs={msg.msgType === "notice"}>

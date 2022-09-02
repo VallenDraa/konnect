@@ -6,30 +6,27 @@ import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import { UserContext } from "../../context/user/userContext";
 import RenderIf from "../../utils/React/RenderIf";
 
-export default function GroupMessage({
-  innerRef = null,
-  state,
-  msg,
-  time,
-  isSentByMe,
-  sender,
-}) {
-  const formattedTime = time
-    .toTimeString()
-    .slice(0, time.toTimeString().lastIndexOf(":"));
+export default function GroupMessage({ innerRef, showSender = true, msg }) {
   const { settings } = useContext(SettingsContext);
   const { userState } = useContext(UserContext);
   const { general } = settings;
   const { fetchCachedUsers } = useContext(CachedUserContext);
-  const [senderUsername, setSenderUsername] = useState(sender);
+  const [senderUsername, setSenderUsername] = useState(msg.by);
+  const time = new Date(msg.time);
+  const formattedTime = time
+    .toTimeString()
+    .slice(0, time.toTimeString().lastIndexOf(":"));
+  const isSentByMe = msg.by === userState.user._id;
 
   useEffect(() => {
     (async () => {
+      if (!showSender) return;
+
       try {
-        if (sender === userState.user._id) {
+        if (msg.by === userState.user._id) {
           setSenderUsername(userState.user.username);
         } else {
-          const { username } = await fetchCachedUsers(sender);
+          const { username } = await fetchCachedUsers(msg.by);
           setSenderUsername(username);
         }
       } catch (error) {
@@ -42,23 +39,26 @@ export default function GroupMessage({
     <li
       ref={innerRef}
       aria-label="message"
-      className={`h-max flex items-center mt-5 ${
-        isSentByMe ? "justify-end" : ""
-      } ${isSentByMe ? "pr-5 lg:pr-8" : "pl-5 lg:pl-8"} ${
-        general?.animation ? "animate-pop-in" : ""
-      }`}
+      className={`h-max flex items-center ${isSentByMe ? "justify-end" : ""} ${
+        isSentByMe ? "pr-5 lg:pr-8" : "pl-5 lg:pl-8"
+      } ${general?.animation ? "animate-pop-in" : ""} ${
+        showSender ? "mt-8" : "mt-1.5"
+      }
+      `}
     >
       <div
         className={`max-w-[75%] flex flex-col relative rounded-lg shadow space-y-2 min-w-[100px] p-2 ${
           isSentByMe ? "bg-white" : " bg-gray-300"
         }`}
       >
-        <span className="text-xxs px-1  text-gray-600 absolute -top-5 inset-x-0 truncate">
-          {senderUsername}
-        </span>
+        <RenderIf conditionIs={showSender}>
+          <span className="text-xxs px-1  text-gray-600 absolute -top-4 left-0 truncate">
+            {senderUsername}
+          </span>
+        </RenderIf>
 
         <span className={`text-gray-800 leading-5 lg:leading-6 self-start`}>
-          {msg}
+          {msg.content}
         </span>
 
         <div
@@ -75,16 +75,14 @@ export default function GroupMessage({
           </time>
 
           <RenderIf conditionIs={isSentByMe}>
-            <RenderIf
-              conditionIs={!state?.isSent && state?.beenReadBy?.length === 0}
-            >
+            <RenderIf conditionIs={!msg.isSent}>
               <AiOutlineLoading3Quarters
                 className={`self-start text-gray-400 ${
                   general?.animation ? "animate-spin animate-fade-in" : ""
                 }`}
               />
             </RenderIf>
-            <RenderIf conditionIs={state?.isSent}>
+            <RenderIf conditionIs={msg.isSent}>
               <BiCheckDouble
                 className={`text-xl self-start text-gray-400 ${
                   general?.animation ? "animate-fade-in" : ""

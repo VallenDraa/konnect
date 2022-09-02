@@ -12,12 +12,6 @@ import { UserContext } from "../user/userContext";
 import getUsersPreview from "../../utils/apis/getusersPreview";
 import { ContactsContext } from "../contactContext/ContactContext";
 import { cloneDeep } from "lodash";
-import {
-  ActivePrivateChatContext,
-  ACTIVE_PRIVATE_CHAT_DEFAULT,
-} from "../activePrivateChat/ActivePrivateChatContext";
-import { ActiveGroupChatContext } from "../activeGroupChat/ActiveGroupChatContext";
-import { SidebarContext } from "../../pages/Home/Home";
 
 const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
@@ -141,8 +135,8 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off("refresh-msg-log");
   }, [userState, contacts, msgLogs]);
 
-  // useEffect(() => console.log(msgUnread), [msgUnread]);
-  useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  useEffect(() => console.log(msgUnread), [msgUnread]);
+  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider

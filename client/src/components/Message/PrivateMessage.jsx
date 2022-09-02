@@ -22,7 +22,7 @@ export default function PrivateMessage({
     <li
       ref={innerRef}
       aria-label="message"
-      className={`h-max flex items-center mt-5 ${
+      className={`h-max flex items-center mt-1.5 ${
         isSentByMe ? "justify-end" : ""
       } ${isSentByMe ? "pr-5 lg:pr-8" : "pl-5 lg:pl-8"} ${
         general?.animation ? "animate-pop-in" : ""

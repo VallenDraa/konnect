@@ -18,6 +18,8 @@ export const App = () => {
 
   // change the page title according to the number of notifications
   useEffect(() => {
+    if (!msgUnread) return;
+
     const notifTotal = notifUnseen.total + msgUnread.total;
 
     setTitle((prev) => ({

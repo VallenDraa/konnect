@@ -35,7 +35,7 @@ export default function GroupChatHeader({ invisibleWallRef }) {
                   );
                 }}
                 to="/chats"
-                className={`block lg:hidden hover:text-blue-400 text-3xl ${
+                className={`block hover:text-blue-400 text-3xl ${
                   general?.animation ? "duration-200" : ""
                 }`}
               >

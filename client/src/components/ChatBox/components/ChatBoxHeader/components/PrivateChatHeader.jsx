@@ -60,7 +60,7 @@ export default function PrivateChatHeader({ invisibleWallRef }) {
                 );
               }}
               to="/chats"
-              className={`block lg:hidden hover:text-blue-400 text-3xl ${
+              className={`block hover:text-blue-400 text-3xl ${
                 general?.animation ? "duration-200" : ""
               }`}
             >
@@ -82,7 +82,7 @@ export default function PrivateChatHeader({ invisibleWallRef }) {
                 </span>
                 <span
                   ref={statusRef}
-                  className=" text-xs text-gray-500 relative z-10 max-w-[200px] truncate"
+                  className="text-xs text-gray-500 relative z-10 max-w-[200px] truncate"
                 >
                   <StatusSwitcher
                     isOnline={activePrivateChat?.isOnline}
