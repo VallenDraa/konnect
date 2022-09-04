@@ -74,27 +74,27 @@ export default function messagesSocket(socket) {
     }
   });
 
-  // socket.on("group-read-msg", async (time, token, groupId, userId, msgIds) => {
-  //   try {
-  //     if (new Date(time).getMonth().toString() === NaN.toString()) {
-  //       throw createErrorNonExpress(400, "invalid time arguments");
-  //     }
+  socket.on("group-read-msg", async (time, token, groupId, userId, msgIds) => {
+    try {
+      if (new Date(time).getMonth().toString() === NaN.toString()) {
+        throw createErrorNonExpress(400, "invalid time arguments");
+      }
 
-  //     // set all passed in messages isRead field to true
-  //     // const { data } = await axios.put(
-  //     //   `${process.env.API_URL}/messages/group/read_message`,
-  //     //   { time, msgIds },
-  //     //   { headers: { Authorization: `Bearer ${token}` } }
-  //     // );
+      // set all passed in messages isRead field to true
+      await axios.put(
+        `${process.env.API_URL}/messages/group/read_message`,
+        { time, msgIds, user: userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-  //     // check if sender is online
-
-  //     socket.to(groupId).emit("group-msg-on-read", true, groupId, userId, time);
-  //   } catch (e) {
-  //     console.log(e);
-  //     socket.emit("error", e);
-  //   }
-  // });
+      socket
+        .to(groupId)
+        .emit("group-msg-on-read", true, groupId, userId, time, msgIds);
+    } catch (e) {
+      console.log(e);
+      socket.emit("error", e);
+    }
+  });
 
   socket.on("download-a-chat-history", async ({ token, pcIds, gcIds }) => {
     const url = `${

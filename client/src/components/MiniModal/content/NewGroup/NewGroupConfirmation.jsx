@@ -32,7 +32,7 @@ export default function NewGroupConfirmation({ cb, selected }) {
       </header>
       <main className="overflow-y-auto grow-[20] mt-3 w-full flex flex-col">
         {/* list the selected user */}
-        <ul className="grow-[10]">
+        <ul className="grow-[10] space-y-2">
           {selected.map(({ user }, i) => {
             return (
               <li

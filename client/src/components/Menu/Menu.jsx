@@ -143,7 +143,7 @@ export const Menu = ({
     if (!menuListRef.current) return;
 
     setTimeout(menuUnderlineLoader, 100);
-  }, [menuListRef, menuUnderlineLoader]); //set the initial menu selector pos
+  }, [menuListRef, menuUnderlineLoader, userState._id]); //set the initial menu selector pos
 
   useEffect(() => {
     window.addEventListener("resize", menuUnderlineLoader);

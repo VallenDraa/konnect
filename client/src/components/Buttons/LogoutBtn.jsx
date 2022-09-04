@@ -5,24 +5,37 @@ import {
   ActivePrivateChatContext,
   ACTIVE_PRIVATE_CHAT_DEFAULT,
 } from "../../context/activePrivateChat/ActivePrivateChatContext";
+import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
 import USER_ACTIONS from "../../context/user/userAction";
 import { UserContext } from "../../context/user/userContext";
 import socket from "../../utils/socketClient/socketClient";
 import Pill from "./Pill";
+import { ModalContext } from "../../context/modal/modalContext";
+import MODAL_ACTIONS from "../../context/modal/modalActions";
 
 export default function LogoutBtn() {
   const { userState, userDispatch } = useContext(UserContext);
   const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
+  const { setActiveGroupChat } = useContext(ActiveGroupChatContext);
+  const { modalDispatch } = useContext(ModalContext);
   const Navigate = useNavigate();
 
   const handleLogout = () => {
     socket.emit("logout", userState.user._id, (success, message) => {
-      // deactivate chat
-      setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+      if (success) {
+        // deactivate chat
+        setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+        setActiveGroupChat(null);
 
-      userDispatch({ type: USER_ACTIONS.logout });
-      sessionStorage.removeItem("token");
-      Navigate("/login");
+        // close the modal so that when a user logs back in, it doesn't jitter
+        modalDispatch({ type: MODAL_ACTIONS.close });
+
+        userDispatch({ type: USER_ACTIONS.logout });
+        sessionStorage.removeItem("token");
+        Navigate("/login");
+      } else {
+        console.error(message);
+      }
     });
   };
   return (

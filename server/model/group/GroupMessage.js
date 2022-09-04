@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export const GroupMessageSchema = new mongoose.Schema({
-  chatId: [{ type: mongoose.Schema.Types.ObjectId, ref: "group_chat" }],
+  chatId: { type: mongoose.Schema.Types.ObjectId, ref: "group_chat" },
   by: { type: mongoose.Schema.Types.ObjectId, ref: "user", default: null },
   msgType: {
     type: String,

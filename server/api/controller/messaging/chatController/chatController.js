@@ -9,7 +9,6 @@ export const getAllChatHistory = async (req, res, next) => {
     const { privateChats: pcIds, groupChats: gcIds } = await User.findById(_id)
       .select("privateChats", "groupChats")
       .lean();
-
     const chats = [];
 
     // if both chats are empty returns an empty result
@@ -98,9 +97,9 @@ export const getAllChatHistory = async (req, res, next) => {
 export const getChatHistory = async (req, res, next) => {
   try {
     const { pcIds, gcIds } = req.query;
-    const parsedPcIds = pcIds.split(","); //private chat ids
-    const parsedGcIds = gcIds.split(","); //group chat ids
     const { _id } = res.locals.tokenData;
+    const parsedPcIds = pcIds ? pcIds.split(",") : []; //private chat ids
+    const parsedGcIds = gcIds ? gcIds.split(",") : []; //group chat ids
 
     // check if client passed in at least one type of chat id
     if (parsedGcIds.length <= 0 && parsedPcIds.length <= 0) {
@@ -128,6 +127,13 @@ export const getChatHistory = async (req, res, next) => {
       }));
     }
 
+    if (parsedGcIds.length > 0) {
+      groupChats = await GroupChat.where({ _id: { $in: parsedGcIds } })
+        .select(["chat", "type"])
+        .populate("chat.messages")
+        .lean();
+    }
+
     res.json({ success: true, privateChats, groupChats });
   } catch (error) {
     next(error);
@@ -142,6 +148,14 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
         const timeGroups = c.chat;
         const timeGroupMaxIdx = timeGroups.length - 1;
         const newDetail = { [unreadId]: 0 };
+        let currMsg, filterFunc;
+
+        // determine which check to execute based on the chat Type
+        filterFunc =
+          c.type === "private"
+            ? (currMsg) => currMsg.readAt
+            : ({ beenReadBy }) =>
+                beenReadBy.some((u) => u.user.toString() === userId);
 
         // check if the length is more than 0
         if (timeGroupMaxIdx > 0) {
@@ -151,10 +165,11 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
 
             // loop over the messages in the time group from the back
             for (let z = chatMaxIdx; z >= 0; i--) {
-              if (timeGroups[i].messages[z].msgType === "notice") continue;
+              currMsg = timeGroups[i].messages[z];
+              if (currMsg.msgType === "notice") continue;
 
-              if (timeGroups[i].messages[z].by.toString() !== userId) {
-                if (timeGroups[i].messages[z].readAt) break;
+              if (currMsg.by.toString() !== userId) {
+                if (filterFunc(currMsg)) break;
 
                 newDetail[unreadId]++;
               }
@@ -165,17 +180,21 @@ async function fetchUnreadMsgFromDb(chats, userId, next) {
 
           // loop over the messages in the time group from the back4
           if (chatMaxIdx === 0) {
-            if (timeGroups[0].messages[0].msgType === "notice") return p;
-            if (timeGroups[0].messages[0].by.toString() === userId) return p;
-            if (timeGroups[0].messages[0].readAt) return p;
+            currMsg = timeGroups[0].messages[0];
+
+            if (currMsg.msgType === "notice") return p;
+            if (currMsg.by.toString() === userId) return p;
+            if (filterFunc(currMsg)) return p;
 
             newDetail[unreadId]++;
           } else {
             for (let z = chatMaxIdx; z >= 0; z--) {
-              if (timeGroups[0].messages[z].msgType === "notice") continue;
+              currMsg = timeGroups[0].messages[z];
 
-              if (timeGroups[0].messages[z].by.toString() !== userId) {
-                if (timeGroups[0].messages[z].readAt) break;
+              if (currMsg.msgType === "notice") continue;
+
+              if (currMsg.by.toString() !== userId) {
+                if (filterFunc(currMsg)) break;
 
                 newDetail[unreadId]++;
               }

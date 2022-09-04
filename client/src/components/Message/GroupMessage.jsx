@@ -74,6 +74,8 @@ export default function GroupMessage({ innerRef, showSender = true, msg }) {
             {formattedTime}
           </time>
 
+          <span>{msg?.beenReadBy?.length}</span>
+
           <RenderIf conditionIs={isSentByMe}>
             <RenderIf conditionIs={!msg.isSent}>
               <AiOutlineLoading3Quarters

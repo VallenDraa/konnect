@@ -51,7 +51,9 @@ export default function inputBar({ messageLogRef }) {
     };
 
     const newMessageInput =
-      chatType === "private" ? { ...msgInterface, readAt: null } : msgInterface;
+      chatType === "private"
+        ? { ...msgInterface, readAt: null }
+        : { ...msgInterface, beenReadBy: [] };
 
     // update the message logs
     // check whether the active chat is private or group

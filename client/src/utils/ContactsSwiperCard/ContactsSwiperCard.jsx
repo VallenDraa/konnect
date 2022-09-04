@@ -21,7 +21,6 @@ export default function ContactsSwiperCard({
   if (contacts.length !== 0) {
     return (
       <Swiper
-        spaceBetween={1}
         slidesPerView="auto"
         navigation
         className="relative"
@@ -39,9 +38,9 @@ export default function ContactsSwiperCard({
           return (
             <SwiperSlide
               key={i}
-              className={`w-[125px] overflow-hidden hover:bg-gray-100 cursor-pointer p-3 mx-5 flex justify-center
-                        ${general?.animation ? "duration-200" : ""}
-                        `}
+              className={`w-[125px] overflow-hidden hover:bg-gray-100 cursor-pointer p-3 flex justify-center ${
+                general?.animation ? "duration-200" : ""
+              }`}
             >
               <RenderIf conditionIs={linkable}>
                 <Link

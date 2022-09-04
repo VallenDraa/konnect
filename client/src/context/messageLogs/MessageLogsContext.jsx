@@ -135,8 +135,8 @@ export default function MessageLogsContextProvider({ children }) {
     return () => socket.off("refresh-msg-log");
   }, [userState, contacts, msgLogs]);
 
-  useEffect(() => console.log(msgUnread), [msgUnread]);
-  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  // useEffect(() => console.log(msgUnread), [msgUnread]);
+  useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider

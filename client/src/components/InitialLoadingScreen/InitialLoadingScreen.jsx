@@ -17,8 +17,13 @@ export const InitialLoadingScreen = () => {
     if (!loading.current) return;
     if (isAuthorized) {
       if (settings.general?.animation) {
-        loading.current.classList.add("animate-pop-out");
-        setTimeout(() => setIsInitialLoading(false), 190);
+        const animDelay = window.innerWidth <= 1024 ? 300 : 0;
+
+        // delay the fading animation if window screen size is small
+        setTimeout(() => {
+          loading.current.classList.add("animate-pop-out");
+          setTimeout(() => setIsInitialLoading(false), 190);
+        }, animDelay);
       } else {
         setIsInitialLoading(false);
       }
