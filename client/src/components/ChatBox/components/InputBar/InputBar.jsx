@@ -36,14 +36,14 @@ export default function inputBar({ messageLogRef }) {
     e.preventDefault();
     if (newMessage === "") return;
     if (isEmojiBarOn) setIsEmojiBarOn(false);
+    const userId = userState.user._id;
 
     // get the message type from the url
     const [key, chatType] = search.split("&")[1].split("=");
 
     const msgInterface = {
       _id: null,
-      chatId: activeGroupChat,
-      by: userState.user._id,
+      by: userId,
       msgType: "text",
       content: newMessage,
       isSent: false,
@@ -52,8 +52,12 @@ export default function inputBar({ messageLogRef }) {
 
     const newMessageInput =
       chatType === "private"
-        ? { ...msgInterface, readAt: null }
-        : { ...msgInterface, beenReadBy: [] };
+        ? { ...msgInterface, readAt: null, to: activePrivateChat._id }
+        : {
+            ...msgInterface,
+            chatId: activeGroupChat,
+            beenReadBy: [{ readAt: msgInterface.time, user: userId }],
+          };
 
     // update the message logs
     // check whether the active chat is private or group
@@ -83,6 +87,7 @@ export default function inputBar({ messageLogRef }) {
     // reset the input bar
     setnewMessage("");
 
+    console.log(newMessageInput);
     // send the message to the server
     socket.emit(
       "new-msg",
@@ -128,17 +133,16 @@ export default function inputBar({ messageLogRef }) {
           ref={inputRef}
           onChange={(e) => setnewMessage(e.target.value)}
           value={newMessage}
-          className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full
-               rounded-full px-6 resize-none flex items-center justify-center h-8"
+          className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8"
         />
         {/* the send msg btn */}
         <RenderIf conditionIs={newMessage !== ""}>
           <button
             className={`w-8 h-8 rounded-full bg-blue-300 text-white
                 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
-                flex items-center justify-center shadow aspect-square text-xs 
-                ${general?.animation ? `animate-pop-in` : ``}
-                `}
+                flex items-center justify-center shadow aspect-square text-xs ${
+                  general?.animation ? `animate-pop-in` : ``
+                }`}
           >
             <FaPaperPlane className="relative right-[1px]" />
           </button>

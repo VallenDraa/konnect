@@ -5,12 +5,23 @@ export const saveMessage = async (req, res, next) => {
   try {
     // //extract the message from the body and save it seperately to the database
     const { message } = req.body;
+    const { beenReadBy, ...parsedMsg } = message;
 
-    if (message._id === null) delete message._id; //this will prevent null _id when creating a new message instance
-    const newMsgTimeGroup = new Date(message.time).toLocaleDateString();
-    const newMsg = await GroupMessage.create({ ...message, isSent: true });
+    if (parsedMsg._id === null) delete parsedMsg._id; //this will prevent null _id when creating a new message instance
+    const newMsgTimeGroup = new Date(parsedMsg.time).toLocaleDateString();
+    const newMsgTemp = await GroupMessage.create({
+      ...parsedMsg,
+      isSent: true,
+    });
 
-    const groupChat = await GroupChat.findById(message.chatId);
+    // update the read list to include the sender
+    const newMsg = await GroupMessage.findByIdAndUpdate(
+      newMsgTemp._id,
+      { beenReadBy },
+      { new: true }
+    );
+
+    const groupChat = await GroupChat.findById(parsedMsg.chatId);
     const lastTimeGroup = groupChat.chat[groupChat.chat.length - 1];
 
     // check if the lastTimegroup matches the incoming message's one
@@ -38,10 +49,15 @@ export const readMessage = async (req, res, next) => {
       return createError(next, 400, "invalid time arguments");
     }
 
-    await GroupMessage.updateMany(
-      { _id: { $in: msgIds } },
-      { $push: { beenReadBy: { user, readAt: time } } }
-    );
+    const msgs = await GroupMessage.find({ _id: { $in: msgIds } });
+
+    for (const msg of msgs) {
+      if (!msg.beenReadBy.includes((u) => u.user.toString() === user)) {
+        msg.beenReadBy.push({ user, readAt: time });
+
+        await msg.save();
+      }
+    }
 
     res.json({ success: true });
   } catch (error) {

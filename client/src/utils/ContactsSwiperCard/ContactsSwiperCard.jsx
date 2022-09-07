@@ -67,10 +67,9 @@ export default function ContactsSwiperCard({
               <RenderIf conditionIs={!linkable}>
                 <button
                   onClick={() => onItemClicked && onItemClicked(user)}
-                  className={`flex flex-col items-center gap-y-1.5
-                            ${
-                              general?.animation ? "animate-fade-in" : ""
-                            }          
+                  className={`flex flex-col items-center gap-y-1.5 ${
+                    general?.animation ? "animate-fade-in" : ""
+                  }          
                   `}
                 >
                   <RenderIf conditionIs={!user.profilePicture}>

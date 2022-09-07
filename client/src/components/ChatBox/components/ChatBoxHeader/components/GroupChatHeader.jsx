@@ -1,12 +1,17 @@
-import { useEffect } from "react";
-import { useContext, useRef } from "react";
+import { useEffect, useContext, useRef } from "react";
 import { BsArrowLeftShort } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { ActiveGroupChatContext } from "../../../../../context/activeGroupChat/ActiveGroupChatContext";
 import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLogsContext";
+import MODAL_ACTIONS from "../../../../../context/modal/modalActions";
+import { ModalContext } from "../../../../../context/modal/modalContext";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
-import { CloseChatLogContext } from "../../../../../pages/Home/Home";
+import {
+  CloseChatLogContext,
+  UrlHistoryContext,
+} from "../../../../../pages/Home/Home";
 import RenderIf from "../../../../../utils/React/RenderIf";
+import GroupProfileModalContent from "../../../../Modal/Content/GroupProfileModalContent/GroupProfileModalContent";
 
 export default function GroupChatHeader({ invisibleWallRef }) {
   const { settings } = useContext(SettingsContext);
@@ -14,8 +19,19 @@ export default function GroupChatHeader({ invisibleWallRef }) {
   const { activeGroupChat, setActiveGroupChat } = useContext(
     ActiveGroupChatContext
   );
+  const { modalDispatch } = useContext(ModalContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const { closeChatLog } = useContext(CloseChatLogContext);
+  const { urlHistory } = useContext(UrlHistoryContext);
+  const showGroupProfile = () => {
+    modalDispatch({
+      type: MODAL_ACTIONS.show,
+      prevUrl: urlHistory?.current,
+      onExitReturnToHome: false,
+      content: <GroupProfileModalContent />,
+      title: msgLogs.content[activeGroupChat]?.name,
+    });
+  };
 
   return (
     <RenderIf conditionIs={msgLogs.content[activeGroupChat]}>
@@ -42,7 +58,10 @@ export default function GroupChatHeader({ invisibleWallRef }) {
                 <BsArrowLeftShort />
               </Link>
               {/* group profile  */}
-              <div className="flex items-center gap-1.5">
+              <button
+                onClick={showGroupProfile}
+                className="flex items-center gap-1.5"
+              >
                 <img
                   src="https://picsum.photos/200/200"
                   alt=""
@@ -56,7 +75,7 @@ export default function GroupChatHeader({ invisibleWallRef }) {
                     Group
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* chat action buttons */}

@@ -11,7 +11,7 @@ export default function GroupMessage({ innerRef, showSender = true, msg }) {
   const { userState } = useContext(UserContext);
   const { general } = settings;
   const { fetchCachedUsers } = useContext(CachedUserContext);
-  const [senderUsername, setSenderUsername] = useState(msg.by);
+  const [senderUsername, setSenderUsername] = useState();
   const time = new Date(msg.time);
   const formattedTime = time
     .toTimeString()
@@ -74,7 +74,7 @@ export default function GroupMessage({ innerRef, showSender = true, msg }) {
             {formattedTime}
           </time>
 
-          <span>{msg?.beenReadBy?.length}</span>
+          {/* <span>{msg?.beenReadBy?.length}</span> */}
 
           <RenderIf conditionIs={isSentByMe}>
             <RenderIf conditionIs={!msg.isSent}>

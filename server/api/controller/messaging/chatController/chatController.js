@@ -298,9 +298,14 @@ export const getAllChatId = async (req, res, next) => {
 
     // formatting the result
     const formattedChats = chats.map((c) => {
+      let messages;
+
       switch (c.type) {
         case "private":
           const [user] = c.users.filter((user) => user._id.toString() !== _id);
+          c.chat[0].messages = [
+            c.chat[0].messages[c.chat[0].messages.length - 1],
+          ]; //only get the last message of the last time group
 
           return {
             chatId: c._id,
@@ -311,6 +316,10 @@ export const getAllChatId = async (req, res, next) => {
           };
 
         case "group":
+          c.chat[0].messages = [
+            c.chat[0].messages[c.chat[0].messages.length - 1],
+          ]; //only get the last message of the last time group
+
           return {
             name: c.name,
             profilePicture: c.profilePicture,
@@ -327,7 +336,6 @@ export const getAllChatId = async (req, res, next) => {
     });
 
     const unreadMsg = await fetchUnreadMsgFromDb(formattedChats, _id, next);
-
     res.json({
       currentUser: _id,
       messageLogs: [...formattedChats],

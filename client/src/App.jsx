@@ -5,28 +5,10 @@ import { Login } from "./pages/Login/Login";
 import { Register } from "./pages/Register/Register";
 import Home from "./pages/Home/Home";
 import RenderIf from "./utils/React/RenderIf";
-import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
-import { NotifContext } from "./context/notifContext/NotifContext";
-import { TitleContext } from "./context/titleContext/TitleContext";
 import ActiveChatHandlerProvider from "./context/activeChatHandler/ActiveChatHandler";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
-  const { msgUnread } = useContext(MessageLogsContext);
-  const { notifUnseen } = useContext(NotifContext);
-  const { setTitle } = useContext(TitleContext);
-
-  // change the page title according to the number of notifications
-  useEffect(() => {
-    if (!msgUnread) return;
-
-    const notifTotal = notifUnseen.total + msgUnread.total;
-
-    setTitle((prev) => ({
-      ...prev,
-      prefix: notifTotal > 0 ? `(${notifTotal}) ` : "",
-    }));
-  }, [notifUnseen, msgUnread]);
 
   return (
     <ActiveChatHandlerProvider>

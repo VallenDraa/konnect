@@ -87,9 +87,9 @@ export default function messagesSocket(socket) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      socket
-        .to(groupId)
-        .emit("group-msg-on-read", true, groupId, userId, time, msgIds);
+      // socket
+      //   .to(groupId)
+      //   .emit("group-msg-on-read", true, groupId, userId, time, msgIds);
     } catch (e) {
       console.log(e);
       socket.emit("error", e);

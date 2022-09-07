@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import { createContext, useEffect, useState } from "react";
+import { useContext, createContext, useEffect, useState } from "react";
 import { TitleContext } from "../titleContext/TitleContext";
 
 export const ACTIVE_PRIVATE_CHAT_DEFAULT = {

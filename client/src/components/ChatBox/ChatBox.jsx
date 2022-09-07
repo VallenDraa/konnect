@@ -449,17 +449,25 @@ export const ChatBox = () => {
 
     // check if the last message has been read by the user if so it means the previous messages had also been read
     if (!lastMsg._id) return;
-    if (lastMsg.beenReadBy.some((u) => u.user === userId)) return;
+    if (lastMsg.by === userState.user._id) return;
+    if (lastMsg.beenReadBy?.length - 1 === membersLen) return;
+    if (lastMsg.beenReadBy?.some((u) => u.user === userId)) return;
 
     // loop through the time group
     for (let i = newChat.length - 1; i >= 0; i--) {
       // loop through the messages in the time group
       const msgs = newChat[i].messages;
+      const msgHasBeenRead = msgs[msgs.length - 1].beenReadBy.some(
+        (u) => u.user === userId
+      );
+
+      if (msgHasBeenRead) break;
 
       for (let j = msgs.length - 1; j >= 0; j--) {
         // check if the messages read list can be updated
         if (msgs[j].msgType === "notice") continue;
         if (msgs[j].beenReadBy.some((u) => u.user === userId)) break;
+        if (msgs[j].beenReadBy.length - 1 === membersLen) return;
         if (msgs[j].beenReadBy.length === membersLen) break;
 
         // add the current user to the read list
@@ -469,8 +477,6 @@ export const ChatBox = () => {
         readMsgIds.push(msgs[j]._id);
       }
     }
-
-    console.log(readMsgIds);
 
     if (readMsgIds.length > 0) {
       msgLogsDispatch({
@@ -494,42 +500,42 @@ export const ChatBox = () => {
       );
     }
   }, [activeGroupChat, msgLogs]); //set the message to read for group chat
-  useEffect(() => {
-    socket.on("group-msg-on-read", (isRead, groupId, userId, time) => {
-      if (isRead) {
-        if (!msgLogs.content[groupId]) return;
-        // if (!msgLogs.content[activeGroupChat]) return;
+  // useEffect(() => {
+  //   socket.on("group-msg-on-read", (isRead, groupId, userId, time) => {
+  //     if (isRead) {
+  //       if (!msgLogs.content[groupId]) return;
+  //       // if (!msgLogs.content[activeGroupChat]) return;
 
-        // console.log(userId, userState.user._id);
-        /* NEW MSG LOGS*/
-        const updatedChatLogs = _.cloneDeep(msgLogs.content);
-        const { chat: newChat } = updatedChatLogs[groupId];
-        const date = new Date().toLocaleDateString();
-        const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
-        const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-        const msgsMaxLen = msgsInTimeLog.length - 1;
+  //       // console.log(userId, userState.user._id);
+  //       /* NEW MSG LOGS*/
+  //       const updatedChatLogs = _.cloneDeep(msgLogs.content);
+  //       const { chat: newChat } = updatedChatLogs[groupId];
+  //       const date = new Date().toLocaleDateString();
+  //       const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+  //       const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+  //       const msgsMaxLen = msgsInTimeLog.length - 1;
 
-        if (msgsMaxLen > 0) {
-          for (let i = msgsMaxLen; i > 0; i--) {
-            if (msgsInTimeLog[i]?.beenReadBy?.some((i) => i.user === userId)) {
-              break;
-            }
+  //       if (msgsMaxLen > 0) {
+  //         for (let i = msgsMaxLen; i > 0; i--) {
+  //           if (msgsInTimeLog[i]?.beenReadBy?.some((i) => i.user === userId)) {
+  //             break;
+  //           }
 
-            msgsInTimeLog[i].beenReadBy.push({ user: userId, readAt: time });
-          }
-        } else {
-          msgsInTimeLog[0].beenReadBy.push({ user: userId, readAt: time });
-        }
+  //           msgsInTimeLog[i].beenReadBy.push({ user: userId, readAt: time });
+  //         }
+  //       } else {
+  //         msgsInTimeLog[0].beenReadBy.push({ user: userId, readAt: time });
+  //       }
 
-        msgLogsDispatch({
-          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-          payload: updatedChatLogs,
-        });
-      }
-    });
+  //       msgLogsDispatch({
+  //         type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+  //         payload: updatedChatLogs,
+  //       });
+  //     }
+  //   });
 
-    return () => socket.off("group-msg-on-read");
-  }, [msgLogs]); //group msg onread
+  //   return () => socket.off("group-msg-on-read");
+  // }, [msgLogs]); //group msg onread
 
   return (
     <>

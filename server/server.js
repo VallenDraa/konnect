@@ -77,7 +77,7 @@ app.use((err, req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
 
-  if (!isProduction) console.error(stack);
+  if (!isProduction) console.error(message);
 
   return res
     .status(status || 500)
@@ -100,7 +100,7 @@ httpServer.listen(process.env.PORT || 3001, async () => {
   } catch (error) {
     console.log(
       "🚀 ~ file: server.js ~ line 104 ~ httpServer.listen ~ error",
-      error
+      error.message
     );
   }
 });
