@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import PicturelessProfile from "../../components/PicturelessProfile/PicturelessProfile";
+import PP from "../../components/PP/PP";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import charToRGB from "../charToRGB/charToRGB";
 import RenderIf from "../React/RenderIf";
@@ -27,14 +28,6 @@ export default function ContactsSwiperCard({
         style={{ cursor: contacts.length >= 4 ? "grab" : "default" }}
       >
         {contacts.map(({ user }, i) => {
-          const rgb = charToRGB(user.initials.split(""));
-
-          const result = {
-            r: rgb[0],
-            g: rgb[1] || rgb[0] + rgb[0] <= 200 ? rgb[0] + rgb[0] : 200,
-            b: rgb[2] || rgb[0] + rgb[1] <= 200 ? rgb[0] + rgb[1] : 200,
-          };
-
           return (
             <SwiperSlide
               key={i}
@@ -45,17 +38,17 @@ export default function ContactsSwiperCard({
               <RenderIf conditionIs={linkable}>
                 <Link
                   to={`/user/${user.username}`}
-                  className={`flex flex-col items-center gap-y-1.5
-                            ${general?.animation ? "animate-fade-in" : ""}   
-                  `}
+                  className={`flex flex-col items-center gap-y-1.5 ${
+                    general?.animation ? "animate-fade-in" : ""
+                  }`}
                 >
-                  <RenderIf conditionIs={!user.profilePicture}>
-                    <PicturelessProfile
-                      width={itemWidth}
-                      initials={user.initials}
-                      bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
-                    />
-                  </RenderIf>
+                  <PP
+                    src={user.profilePicture || null}
+                    alt={user.username}
+                    type="private"
+                    className="rounded-full h-20 mx-auto"
+                  />
+
                   <span
                     style={{ fontSize: `${itemWidth / 4.5}px` }}
                     className="font-semibold text-sm truncate max-w-[125px]"
@@ -72,13 +65,12 @@ export default function ContactsSwiperCard({
                   }          
                   `}
                 >
-                  <RenderIf conditionIs={!user.profilePicture}>
-                    <PicturelessProfile
-                      width={itemWidth}
-                      initials={user.initials}
-                      bgColor={`rgb(${result.r} ${result.g} ${result.b})`}
-                    />
-                  </RenderIf>
+                  <PP
+                    src={user.profilePicture || null}
+                    alt={user.username}
+                    type="private"
+                    className="rounded-full h-20 mx-auto"
+                  />
                   <span
                     style={{ fontSize: `${itemWidth / 4.5}px` }}
                     className="font-semibold text-sm max-w-full truncate"

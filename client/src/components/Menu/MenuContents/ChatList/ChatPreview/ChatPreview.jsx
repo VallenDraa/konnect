@@ -8,16 +8,18 @@ import { MessageLogsContext } from "../../../../../context/messageLogs/MessageLo
 import RenderIf from "../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 import { CloseChatLogContext } from "../../../../../pages/Home/Home";
+import PP from "../../../../PP/PP";
 
 export const ChatPreview = ({
   user,
   type,
-  groupName,
+  group,
   chatId,
   lastMessage,
   timeSentArg,
   isActive,
 }) => {
+  if (!user && !group) return;
   if (!lastMessage || !timeSentArg) return;
   const { msgUnread } = useContext(MessageLogsContext);
   const { settings } = useContext(SettingsContext);
@@ -38,11 +40,23 @@ export const ChatPreview = ({
         <div className="flex overflow-hidden grow">
           <div className="flex gap-2 overflow-hidden grow">
             <div className=" h-12 w-12 relative">
-              <img
-                src="https://picsum.photos/200/200"
-                alt={type === "private" ? user.username : groupName}
-                className="rounded-full absolute inset-0 z-10"
-              />
+              {/* profile picture */}
+
+              <RenderIf conditionIs={type === "private"}>
+                <PP
+                  src={user?.profilePicture || null}
+                  type="private"
+                  alt={user?.username}
+                />
+              </RenderIf>
+              <RenderIf conditionIs={type === "group"}>
+                <PP
+                  src={group?.profilePicture || null}
+                  type="group"
+                  alt={group?.name}
+                />
+              </RenderIf>
+
               {/* notifications*/}
               <RenderIf conditionIs={msgUnread.detail[chatId]}>
                 <RenderIf conditionIs={msgUnread.detail[chatId] > 0}>
@@ -67,7 +81,7 @@ export const ChatPreview = ({
                     : "group-hover:text-pink-700"
                 } ${general?.animation ? "duration-200" : ""}`}
               >
-                {type === "private" ? user.username : groupName}
+                {type === "private" ? user.username : group.name}
               </span>
               <span
                 className={`text-sm truncate text-gray-500 relative z-10 flex items-center gap-1 

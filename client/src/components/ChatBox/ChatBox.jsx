@@ -207,6 +207,8 @@ export const ChatBox = () => {
     }
   }, [activePrivateChat, activeGroupChat, msgLogs]); //tell the server to download the chat log based on the active chat
   useEffect(() => {
+    let downloaded = false;
+
     socket.on("a-chat-history-downloaded", (data) => {
       const { privateChats, groupChats } = data;
       const newChatLogs = _.cloneDeep(msgLogs.content);
@@ -234,10 +236,15 @@ export const ChatBox = () => {
         payload: result,
       });
 
-      if (messageLogRef.current) scrollToBottom(messageLogRef.current);
+      downloaded = true;
     });
 
-    return () => socket.off("a-chat-history-downloaded");
+    return () => {
+      if (messageLogRef.current && downloaded) {
+        scrollToBottom(messageLogRef.current);
+      }
+      socket.off("a-chat-history-downloaded");
+    };
   }, [messageLogRef, msgLogs]); //receive the downloaded full active chat log
 
   useEffect(() => {

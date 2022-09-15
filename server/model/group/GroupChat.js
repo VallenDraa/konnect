@@ -5,6 +5,7 @@ const GroupChatSchema = new mongoose.Schema(
     name: { type: String, required: false, default: null },
     admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    description: { type: String, default: "" },
     type: { type: String, default: "group" },
     profilePicture: { type: String, default: "" },
     chat: [

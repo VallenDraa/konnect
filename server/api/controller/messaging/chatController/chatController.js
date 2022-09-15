@@ -38,17 +38,7 @@ export const getAllChatHistory = async (req, res, next) => {
 
     if (gcIds.length > 0) {
       const groupChats = await GroupChat.where({ _id: { $in: gcIds } })
-        .populate([
-          {
-            path: "admins",
-            select: ["username", "status", "initials", "profilePicture"],
-          },
-          {
-            path: "members",
-            select: ["username", "status", "initials", "profilePicture"],
-          },
-          "chat.messages",
-        ])
+        .populate(["chat.messages"])
         .lean();
 
       chats.push(...groupChats);
@@ -280,17 +270,7 @@ export const getAllChatId = async (req, res, next) => {
     if (gcIds.length > 0) {
       const groupChats = await GroupChat.where({ _id: { $in: gcIds } })
         .slice("chat", -1)
-        .populate([
-          {
-            path: "admins",
-            select: ["username", "status", "initials", "profilePicture"],
-          },
-          {
-            path: "members",
-            select: ["username", "status", "initials", "profilePicture"],
-          },
-          "chat.messages",
-        ])
+        .populate(["chat.messages"])
         .lean();
 
       chats.push(...groupChats);
@@ -324,11 +304,13 @@ export const getAllChatId = async (req, res, next) => {
             name: c.name,
             profilePicture: c.profilePicture,
             chatId: c._id,
+            description: c.description,
             admins: c.admins,
             members: c.members,
             chat: c.chat,
             type: c.type,
             preview: true,
+            createdAt: c.createdAt,
           };
         default:
           return createError(next, 400, "Invalid chat type !");

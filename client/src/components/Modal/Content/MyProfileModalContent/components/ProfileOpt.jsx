@@ -15,6 +15,7 @@ import { MiniModalContext } from "../../../../../context/miniModal/miniModalCont
 import MINI_MODAL_ACTIONS from "../../../../../context/miniModal/miniModalActions";
 import PasswordConfirmation from "../../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
+import PP from "../../../../PP/PP";
 
 const ProfileOpt = () => {
   const imageId = useId();
@@ -116,10 +117,12 @@ const ProfileOpt = () => {
               </RenderIf>
               <input type="file" id={imageId} className="hidden" />
               {/* image preview */}
-              <img
-                src="https://picsum.photos/200/200"
-                alt=""
-                className="text-5xl font-bold uppercase rounded-full aspect-square grid place-items-center shadow-md h-[160px]"
+
+              <PP
+                src={userState.user.profilePicture || null}
+                alt={userState.user.username}
+                type="private"
+                className="rounded-full h-[160px]"
               />
             </div>
           </header>

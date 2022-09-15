@@ -12,6 +12,7 @@ import {
 } from "../../../../../pages/Home/Home";
 import RenderIf from "../../../../../utils/React/RenderIf";
 import GroupProfileModalContent from "../../../../Modal/Content/GroupProfileModalContent/GroupProfileModalContent";
+import PP from "../../../../PP/PP";
 
 export default function GroupChatHeader({ invisibleWallRef }) {
   const { settings } = useContext(SettingsContext);
@@ -28,7 +29,9 @@ export default function GroupChatHeader({ invisibleWallRef }) {
       type: MODAL_ACTIONS.show,
       prevUrl: urlHistory?.current,
       onExitReturnToHome: false,
-      content: <GroupProfileModalContent />,
+      content: (
+        <GroupProfileModalContent data={msgLogs.content[activeGroupChat]} />
+      ),
       title: msgLogs.content[activeGroupChat]?.name,
     });
   };
@@ -62,10 +65,11 @@ export default function GroupChatHeader({ invisibleWallRef }) {
                 onClick={showGroupProfile}
                 className="flex items-center gap-1.5"
               >
-                <img
-                  src="https://picsum.photos/200/200"
-                  alt=""
-                  className="rounded-full h-9 w-9"
+                <PP
+                  type="group"
+                  src={msgLogs.content[activeGroupChat]?.profilePicture || null}
+                  alt={msgLogs.content[activeGroupChat]?.name}
+                  className="rounded-full w-9 h-9"
                 />
                 <div className="flex flex-col items-start">
                   <span className="text-sm max-w-[200px] truncate">

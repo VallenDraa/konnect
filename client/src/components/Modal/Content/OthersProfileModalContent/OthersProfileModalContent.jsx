@@ -30,14 +30,17 @@ import {
   receiveSendAddContact,
 } from "../../../../context/notifContext/NotifContext";
 import { useNavigate } from "react-router-dom";
+import PP from "../../../PP/PP";
+import { CachedUserContext } from "../../../../context/cachedUser/CachedUserContext";
 
-export const OthersProfileModalContent = ({ username }) => {
+export const OthersProfileModalContent = ({ username, userId }) => {
   const [otherUserData, setOtherUserData] = useState({});
   const { userState, userDispatch } = useContext(UserContext);
   const [addRequestSent, requestDispatch] = useReducer(
     addRequestSentReducer,
     ADD_REQUEST_SENT_DEFAULT
   );
+  const { fetchCachedUsers } = useContext(CachedUserContext);
   const { Start, Loading, Error, Sent } = ADD_REQUEST_SENT_ACTIONS;
   const [rgb, setRgb] = useState("");
   const { contacts, setContacts } = useContext(ContactsContext);
@@ -253,16 +256,13 @@ export const OthersProfileModalContent = ({ username }) => {
       <div className="grow shadow-md lg:shadow-inner">
         <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col container max-w-screen-sm mx-auto">
           {/* profile pic */}
-          <header>
-            <RenderIf conditionIs={!otherUserData?.profilePic}>
-              <div className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 h-[210px] w-full flex items-center justify-center">
-                <PicturelessProfile
-                  initials={otherUserData?.initials}
-                  bgColor={rgb}
-                  width={160}
-                />
-              </div>
-            </RenderIf>
+          <header className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 py-4">
+            <PP
+              src={otherUserData.profilePic || null}
+              alt={otherUserData.username}
+              type="private"
+              className="rounded-full h-44 mx-auto"
+            />
           </header>
           {/* user data */}
           <footer className="py-3 space-y-8">

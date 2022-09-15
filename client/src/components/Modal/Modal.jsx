@@ -19,7 +19,7 @@ export const Modal = () => {
   const { general } = settings;
 
   useEffect(() => {
-    if (!urlHistory.current) return;
+    if (!urlHistory?.current) return;
 
     const isNonModalUrl =
       urlHistory.current.includes("chats") ||

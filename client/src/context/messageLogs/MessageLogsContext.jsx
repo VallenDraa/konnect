@@ -67,7 +67,9 @@ export default function MessageLogsContextProvider({ children }) {
                   members: log.members,
                   type: log.type,
                   chatId: log.chatId,
+                  description: log.description,
                   preview: log.preview,
+                  createdAt: log.createdAt,
                 };
 
                 // automatically join the group chat room via websocket

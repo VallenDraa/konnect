@@ -18,6 +18,7 @@ import {
   SettingsContext,
 } from "../../context/settingsContext/SettingsContext";
 import { SidebarContext } from "../../pages/Home/Home";
+import PP from "../PP/PP";
 
 export const Sidebar = ({ urlHistory }) => {
   const Navigate = useNavigate();
@@ -170,10 +171,11 @@ export const Sidebar = ({ urlHistory }) => {
                         ${general?.animation ? "duration-200" : ""}
               `}
             >
-              <img
-                src="https://picsum.photos/200/200"
-                alt=""
-                className="rounded-full h-8 w-8"
+              <PP
+                type="private"
+                src={userState.user.profilePicture || null}
+                alt={userState.user.username}
+                className="rounded-full w-9 h-9"
               />
               <div className="flex flex-col items-start overflow-hidden">
                 <span className="text-sm truncate">

@@ -93,7 +93,7 @@ export default function ChatList() {
               return (
                 <ChatPreview
                   type="group"
-                  groupName={log.name}
+                  group={log}
                   chatId={log.chatId}
                   key={_id}
                   lastMessage={lastMsg}

@@ -5,6 +5,7 @@ import { ActivePrivateChatContext } from "../../../../../context/activePrivateCh
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 import { CloseChatLogContext } from "../../../../../pages/Home/Home";
 import { chatPreviewTimeStatus } from "../../../../../utils/dates/dates";
+import PP from "../../../../PP/PP";
 
 export default function PrivateChatHeader({ invisibleWallRef }) {
   const { settings } = useContext(SettingsContext);
@@ -71,11 +72,13 @@ export default function PrivateChatHeader({ invisibleWallRef }) {
               to={`user/${activePrivateChat?.username}`}
               className="flex items-center gap-1.5"
             >
-              <img
-                src="https://picsum.photos/200/200"
-                alt=""
+              <PP
+                src={activePrivateChat?.profilePicture || null}
+                alt={activePrivateChat?.username}
+                type="private"
                 className="rounded-full h-9 w-9"
               />
+
               <div className="flex flex-col items-start">
                 <span className="text-sm max-w-[200px] truncate">
                   {activePrivateChat?.username}

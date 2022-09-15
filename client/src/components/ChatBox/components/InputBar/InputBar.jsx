@@ -87,7 +87,6 @@ export default function inputBar({ messageLogRef }) {
     // reset the input bar
     setnewMessage("");
 
-    console.log(newMessageInput);
     // send the message to the server
     socket.emit(
       "new-msg",

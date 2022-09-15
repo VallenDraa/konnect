@@ -229,7 +229,7 @@ export const Menu = ({
           className={`h-0.5 bg-blue-300 absolute -bottom-1 ${
             general.animation ? "duration-200" : ""
           }`}
-          style={{ left: "0px", right: "0px" }}
+          // style={{ left: "0px", right: "0px" }}
         />
       </ul>
     </>

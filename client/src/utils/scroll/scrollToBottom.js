@@ -3,7 +3,6 @@
  * @param {HTMLElement} element
  */
 export function scrollToBottom(element) {
-  // console.trace("rigid");
   element.scrollTop = element.scrollHeight;
 }
 

@@ -50,9 +50,8 @@ export default function CachedUserContextProvider({ children }) {
             ...prev,
             ..._.keyBy(newCachedUsers, "._id"),
           }));
-
-          return newCachedUsers;
         }
+        return result;
 
       default:
         return console.error("Please provide the correct parameter type");
