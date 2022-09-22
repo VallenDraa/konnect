@@ -18,6 +18,7 @@ export default function groupSocket(socket) {
         newNotice: data.newNotice,
         name,
         users,
+        createdAt: data.createdAt,
       };
 
       if (data.success) {

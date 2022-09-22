@@ -167,9 +167,9 @@ export const Sidebar = ({ urlHistory }) => {
                   content: <MyProfileModalContent />,
                 })
               }
-              className={`flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 rounded-lg grow w-2/3
-                        ${general?.animation ? "duration-200" : ""}
-              `}
+              className={`flex items-center gap-1 shadow hover:shadow-md bg-gray-200 hover:bg-gray-300 p-2 rounded-lg grow w-2/3 ${
+                general?.animation ? "duration-200" : ""
+              }`}
             >
               <PP
                 type="private"

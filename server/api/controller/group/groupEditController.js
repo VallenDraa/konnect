@@ -56,11 +56,12 @@ export const makeGroup = async (req, res, next) => {
       const { _id, ...extras } = newGc._doc;
       return res
         .status(201)
-        .json({ chatId: _id, ...extras, newNotic, success: true });
+        .json({ chatId: _id, ...extras, newNotice, success: true });
     }
 
     res.status(201).json({
       chatId: newGc._id,
+      createdAt: newGc.createdAt,
       newNotice: { ...newTimeGroup, messages: [newNoticeMsg] },
       success: true,
     });

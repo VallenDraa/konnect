@@ -39,6 +39,14 @@ module.exports = {
           from: { transform: "scale(1)", opacity: 1 },
           to: { transform: "scale(95%)", opacity: "10%" },
         },
+        "context-menu-open": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+        "context-menu-close": {
+          from: { transform: "scaleY(1)" },
+          to: { transform: "scaleY(0)", opacity: "10%" },
+        },
       },
       animation: {
         ripple: "ripple 600ms linear",
@@ -50,6 +58,8 @@ module.exports = {
         "fade-out": "fade-out 200ms ease-in",
         "d-down-open": "d-down-open 200ms ease-out",
         "d-down-close": "d-down-close 200ms ease-out",
+        "context-menu-open": "context-menu-open 150ms ease-out",
+        "context-menu-close": "context-menu-close 150ms ease-out",
       },
     },
   },

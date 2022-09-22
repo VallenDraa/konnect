@@ -32,6 +32,8 @@ export const Menu = ({
   const menuListRef = useRef(null);
   const menuUnderlineLoader = useCallback(
     throttle(() => {
+      if (!menuListRef.current) return;
+
       const { left: pLeft, right: pRight } =
         menuListRef.current.getBoundingClientRect();
       const child = [...menuListRef.current.children].find(
@@ -45,7 +47,7 @@ export const Menu = ({
         menuUnderlineRef.current.style.right = `${pRight - cRight}px`;
       }
     }, 200),
-    [menuUnderlineRef, activeMenu]
+    [menuUnderlineRef, activeMenu, menuListRef]
   );
 
   // check if the pathname is heading for a user profile

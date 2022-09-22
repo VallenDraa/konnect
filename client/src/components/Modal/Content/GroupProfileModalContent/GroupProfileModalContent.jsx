@@ -1,15 +1,28 @@
-import { useContext, useState } from "react";
+import _ from "lodash";
 import PP from "../../../PP/PP";
 import ContactsSwiperCard from "../../../../utils/ContactsSwiperCard/ContactsSwiperCard";
-import { useEffect } from "react";
-import { BiHappyHeartEyes } from "react-icons/bi";
+import FloatingContextMenu from "../../../FloatingContextMenu/FloatingContextMenu";
 import { CachedUserContext } from "../../../../context/cachedUser/CachedUserContext";
+import { useEffect, useContext, useState, useRef } from "react";
+import { BiHappyHeartEyes } from "react-icons/bi";
+import { FCMContext } from "../../../../context/FloatingContextMenuContext/FloatingContextMenuContext";
+import FCMItem from "../../../FloatingContextMenu/FCMItem";
 
 export default function GroupProfileModalContent({ data }) {
+  const clickedRef = useRef(); //for closing the context menu
+  const adminsListRef = useRef();
+  const membersListRef = useRef();
   const { fetchCachedUsers } = useContext(CachedUserContext);
   const [adminsData, setAdminsData] = useState([]);
   const [membersData, setMembersData] = useState([]);
+  const {
+    closeContextMenuOnClick,
+    FCMWrapperRef,
+    closeContextMenu,
+    openContextMenu,
+  } = useContext(FCMContext);
 
+  // mapping the admins data for the lists
   useEffect(() => {
     (async () => {
       try {
@@ -22,6 +35,7 @@ export default function GroupProfileModalContent({ data }) {
     })();
   }, []);
 
+  // mapping the members data for the lists
   useEffect(() => {
     (async () => {
       try {
@@ -35,11 +49,26 @@ export default function GroupProfileModalContent({ data }) {
 
   return (
     <section
-      aria-label="Group Profile"
+      ref={FCMWrapperRef}
       className="w-screen lg:w-[40rem] h-full flex flex-col"
+      onClick={(e) => {
+        if (!e.target.getAttribute("data-user-card")) {
+          closeContextMenuOnClick(e);
+        }
+      }}
+      aria-label="Group Profile"
     >
+      <FloatingContextMenu>
+        <FCMItem>foo</FCMItem>
+        <FCMItem>bar</FCMItem>
+        <FCMItem>hello</FCMItem>
+        <FCMItem>world</FCMItem>
+      </FloatingContextMenu>
       <div className="grow shadow-md lg:shadow-inner">
-        <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col container max-w-screen-sm mx-auto">
+        <div
+          onScroll={closeContextMenu}
+          className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col container max-w-screen-sm mx-auto"
+        >
           {/* profile pic */}
           <header className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 py-4">
             <PP
@@ -75,19 +104,28 @@ export default function GroupProfileModalContent({ data }) {
               </div>
 
               {/* Participants */}
-              <div className="space-y-3 border-t-2 pt-3">
+              <div ref={adminsListRef} className="space-y-3 border-t-2 pt-3">
                 <span className="text-lg font-medium text-gray-400 px-5">
                   Admins:
                 </span>
 
-                <ContactsSwiperCard contacts={adminsData} />
+                <ContactsSwiperCard
+                  onItemClicked={(user, e) => openContextMenu(e)}
+                  linkable={false}
+                  contacts={adminsData}
+                />
               </div>
-              <div className="space-y-3 border-t-2 pt-3">
+
+              <div ref={membersListRef} className="space-y-3 border-t-2 pt-3">
                 <span className="text-lg font-medium text-gray-400 px-5">
                   Members:
                 </span>
 
-                <ContactsSwiperCard contacts={membersData} />
+                <ContactsSwiperCard
+                  onItemClicked={(user, e) => openContextMenu(e)}
+                  linkable={false}
+                  contacts={membersData}
+                />
               </div>
             </main>
           </footer>

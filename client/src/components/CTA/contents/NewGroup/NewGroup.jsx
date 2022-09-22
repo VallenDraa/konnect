@@ -54,7 +54,7 @@ export default function NewGroup() {
       submitBtn={
         <>
           <IoPeopleSharp />
-          Start Group
+          New Group
         </>
       }
       submitCb={handleMakeGroup}

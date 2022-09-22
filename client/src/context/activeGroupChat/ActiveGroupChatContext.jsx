@@ -41,6 +41,7 @@ export const makeNewGroup = ({
   chatId,
   name,
   users,
+  createdAt,
   newNotice,
   msgLogs,
   msgLogsDispatch,
@@ -54,6 +55,10 @@ export const makeNewGroup = ({
       members: users.members,
       chat: [newNotice],
       type: "group",
+      description: "",
+      preview: true,
+      profilePicture: "",
+      createdAt,
     },
     ...updatedLogsContent,
   };

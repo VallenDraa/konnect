@@ -16,6 +16,7 @@ import TitleContextProvider from "./context/titleContext/TitleContext";
 import ActivePrivateChatContextProvider from "./context/activePrivateChat/ActivePrivateChatContext";
 import ActiveGroupChatContextProvider from "./context/activeGroupChat/ActiveGroupChatContext";
 import CachedUserContextProvider from "./context/cachedUser/CachedUserContext";
+import FCMContextProvider from "./context/FloatingContextMenuContext/FloatingContextMenuContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <TitleContextProvider>
@@ -32,7 +33,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                         <MessageLogsContextProvider>
                           <ActivePrivateChatContextProvider>
                             <ActiveGroupChatContextProvider>
-                              <App />
+                              <FCMContextProvider>
+                                <App />
+                              </FCMContextProvider>
                             </ActiveGroupChatContextProvider>
                           </ActivePrivateChatContextProvider>
                         </MessageLogsContextProvider>

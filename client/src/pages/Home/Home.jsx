@@ -83,12 +83,13 @@ export default function Home() {
   useEffect(() => {
     socket.on(
       "receive-make-new-group",
-      ({ success, chatId, name, users, newNotice, initiator }) => {
+      ({ success, chatId, name, users, newNotice, initiator, createdAt }) => {
         if (success) {
           makeNewGroup({
             chatId,
             name,
             users,
+            createdAt,
             newNotice,
             msgLogs,
             msgLogsDispatch,

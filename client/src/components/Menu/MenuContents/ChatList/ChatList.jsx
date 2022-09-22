@@ -109,6 +109,9 @@ export default function ChatList() {
           }
         })}
       </RenderIf>
+      <li className="text-gray-600 text-center w-full text-sm font-light py-5">
+        <span>End Of Chat List</span>
+      </li>
     </ul>
   );
 }

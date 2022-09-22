@@ -6,10 +6,8 @@ import searchResultsReducer, {
   SEARCH_RESULTS_ACTIONS,
   SEARCH_RESULTS_DEFAULT,
 } from "../../../reducer/searchResultsReducer/searchResultsReducer";
-
 import ContactsSwiperCard from "../../../utils/ContactsSwiperCard/ContactsSwiperCard";
 import RenderIf from "../../../utils/React/RenderIf";
-
 import Pill from "../../Buttons/Pill";
 import Input from "../../Input/Input";
 
@@ -96,7 +94,7 @@ export default function SearchBox({
 
   return (
     <div className="w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2 bg-white max-w-screen-sm">
-      <header className="px-4 flex flex-col gap-y-2">
+      <header className="px-6 flex flex-col gap-y-2">
         <div className="flex flex-wrap justify-between items-center">
           <h2 className="font-semibold text-xl">Search For People</h2>
           <Pill
@@ -140,10 +138,9 @@ export default function SearchBox({
                                 general?.animation
                                   ? "animate-fade-in duration-200"
                                   : ""
-                              }
-                              `}
+                              }`}
                   >
-                    <button className="flex items-center gap-2 py-2 px-4 grow">
+                    <button className="flex items-center gap-2 py-2 px-5 grow">
                       <img
                         src="https://picsum.photos/200/200"
                         alt=""

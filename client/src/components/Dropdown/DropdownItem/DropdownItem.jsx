@@ -16,7 +16,7 @@ export default function DropdownItem({
   const { general } = settings;
 
   const [defaultClasses, setDefaultClasses] = useState(`
-  text-xs cursor-pointer rounded
+  text-xs cursor-pointer rounded 
   ${!to ? "w-full flex items-center gap-x-1" : ""}
   ${isActive ? "bg-gray-200" : "active:bg-gray-200"}
   ${isActive ? "shadow" : "hover:shadow-sm"}
