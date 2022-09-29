@@ -182,7 +182,7 @@ export const Sidebar = ({ urlHistory }) => {
                   {userState.user.username}
                 </span>
                 <span className="text-xs text-gray-500 relative z-10 truncate">
-                  {userState.user.status || "-"}
+                  {userState.user.status || "Status Unset"}
                 </span>
               </div>
             </Link>

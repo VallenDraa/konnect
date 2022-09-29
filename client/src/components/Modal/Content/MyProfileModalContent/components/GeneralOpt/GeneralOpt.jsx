@@ -95,7 +95,7 @@ const GeneralOpt = () => {
         </h2>
         <ul className=" w-full overflow-y-hidden flex flex-col gap-0.5">
           {/* language */}
-          <li
+          {/* <li
             className={`overflow-auto flex items-center justify-between w-full hover:bg-gray-100 p-3 ${
               general?.animation ? "duration-200" : ""
             }`}
@@ -107,7 +107,7 @@ const GeneralOpt = () => {
             <div className="absolute right-3">
               <Language languageState={{ language, setLanguage }} />
             </div>
-          </li>
+          </li> */}
           {/* swipeable menu */}
           <li
             className={`flex items-center justify-between w-full hover:bg-gray-100 p-3 ${

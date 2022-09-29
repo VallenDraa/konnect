@@ -4,66 +4,90 @@ import { ActiveGroupChatContext } from "../../../context/activeGroupChat/ActiveG
 import { MessageLogsContext } from "../../../context/messageLogs/MessageLogsContext";
 import { UserContext } from "../../../context/user/userContext";
 import RenderIf from "../../../utils/React/RenderIf";
-import {
-  FaBan,
-  FaKey,
-  FaPaperPlane,
-  FaUserAlt,
-  FaUserPlus,
-} from "react-icons/fa";
-import { IoPersonAdd } from "react-icons/io5";
+import { FaBan, FaKey, FaPaperPlane, FaUserAlt } from "react-icons/fa";
+import { BiLogOut } from "react-icons/bi";
 
 export default function GroupModalFCMItem({ user }) {
-  const { activeGroupChat, setActiveGroupChat } = useContext(
-    ActiveGroupChatContext
-  );
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
   const { _id } = userState.user;
   const [isAdmin, setIsAdmin] = useState(
-    msgLogs.content[activeGroupChat]?.admins.some((id) => id == _id)
+    msgLogs.content[activeGroupChat]?.admins.some((id) => id === _id)
+  );
+  const [isTargetAdmin, setIsTargetAdmin] = useState(
+    msgLogs.content[activeGroupChat]?.admins.some((id) => id === user?._id)
   );
 
   useEffect(() => {
     setIsAdmin(
-      msgLogs.content[activeGroupChat]?.admins.some((id) => id == _id)
+      msgLogs.content[activeGroupChat]?.admins.some((id) => id === _id)
     );
-  }, [msgLogs, _id]);
+  }, [msgLogs[activeGroupChat], _id, activeGroupChat]);
 
   return (
     <>
-      {/* go to the target user's profile */}
-      <FCMItem
-        className="flex items-center gap-2"
-        link={`/user/${user?.username}`}
-      >
-        <FaUserAlt className="text-xs" />
-        Go To {user?.username}'s Profile
-      </FCMItem>
-      {/* send a message to target user */}
-      <FCMItem
-        className="flex items-center gap-2"
-        link={`/chats?id=${user?._id}&type=private`}
-      >
-        <FaPaperPlane className="text-xs" />
-        Message {user?.username}
-      </FCMItem>
-      {/* send a contact request to the target user */}
-      <FCMItem className="flex items-center gap-2 relative">
-        <FaUserPlus className="text-sm absolute left-2" />
-        <span className="ml-5">Send contact request</span>
-      </FCMItem>
-      <RenderIf conditionIs={isAdmin}>
-        {/* make user to be an admin*/}
-        <FCMItem className="flex items-center gap-2">
-          <FaKey />
-          Make {user?.username} an admin
+      {/* if the target user is not the current logged in person */}
+      <RenderIf conditionIs={user?._id !== _id}>
+        {/* view the target user's profile */}
+        <FCMItem
+          className="flex items-center gap-2 truncate"
+          link={`/user/${user?.username}`}
+        >
+          <FaUserAlt className="text-xs basis-3" />
+          View Profile
         </FCMItem>
-        {/* kick user from group*/}
+        {/* send a message to target user */}
+        <FCMItem
+          className="flex items-center gap-2 truncate"
+          link={`/chats?id=${user?._id}&type=private`}
+        >
+          <FaPaperPlane className="text-xs basis-3" />
+          Send Message
+        </FCMItem>
+        <RenderIf conditionIs={isAdmin}>
+          <RenderIf conditionIs={!isTargetAdmin}>
+            {/* give admin access to target user */}
+            <FCMItem className="flex items-center gap-2 truncate">
+              <FaKey className="basis-3" />
+              Give admin access
+            </FCMItem>
+          </RenderIf>
+          <RenderIf conditionIs={isTargetAdmin}>
+            {/* revoke admin access from target user*/}
+            <FCMItem className="flex items-center gap-2 truncate">
+              <FaKey className="basis-3" />
+              Revoke admin access
+            </FCMItem>
+          </RenderIf>
+          {/* kick user from group*/}
+          <FCMItem className="bg-red-100 hover:bg-red-200">
+            <div className="text-red-400 flex items-center gap-2 truncate">
+              <FaBan className="basis-3" />
+              Kick user from group
+            </div>
+          </FCMItem>
+        </RenderIf>
+      </RenderIf>
+      {/* if the target user is the current logged in person */}
+      <RenderIf conditionIs={user?._id === _id}>
+        {/* view the target user's profile */}
+        <FCMItem
+          className="flex items-center gap-2 truncate"
+          link={`/user/${user?.username}`}
+        >
+          <FaUserAlt className="text-xs basis-3" />
+          View Profile
+        </FCMItem>
+        <FCMItem className="flex items-center gap-2 truncate">
+          <FaKey className="basis-3" />
+          Revoke admin access
+        </FCMItem>
+        {/* quit from this group*/}
         <FCMItem className="bg-red-100 hover:bg-red-200">
-          <div className="text-red-400 flex items-center gap-2">
-            <FaBan />
-            Kick user from group
+          <div className="text-red-400 flex items-center gap-2 truncate">
+            <BiLogOut className="text-sm basis-3" />
+            Quit this group
           </div>
         </FCMItem>
       </RenderIf>

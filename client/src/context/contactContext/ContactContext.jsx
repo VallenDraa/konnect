@@ -44,10 +44,7 @@ export default function ContactsContextProvider({ children }) {
           }
 
           setContacts(result);
-          setCachedUsers((prev) => ({
-            ...prev,
-            ...cachedContacts,
-          }));
+          setCachedUsers((prev) => ({ ...prev, ...cachedContacts }));
         } else {
           setContacts([]);
         }

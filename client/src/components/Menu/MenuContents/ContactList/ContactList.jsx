@@ -8,11 +8,12 @@ export default function ContactList() {
   const { groupedContacts } = useContext(ContactsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+
   return (
     <>
       {/* if the contacts are still loading */}
       <RenderIf
-        conditionIs={groupedContacts.isLoading || groupedContacts.isStarting}
+        conditionIs={groupedContacts?.isLoading || groupedContacts?.isStarting}
       >
         Loading
       </RenderIf>
@@ -20,9 +21,9 @@ export default function ContactList() {
       {/* if contact is empty */}
       <RenderIf
         conditionIs={
-          groupedContacts.contents?.length === 0 &&
-          !groupedContacts.isLoading &&
-          !groupedContacts.isStarting
+          groupedContacts?.contents?.length === 0 &&
+          !groupedContacts?.isLoading &&
+          !groupedContacts?.isStarting
         }
       >
         <div className="text-center space-y-10 mt-10 p-3">
@@ -38,12 +39,12 @@ export default function ContactList() {
       {/* if contact is not empty */}
       <RenderIf
         conditionIs={
-          groupedContacts.contents?.length !== 0 &&
-          !groupedContacts.isLoading &&
-          !groupedContacts.isStarting
+          groupedContacts?.contents?.length !== 0 &&
+          !groupedContacts?.isLoading &&
+          !groupedContacts?.isStarting
         }
       >
-        {groupedContacts.contents?.map(([letter, nameList], i) => {
+        {groupedContacts?.contents?.map(([letter, nameList], i) => {
           return (
             <div key={i} className="space-y-3 mb-3 p-3">
               <span className="block sticky top-0 bg-gray-100 px-2 font-bold uppercase text-blue-400">

@@ -178,6 +178,8 @@ const ProfileOpt = () => {
                   type="submit"
                   disabled={!isEditMode}
                   style={{
+                    position: isEditMode ? "static" : "absolute",
+                    zIndex: isEditMode ? "" : "-1",
                     cursor: isEditMode ? "pointer" : "default",
                     padding: isEditMode ? "0.25rem 1rem" : "0",
                     opacity: isEditMode ? "1" : "0",
