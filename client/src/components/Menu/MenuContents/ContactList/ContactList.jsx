@@ -4,7 +4,7 @@ import RenderIf from "../../../../utils/React/RenderIf";
 import { ContactsContext } from "../../../../context/contactContext/ContactContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
-const ContactList = () => {
+export default function ContactList() {
   const { groupedContacts } = useContext(ContactsContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
@@ -73,6 +73,4 @@ const ContactList = () => {
       </RenderIf>
     </>
   );
-};
-
-export default ContactList;
+}

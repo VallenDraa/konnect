@@ -5,11 +5,11 @@ import FloatingContextMenu from "../../../FloatingContextMenu/FloatingContextMen
 import { CachedUserContext } from "../../../../context/cachedUser/CachedUserContext";
 import { useEffect, useContext, useState, useRef } from "react";
 import { BiHappyHeartEyes } from "react-icons/bi";
-import { FCMContext } from "../../../../context/FloatingContextMenuContext/FloatingContextMenuContext";
+import { FCMContext } from "../../../../context/FCMContext/FCMContext";
 import FCMItem from "../../../FloatingContextMenu/FCMItem";
+import GroupModalFCMItem from "../../../FloatingContextMenu/Content/GroupModalFCMItem";
 
 export default function GroupProfileModalContent({ data }) {
-  const clickedRef = useRef(); //for closing the context menu
   const adminsListRef = useRef();
   const membersListRef = useRef();
   const { fetchCachedUsers } = useContext(CachedUserContext);
@@ -21,6 +21,7 @@ export default function GroupProfileModalContent({ data }) {
     closeContextMenu,
     openContextMenu,
   } = useContext(FCMContext);
+  const [activeUser, setActiveUser] = useState(null);
 
   // mapping the admins data for the lists
   useEffect(() => {
@@ -47,6 +48,9 @@ export default function GroupProfileModalContent({ data }) {
     })();
   }, []);
 
+  // to close the floating context menu when profile is closed
+  useEffect(() => () => closeContextMenu(), []);
+
   return (
     <section
       ref={FCMWrapperRef}
@@ -59,10 +63,7 @@ export default function GroupProfileModalContent({ data }) {
       aria-label="Group Profile"
     >
       <FloatingContextMenu>
-        <FCMItem>foo</FCMItem>
-        <FCMItem>bar</FCMItem>
-        <FCMItem>hello</FCMItem>
-        <FCMItem>world</FCMItem>
+        <GroupModalFCMItem user={activeUser} />
       </FloatingContextMenu>
       <div className="grow shadow-md lg:shadow-inner">
         <div
@@ -99,7 +100,7 @@ export default function GroupProfileModalContent({ data }) {
                   Group Description :
                 </h3>
                 <span className="text-base text-gray-600 font-semibold px-2">
-                  {data?.description || "unset"}
+                  {data?.description || "-"}
                 </span>
               </div>
 
@@ -110,7 +111,10 @@ export default function GroupProfileModalContent({ data }) {
                 </span>
 
                 <ContactsSwiperCard
-                  onItemClicked={(user, e) => openContextMenu(e)}
+                  onItemClicked={(user, e) => {
+                    openContextMenu(e);
+                    setActiveUser(user);
+                  }}
                   linkable={false}
                   contacts={adminsData}
                 />
@@ -122,7 +126,10 @@ export default function GroupProfileModalContent({ data }) {
                 </span>
 
                 <ContactsSwiperCard
-                  onItemClicked={(user, e) => openContextMenu(e)}
+                  onItemClicked={(user, e) => {
+                    openContextMenu(e);
+                    setActiveUser(user);
+                  }}
                   linkable={false}
                   contacts={membersData}
                 />

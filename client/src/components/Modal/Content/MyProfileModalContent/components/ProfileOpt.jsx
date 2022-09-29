@@ -24,16 +24,16 @@ const ProfileOpt = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [firstName, setFirstName] = useState(userState.user.firstName || "");
   const [lastName, setLastName] = useState(userState.user.lastName || "");
-  const [status, setStatus] = useState(userState.user.status || "unset");
+  const [status, setStatus] = useState(userState.user.status || "-");
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
   useEffect(() => {
     if (isEditMode) {
-      status === "unset" && setStatus("");
+      status === "-" && setStatus("");
     } else {
-      userState.user.status === "" && setStatus("unset");
+      userState.user.status === "" && setStatus("-");
       if (firstName !== "" && userState.user.firstName === "") setFirstName("");
       if (lastName !== "" && userState.user.lastName === "") setLastName("");
     }

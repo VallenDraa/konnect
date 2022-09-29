@@ -10,16 +10,18 @@ export default function FCMContextProvider({ children }) {
   const FCMWrapperRef = useRef(); // used for the parent element of the FCM to make sure thet the FCM is not off-screen
   const FCMRef = useRef();
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
   const openContextMenu = _.throttle((e) => {
-    FCMRef.current.classList.remove("animate-context-menu-open");
-    FCMRef.current.classList.remove("animate-context-menu-close");
-
+    if (!isOpen) {
+      FCMRef.current.classList.remove("animate-context-menu-open");
+      FCMRef.current.classList.remove("animate-context-menu-close");
+      setIsOpen(true);
+    }
     e.preventDefault();
-    setIsOpen(true);
 
     const { offsetHeight: FCMHeight, offsetWidth: FCMWidth } = FCMRef.current;
     const { height: wrapperHeight, width: wrapperWidth } =
@@ -33,40 +35,44 @@ export default function FCMContextProvider({ children }) {
     setPos({ x: newX, y: newY });
 
     if (general?.animation) {
-      FCMRef.current.classList.add("animate-context-menu-open");
+      if (!isOpen) {
+        FCMRef.current.classList.add("animate-context-menu-open");
 
-      setTimeout(() => {
-        FCMRef.current.classList.remove("animate-context-menu-open");
-      }, 150);
+        setTimeout(() => {
+          FCMRef.current.classList.remove("animate-context-menu-open");
+        }, 150);
+      }
     }
   }, 2000);
 
   const closeContextMenuOnClick = _.throttle((e) => {
-    if (!FCMRef.current?.contains(e.target)) {
+    if (!FCMRef.current?.contains(e.target) && !isClosing) {
+      setIsClosing(true);
       if (!general?.animation) {
         setIsOpen(false);
+        setIsClosing(false);
       } else {
         FCMRef.current.classList.add("animate-context-menu-close");
-        setTimeout(() => setIsOpen(false), 140);
-        setTimeout(
-          () => FCMRef.current.classList.remove("animate-context-menu-close"),
-          150
-        );
+        setTimeout(() => {
+          setIsOpen(false);
+          setIsClosing(false);
+        }, 130);
       }
     }
   }, 2000);
 
   const closeContextMenu = _.throttle(() => {
-    if (isOpen) {
+    if (isOpen && !isClosing) {
+      setIsClosing(true);
       if (!general?.animation) {
         setIsOpen(false);
+        setIsClosing(false);
       } else {
         FCMRef.current.classList.add("animate-context-menu-close");
-        setTimeout(() => setIsOpen(false), 140);
-        setTimeout(
-          () => FCMRef.current.classList.remove("animate-context-menu-close"),
-          150
-        );
+        setTimeout(() => {
+          setIsOpen(false);
+          setIsClosing(false);
+        }, 130);
       }
     }
   }, 2000);

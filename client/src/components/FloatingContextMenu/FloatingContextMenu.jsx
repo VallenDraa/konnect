@@ -1,5 +1,5 @@
 import { useEffect, useContext } from "react";
-import { FCMContext } from "../../context/FloatingContextMenuContext/FloatingContextMenuContext";
+import { FCMContext } from "../../context/FCMContext/FCMContext";
 
 export default function FloatingContextMenu({ children }) {
   const { isOpen, pos, FCMRef, closeContextMenu } = useContext(FCMContext);
@@ -11,12 +11,18 @@ export default function FloatingContextMenu({ children }) {
   }, [isOpen]);
 
   return (
-    <ul
+    <div
+      aria-label="floating-context-menu"
       ref={FCMRef}
-      className="min-h-[4rem] w-48 max-w-[12rem] fixed divide-y-2 bg-gray-50 border-2 border-gray-200 text-gray-800 rounded-md overflow-clip shadow-md z-50 origin-top"
-      style={{ top: pos?.y, left: pos?.x, display: isOpen ? "block" : "none" }}
+      className="min-h-[4rem] w-48 max-w-[12rem] fixed divide-y-2 bg-gray-50 border-2 border-gray-200 text-gray-800 rounded-md overflow-clip shadow-md  origin-top"
+      style={{
+        top: pos?.y,
+        left: pos?.x,
+        zIndex: isOpen ? "50" : "-1",
+        visibility: isOpen ? "" : "hidden",
+      }}
     >
       {children}
-    </ul>
+    </div>
   );
 }

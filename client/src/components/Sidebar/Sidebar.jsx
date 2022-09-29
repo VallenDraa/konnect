@@ -182,7 +182,7 @@ export const Sidebar = ({ urlHistory }) => {
                   {userState.user.username}
                 </span>
                 <span className="text-xs text-gray-500 relative z-10 truncate">
-                  {userState.user.status || "unset"}
+                  {userState.user.status || "-"}
                 </span>
               </div>
             </Link>
@@ -223,7 +223,7 @@ export const Sidebar = ({ urlHistory }) => {
                 setIsSidebarOn={setIsSidebarOn}
               />
             </SwiperSlide>
-            <SwiperSlide className="no-swipe">
+            <SwiperSlide className="no-swipe overflow-y-auto">
               <ContactList setIsSidebarOn={setIsSidebarOn} />
             </SwiperSlide>
             <SwiperSlide className="no-swipe">

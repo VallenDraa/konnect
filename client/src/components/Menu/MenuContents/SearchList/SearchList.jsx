@@ -69,8 +69,11 @@ export default function SearchList() {
   // }, [searchResults]);
 
   return (
-    <section aria-label="searchList" className="py-1.5 px-3 space-y-5">
-      <header className="sticky top-0 space-y-3  pt-2">
+    <section
+      aria-label="search-list"
+      className="flex flex-col min-h-full py-1.5 px-3 gap-y-3"
+    >
+      <header className="flex flex-col basis-14 sticky top-0 gap-y-5 pt-2">
         <Input
           labelActive={true}
           customState={[query, setQuery]}
@@ -78,8 +81,19 @@ export default function SearchList() {
           label="Search"
           icon={<IoSearch />}
         />
+        {/* this will appear when the user is done typing and the search value is not empty */}
+        <RenderIf conditionIs={SVPreview !== ""}>
+          <div className="flex flex-col gap-1 sticky top-0">
+            <span className="font-semibold text-gray-700 max-w-full truncate">
+              Results for <span className="italic ">{SVPreview}</span>
+            </span>
+            <span className="text-xxs text-gray-500">
+              {searchResults.content?.length} results
+            </span>
+          </div>
+        </RenderIf>
       </header>
-      <main className="px-1 space-y-3">
+      <main className="relative flex flex-col grow">
         {/*  placeholder for when user is still typing */}
         <RenderIf conditionIs={isTyping || searchResults.loading}>
           <span>Loading</span>
@@ -87,18 +101,6 @@ export default function SearchList() {
 
         <RenderIf conditionIs={!isTyping && !searchResults.loading}>
           <div>
-            {/* this will appear when the user is done typing and the search value is not empty */}
-            <RenderIf conditionIs={SVPreview !== ""}>
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-gray-700 max-w-full truncate">
-                  Results for <span className="italic ">{SVPreview}</span>
-                </span>
-                <span className="text-xxs text-gray-500">
-                  {searchResults.content?.length} results
-                </span>
-              </div>
-            </RenderIf>
-
             {/* this svg will appear when the query is empty */}
             <RenderIf conditionIs={query === ""}>
               <div className="text-center space-y-10 mt-10 overflow-x-hidden">
@@ -112,39 +114,38 @@ export default function SearchList() {
             </RenderIf>
           </div>
           {/* results */}
-          <ul className="space-y-3">
+          <ul className="space-y-3 overflow-y-auto absolute inset-0 mb-3">
             {/* the list item containing the user result */}
             <RenderIf
               conditionIs={
                 !searchResults.loading && searchResults.content?.length !== 0
               }
             >
-              {searchResults.content?.map(({ username }, i) => {
-                return (
-                  <li key={i}>
-                    <Link
-                      // this link will open a modal containing info of the user (code is ini Menu.jsx)
-                      title={`Go To ${username}'s Profile`}
-                      to={`user/${username}`}
-                      className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 rounded-lg shadow            
-                                ${general?.animation ? "duration-200" : ""}`}
-                    >
-                      <div className="flex items-center gap-2 grow border-r-2 group-hover:border-pink-200">
-                        <img
-                          src="https://picsum.photos/200/200"
-                          alt=""
-                          className="rounded-full h-12 w-12"
-                        />
+              {searchResults.content?.map(({ username }, i) => (
+                <li key={i}>
+                  <Link
+                    // this link will open a modal containing info of the user (code is ini Menu.jsx)
+                    title={`Go To ${username}'s Profile`}
+                    to={`user/${username}`}
+                    className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-100 p-2 rounded-lg shadow ${
+                      general?.animation ? "duration-200" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 grow border-r-2 group-hover:border-pink-200">
+                      <img
+                        src="https://picsum.photos/200/200"
+                        alt=""
+                        className="rounded-full h-12 w-12"
+                      />
 
-                        <span className="text-lg truncate font-medium group-hover:text-pink-700">
-                          {username}
-                        </span>
-                      </div>
-                      <FaUserAlt className="ml-auto mr-1 text-gray-500 group-hover:text-pink-500" />
-                    </Link>
-                  </li>
-                );
-              })}
+                      <span className="text-lg truncate font-medium group-hover:text-pink-700">
+                        {username}
+                      </span>
+                    </div>
+                    <FaUserAlt className="ml-auto mr-1 text-gray-500 group-hover:text-pink-500" />
+                  </Link>
+                </li>
+              ))}
             </RenderIf>
 
             {/* svg for when there are no results*/}

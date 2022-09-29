@@ -16,7 +16,7 @@ import TitleContextProvider from "./context/titleContext/TitleContext";
 import ActivePrivateChatContextProvider from "./context/activePrivateChat/ActivePrivateChatContext";
 import ActiveGroupChatContextProvider from "./context/activeGroupChat/ActiveGroupChatContext";
 import CachedUserContextProvider from "./context/cachedUser/CachedUserContext";
-import FCMContextProvider from "./context/FloatingContextMenuContext/FloatingContextMenuContext";
+import FCMContextProvider from "./context/FCMContext/FCMContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <TitleContextProvider>

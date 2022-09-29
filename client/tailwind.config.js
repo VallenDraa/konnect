@@ -40,8 +40,8 @@ module.exports = {
           to: { transform: "scale(95%)", opacity: "10%" },
         },
         "context-menu-open": {
-          "0%": { transform: "scaleY(0)" },
-          "100%": { transform: "scaleY(1)" },
+          "0%": { transform: "scaleY(0)", zIndex: "50" },
+          "100%": { transform: "scaleY(1)", zIndex: "50" },
         },
         "context-menu-close": {
           from: { transform: "scaleY(1)" },

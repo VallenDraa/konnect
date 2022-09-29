@@ -93,8 +93,8 @@ export default function NotificationList() {
   }, [activeBox, userState, notifs, location]);
 
   return (
-    <div className="p-3 space-y-3">
-      <header>
+    <div className="p-3 pb-0 space-y-3 flex flex-col min-h-full">
+      <header className="basis-7">
         <nav className="relative w-fit">
           <Dropdown
             offset={8}
@@ -118,7 +118,7 @@ export default function NotificationList() {
           </Dropdown>
         </nav>
       </header>
-      <main>
+      <main className="grow relative">
         {/* if an error happened */}
         <RenderIf conditionIs={notifs.error !== null}>{notifs.error}</RenderIf>
 
@@ -130,7 +130,7 @@ export default function NotificationList() {
         {/* if notifs are fine */}
         <RenderIf conditionIs={!notifs.isLoading && !notifs.error}>
           <ul
-            className={`${
+            className={`absolute inset-0 ${
               notifs?.content[activeBox.name]?.length === 0 ? "" : "border-t-2"
             }`}
           >

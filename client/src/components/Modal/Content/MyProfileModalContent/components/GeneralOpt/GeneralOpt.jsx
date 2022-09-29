@@ -71,8 +71,7 @@ const GeneralOpt = () => {
           <li
             className={`flex items-center justify-between w-full hover:bg-gray-100 p-3 ${
               general?.animation ? "duration-200" : ""
-            }
-`}
+            }`}
           >
             <span className="flex items-center gap-2 font-semibold text-sm">
               <IoInvertModeSharp />

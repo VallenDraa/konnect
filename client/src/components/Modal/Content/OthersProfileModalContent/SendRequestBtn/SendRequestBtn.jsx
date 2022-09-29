@@ -55,8 +55,9 @@ export default function SendRequestBtn({
   } else if (Loading) {
     return (
       <span
-        className={`flex items-center gap-x-1
-                  ${settings.general?.animation ? "animate-pulse" : ""}`}
+        className={`flex items-center gap-x-1 ${
+          settings.general?.animation ? "animate-pulse" : ""
+        }`}
       >
         <AiOutlineLoading3Quarters className="animate-spin" />
         <span>Loading</span>

@@ -331,7 +331,7 @@ export const OthersProfileModalContent = ({ username, userId }) => {
                   Status :
                 </h3>
                 <span className="text-base text-gray-600 font-semibold px-2">
-                  {otherUserData?.status || "unset"}
+                  {otherUserData?.status || "-"}
                 </span>
               </div>
 
