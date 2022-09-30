@@ -16,6 +16,7 @@ const GroupChatSchema = new mongoose.Schema(
         ],
       },
     ],
+    hasQuit: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   },
   { timestamps: true }
 );

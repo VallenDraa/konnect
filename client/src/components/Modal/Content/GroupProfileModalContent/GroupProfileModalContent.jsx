@@ -10,10 +10,13 @@ import { BsTextParagraph } from "react-icons/bs";
 import GroupModalFCMItem from "../../../FloatingContextMenu/Content/GroupModalFCMItem";
 import Pill from "../../../Buttons/Pill";
 import RenderIf from "../../../../utils/React/RenderIf";
-import { ImBlocked, ImParagraphJustify, ImPencil } from "react-icons/im";
+import { ImBlocked, ImPencil } from "react-icons/im";
 import { FiSave } from "react-icons/fi";
 import { UserContext } from "../../../../context/user/userContext";
 import Input from "../../../Input/Input";
+import { FaTrash } from "react-icons/fa";
+import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
+import PasswordConfirmation from "../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 
 export default function GroupProfileModalContent({ data }) {
   const { userState } = useContext(UserContext);
@@ -33,6 +36,7 @@ export default function GroupProfileModalContent({ data }) {
   const [activeUser, setActiveUser] = useState(null);
   const [description, setDescription] = useState(data?.description);
   const [groupName, setGroupName] = useState(data?.name);
+  const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
 
   // mapping the admins data for the lists
   useEffect(() => {
@@ -71,6 +75,56 @@ export default function GroupProfileModalContent({ data }) {
   const resetEditValue = () => {
     if (groupName !== data?.name) setGroupName(data?.name);
     if (description !== data?.description) setDescription(data?.description);
+  };
+
+  // show password mini modal for group edit confirmation
+  const submitChanges = (password, payload) => {
+    console.log(password, payload);
+  };
+  const handleEdits = () => {
+    const payload = {
+      _id: data._id,
+      newName: groupName,
+      newDesc: description,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: (
+          <PasswordConfirmation
+            cb={submitChanges}
+            title="Enter Your Password To Edit The Group"
+            payload={payload}
+          />
+        ),
+      });
+    }
+  };
+
+  // show password mini modal for group deletion confirmation
+  const deleteGroupInDb = (password, payload) => {
+    console.log(password, payload);
+  };
+  const handleDeleteGroup = () => {
+    const payload = {
+      _id: data._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: (
+          <PasswordConfirmation
+            cb={deleteGroupInDb}
+            title="Enter Your Password To Edit The Group"
+            payload={payload}
+          />
+        ),
+      });
+    }
   };
 
   return (
@@ -219,6 +273,14 @@ export default function GroupProfileModalContent({ data }) {
                 </RenderIf>
               </div>
 
+              {/* Delete group button for admins  */}
+              <RenderIf conditionIs={isAdmin && isEditMode}>
+                <Pill className="text-sm px-4 py-1 font-bold flex items-center gap-x-1.5 bg-red-400 hover:shadow-red-100 hover:bg-red-300 text-white max-w-sm mx-auto">
+                  <FaTrash />
+                  Delete Group
+                </Pill>
+              </RenderIf>
+
               {/* Participants */}
               <div ref={adminsListRef} className="space-y-3 border-t-2 pt-3">
                 <span className="text-lg font-medium text-gray-400 px-5">
@@ -234,7 +296,6 @@ export default function GroupProfileModalContent({ data }) {
                   contacts={adminsData}
                 />
               </div>
-
               <div ref={membersListRef} className="space-y-3 border-t-2 pt-3">
                 <span className="text-lg font-medium text-gray-400 px-5">
                   Members:

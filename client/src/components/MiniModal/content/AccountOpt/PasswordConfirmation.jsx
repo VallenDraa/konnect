@@ -6,11 +6,6 @@ import { useState } from "react";
 import Pill from "../../../Buttons/Pill";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
-/**
- *
- * @param {Object} param0 Pass in a callback that'll execute
- * @returns
- */
 export default function PasswordConfirmation({ cb, title, caption, payload }) {
   const { miniModalDispatch } = useContext(MiniModalContext);
   const [password, setPassword] = useState("");

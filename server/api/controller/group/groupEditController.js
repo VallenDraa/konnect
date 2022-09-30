@@ -69,3 +69,61 @@ export const makeGroup = async (req, res, next) => {
     next(error);
   }
 };
+
+export const editGroup = async (req, res, next) => {
+  try {
+    const { newName, newDescription, _id } = req.body;
+
+    const updatedGroup = await GroupChat.findById(_id);
+    const { name: oldName, description: oldDesc } = updatedGroup;
+
+    if (oldName !== newName) updatedGroup.name = newName;
+    if (oldDesc !== newDescription) updatedGroup.description = newDescription;
+
+    await updatedGroup.save();
+
+    res.status(204).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const joinGroup = async (req, res, next) => {
+  try {
+    const { groupId, userId } = req.body;
+
+    await GroupChat.findByIdAndUpdate(groupId, {
+      $push: { admins: userId, members: userId },
+      $pull: { hasQuit: userId },
+    });
+
+    res.status(204).json({ success: true });
+  } catch (error) {}
+};
+
+export const quitGroup = async (req, res, next) => {
+  try {
+    const { groupId, userId } = req.body;
+
+    await GroupChat.findByIdAndUpdate(groupId, {
+      $pull: { admins: userId, members: userId },
+      $push: { hasQuit: userId },
+    });
+
+    res.status(204).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteGroup = async (req, res, next) => {
+  try {
+    const { _id } = req.body;
+
+    await GroupChat.findByIdAndDelete(_id);
+
+    res.status(204).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
