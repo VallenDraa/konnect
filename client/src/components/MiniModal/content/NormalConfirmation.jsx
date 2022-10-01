@@ -1,5 +1,4 @@
-import { useContext } from "react";
-import MINI_MODAL_ACTIONS from "../../../context/miniModal/miniModalActions";
+import { useContext, useState } from "react";
 import { MiniModalContext } from "../../../context/miniModal/miniModalContext";
 import { SettingsContext } from "../../../context/settingsContext/SettingsContext";
 import Pill from "../../Buttons/Pill";
@@ -8,6 +7,7 @@ export default function NormalConfirmation({ cb, title, caption, payload }) {
   const { miniModalDispatch } = useContext(MiniModalContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
 
   const handleCallback = (e) => {
     e.preventDefault();
@@ -28,16 +28,16 @@ export default function NormalConfirmation({ cb, title, caption, payload }) {
       </header>
       <footer className="flex w-full gap-x-2 h-10 grow-[1] pt-3 border-t-2">
         <Pill
-          className={`h-full text-xs bg-gray-300 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
+          disabled={hasBeenPressed}
+          className={`h-full text-xs bg-gray-300 disabled:bg-gray-200 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
           type="button"
-          onClick={() =>
-            miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing })
-          }
         >
           No
         </Pill>
         <Pill
-          className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
+          disabled={hasBeenPressed}
+          onClick={() => setHasBeenPressed((prev) => !prev)}
+          className="h-full text-xs bg-blue-400 disabled:bg-blue-200 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
           type="submit"
         >
           Yes

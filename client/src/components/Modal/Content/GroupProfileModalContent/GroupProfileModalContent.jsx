@@ -22,10 +22,6 @@ import socket from "../../../../utils/socketClient/socketClient";
 import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
-import Dropdown from "../../../Dropdown/Dropdown";
-import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
-import { IoPersonAdd } from "react-icons/io5";
-import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
 import MoreMenu from "./components/MoreMenu";
 
 export default function GroupProfileModalContent() {

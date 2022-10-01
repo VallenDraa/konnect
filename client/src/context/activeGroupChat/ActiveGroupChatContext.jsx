@@ -1,11 +1,13 @@
 import { useContext, createContext, useEffect, useState } from "react";
-import { clone, cloneDeep, last } from "lodash";
+import { cloneDeep, last } from "lodash";
 import MESSAGE_LOGS_ACTIONS from "../messageLogs/messageLogsActions";
 import { TitleContext } from "../titleContext/TitleContext";
 import { MessageLogsContext } from "../messageLogs/MessageLogsContext";
 import socket from "../../utils/socketClient/socketClient";
 import { UserContext } from "../user/userContext";
 import USER_ACTIONS from "../user/userAction";
+import MINI_MODAL_ACTIONS from "../miniModal/miniModalActions";
+import { MiniModalContext } from "../miniModal/miniModalContext";
 
 export const ActiveGroupChatContext = createContext("");
 
@@ -14,6 +16,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { setTitle } = useContext(TitleContext);
   const { userState, userDispatch } = useContext(UserContext);
+  const { miniModalDispatch } = useContext(MiniModalContext);
 
   // change the web title according to the user we are chatting to
   useEffect(() => {
@@ -27,6 +30,23 @@ export default function ActiveGroupChatContextProvider({ children }) {
       setTitle((prev) => ({ ...prev, suffix }));
     }
   }, [activeGroupChat, msgLogs.content]);
+
+  // for receiving remove group from the message logs
+  useEffect(() => {
+    socket.on("receive-remove-group", ({ groupId }) => {
+      const newMsgLogs = cloneDeep(msgLogs.content);
+      delete newMsgLogs[groupId];
+
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: newMsgLogs,
+      });
+      miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+      miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
+    });
+
+    return () => socket.off("receive-remove-group");
+  }, [msgLogs.content]);
 
   // for receiving group edits
   useEffect(() => {
@@ -55,6 +75,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
     return () => socket.off("receive-edit-group");
   }, [msgLogs.content]);
 
+  // for receiving quitting group
   useEffect(() => {
     socket.on(
       "receive-quit-group",

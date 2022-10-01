@@ -126,9 +126,9 @@ export const getChatHistory = async (req, res, next) => {
       // check if the user has left the group
       groupChats = groupChats.map((gc) => {
         let lastTimeGroup = gc.hasQuit.find((u) => u.user.toString() === _id);
-        const exitDateStr = new Date(lastTimeGroup.date).toLocaleDateString();
 
         if (lastTimeGroup) {
+          const exitDateStr = new Date(lastTimeGroup.date).toLocaleDateString();
           const chat = [];
 
           for (let i = 0; i < gc.chat.length; i++) {

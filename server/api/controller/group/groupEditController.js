@@ -243,8 +243,28 @@ export const deleteGroup = async (req, res, next) => {
     } else {
       await GroupChat.findByIdAndDelete(_id);
 
-      res.status(204).json({ success: true });
+      res.status(200).json({ success: true });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// remove group id from the groupchats list in database
+export const removeGroup = async (req, res, next) => {
+  try {
+    const { groupId } = req.body;
+    const { _id } = res.locals.tokenData;
+    await User.findByIdAndUpdate(_id, { $pull: { groupChats: groupId } });
+    const { members, admins } = await GroupChat.findById(groupId)
+      .select(["members", "admins"])
+      .lean();
+
+    if (members.length === 0 && admins.length === 0) {
+      await GroupChat.findByIdAndDelete(groupId);
+    }
+
+    res.status(200).json({ success: true });
   } catch (error) {
     next(error);
   }

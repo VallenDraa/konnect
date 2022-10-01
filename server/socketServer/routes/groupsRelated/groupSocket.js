@@ -69,6 +69,23 @@ export default function groupSocket(socket) {
     }
   });
   socket.on("delete-group", async (groupId) => {});
+  socket.on("remove-group", async ({ token, groupId }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/remove_group`,
+        { groupId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        socket.emit("receive-remove-group", { groupId });
+      } else {
+        throw new Error("Fail to remove group from the chats list !");
+      }
+    } catch (error) {
+      socket.emit(error);
+    }
+  });
   socket.on("join-group", async (groupId) => socket.join(groupId));
   socket.on("add-to-group", async (groupId) => socket.kick(groupId));
   socket.on("quit-group", async ({ groupId, userId, token }) => {

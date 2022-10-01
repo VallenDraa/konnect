@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane, FaTrashAlt } from "react-icons/fa";
 import RenderIf from "../../../../utils/React/RenderIf";
 import EmojiBarToggle from "../EmojiBarToggle/EmojiBarToggle";
 import Picker from "emoji-picker-react";
@@ -19,6 +19,10 @@ import {
 
 import { useLocation } from "react-router-dom";
 import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
+import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
+import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
+import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
+import Pill from "../../../Buttons/Pill";
 
 export default function inputBar({ messageLogRef }) {
   const [isEmojiBarOn, setIsEmojiBarOn] = useState(false);
@@ -31,9 +35,10 @@ export default function inputBar({ messageLogRef }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
   const { search } = useLocation();
+  const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
   const [hasQuitGroup, setHasQuitgroup] = useState(
     activeGroupChat &&
-      msgLogs.content[activeGroupChat].hasQuit.some(
+      msgLogs.content[activeGroupChat]?.hasQuit.some(
         (u) => u.user === userState.user._id
       )
   );
@@ -42,7 +47,7 @@ export default function inputBar({ messageLogRef }) {
   useEffect(() => {
     setHasQuitgroup(
       activeGroupChat &&
-        msgLogs.content[activeGroupChat].hasQuit.some(
+        msgLogs.content[activeGroupChat]?.hasQuit.some(
           (u) => u.user === userState.user._id
         )
     );
@@ -114,6 +119,33 @@ export default function inputBar({ messageLogRef }) {
 
   const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 
+  // REMOVE GROUP FROM USER'S GROUP LIST
+  const removeGroupFromList = (payload) => socket.emit("remove-group", payload);
+  const handleRemoveGroup = () => {
+    const payload = {
+      groupId: msgLogs.content[activeGroupChat].chatId,
+      userId: userState.user._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: {
+          content: (
+            <NormalConfirmation
+              cb={removeGroupFromList}
+              title="Are You Sure You Want To Remove This Chat Log ?"
+              caption="You won't be able to access this chat log anymore"
+              payload={payload}
+            />
+          ),
+        },
+      });
+    }
+  };
+  //for when the normal confirmation tab is opened and can't be closed because the chat log has been deleted
+
   return (
     <footer
       className={`sticky bottom-0 ${
@@ -170,10 +202,17 @@ export default function inputBar({ messageLogRef }) {
         </form>
       </RenderIf>
       <RenderIf conditionIs={hasQuitGroup}>
-        <span className="text-gray-500 mx-2 mt-4 mb-2 block text-center font-medium">
+        <span className="text-gray-500 mx-2 mt-4  block text-center font-medium">
           You're unable to send or receive a new message, as you're no longer a
           participant of this group
         </span>
+        <Pill
+          onClick={handleRemoveGroup}
+          className="max-w-[150px] mx-auto my-4 w-full border-[1.5px] shadow border-red-500  hover:bg-red-500 active:bg-red-500 text-red-500 hover:text-white active:text-white shadow-red-100 hover:shadow-red-200 active:shadow-red-200"
+        >
+          <FaTrashAlt />
+          <span>Remove Chat</span>
+        </Pill>
         <div className="h-3 w-full bg-gray-300 shadow-xl"></div>
       </RenderIf>
     </footer>
