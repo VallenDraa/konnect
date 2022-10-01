@@ -14,7 +14,7 @@ import { ImBlocked, ImPencil } from "react-icons/im";
 import { FiSave } from "react-icons/fi";
 import { UserContext } from "../../../../context/user/userContext";
 import Input from "../../../Input/Input";
-import { FaTrash, FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
 import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
 import PasswordConfirmation from "../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
@@ -26,6 +26,7 @@ import Dropdown from "../../../Dropdown/Dropdown";
 import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
 import { IoPersonAdd } from "react-icons/io5";
 import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
+import MoreMenu from "./components/MoreMenu";
 
 export default function GroupProfileModalContent() {
   const adminsListRef = useRef();
@@ -54,6 +55,22 @@ export default function GroupProfileModalContent() {
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [hasQuitGroup, setHasQuitgroup] = useState(
+    activeGroupChat &&
+      msgLogs.content[activeGroupChat].hasQuit.some(
+        (u) => u.user === userState.user._id
+      )
+  );
+
+  // for handling whether the user has quit or been kicked
+  useEffect(() => {
+    setHasQuitgroup(
+      activeGroupChat &&
+        msgLogs.content[activeGroupChat].hasQuit.some(
+          (u) => u.user === userState.user._id
+        )
+    );
+  }, [activeGroupChat, msgLogs.content]);
 
   // mapping the admins data for the lists
   useEffect(() => {
@@ -164,39 +181,9 @@ export default function GroupProfileModalContent() {
     }
   };
 
-  // QUIT GROUP
-  const quitGroupInDb = (payload) => {
-    console.log(payload);
-  };
-  const handleQuitGroup = () => {
-    const payload = {
-      groupId: msgLogs.content[activeGroupChat].chatId,
-      userId: userState.user._id,
-      token: sessionStorage.getItem("token"),
-    };
-
-    if (!miniModalState.isActive) {
-      miniModalDispatch({
-        type: MINI_MODAL_ACTIONS.show,
-        payload: {
-          content: (
-            <NormalConfirmation
-              cb={quitGroupInDb}
-              title="Are You Sure You Want To Quit This Group ?"
-              caption="You won't be able to send or receive new messages"
-              payload={payload}
-            />
-          ),
-        },
-      });
-    }
-  };
-
   // handling auto context menu auto close
   const handleFCMAutoClose = (e) => {
-    if (!e.target.getAttribute("data-user-card")) {
-      closeContextMenuOnClick(e);
-    }
+    if (!e.target.getAttribute("data-user-card")) closeContextMenuOnClick(e);
   };
 
   return (
@@ -307,34 +294,8 @@ export default function GroupProfileModalContent() {
                     Save
                   </Pill>
                 </RenderIf>
-                <RenderIf conditionIs={!isEditMode}>
-                  {/* for more info regarding the group */}
-                  <Dropdown
-                    className="ml-2"
-                    style={{ padding: "0.5rem 0.5rem" }}
-                    offset={15}
-                    fontSize={16}
-                    icon={<BsThreeDotsVertical />}
-                    position={"origin-top-right right-0"}
-                  >
-                    <DropdownItem
-                      className="flex items-center gap-x-1 text-sm"
-                      style={{ color: "rgb(75 85 99)" }}
-                    >
-                      <IoPersonAdd className="text-xs" />
-                      <span className="text-xs capitalize">
-                        Add Participants
-                      </span>
-                    </DropdownItem>
-                    <DropdownItem
-                      onClick={handleQuitGroup}
-                      className="flex items-center gap-x-1 text-sm"
-                      style={{ color: "rgb(239 68 68)" }}
-                    >
-                      <BiLogOut className="text-xs" />
-                      <span className="text-xs capitalize">Quit</span>
-                    </DropdownItem>
-                  </Dropdown>
+                <RenderIf conditionIs={!isEditMode && !hasQuitGroup}>
+                  <MoreMenu />
                 </RenderIf>
               </div>
             </header>

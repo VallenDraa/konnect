@@ -86,7 +86,7 @@ export const getAllChatHistory = async (req, res, next) => {
 
 export const getChatHistory = async (req, res, next) => {
   try {
-    const { pcIds, gcIds } = req.query;
+    const { pcIds, gcIds, hasQuit } = req.query;
     const { _id } = res.locals.tokenData;
     const parsedPcIds = pcIds ? pcIds.split(",") : []; //private chat ids
     const parsedGcIds = gcIds ? gcIds.split(",") : []; //group chat ids
@@ -119,9 +119,38 @@ export const getChatHistory = async (req, res, next) => {
 
     if (parsedGcIds.length > 0) {
       groupChats = await GroupChat.where({ _id: { $in: parsedGcIds } })
-        .select(["chat", "type"])
+        .select(["chat", "type", "hasQuit"])
         .populate("chat.messages")
         .lean();
+
+      // check if the user has left the group
+      groupChats = groupChats.map((gc) => {
+        let lastTimeGroup = gc.hasQuit.find((u) => u.user.toString() === _id);
+        const exitDateStr = new Date(lastTimeGroup.date).toLocaleDateString();
+
+        if (lastTimeGroup) {
+          const chat = [];
+
+          for (let i = 0; i < gc.chat.length; i++) {
+            const msgsBeforeLeaving = [];
+            chat.push(gc.chat[i]);
+
+            // limit the messages in the time group based on the exit time
+            for (const msg of chat[i].messages) {
+              if (msg.time > lastTimeGroup.date) break;
+
+              msgsBeforeLeaving.push(msg);
+            }
+            chat[i].messages = msgsBeforeLeaving;
+
+            if (gc.chat[i].date === exitDateStr) break;
+          }
+
+          return { ...gc, chat };
+        } else {
+          return gc;
+        }
+      });
     }
 
     res.json({ success: true, privateChats, groupChats });
@@ -268,18 +297,62 @@ export const getAllChatId = async (req, res, next) => {
     }
 
     if (gcIds.length > 0) {
-      const groupChats = await GroupChat.where({ _id: { $in: gcIds } })
-        .slice("chat", -1)
+      let groupChats = await GroupChat.where({ _id: { $in: gcIds } })
         .populate(["chat.messages"])
         .lean();
+
+      groupChats = groupChats.map((gc) => {
+        const hasQuitIdx = gc.hasQuit.findIndex(
+          (u) => u.user.toString() === _id
+        );
+
+        if (hasQuitIdx !== -1) {
+          const { date } = gc.hasQuit[hasQuitIdx];
+          const exitDateStr = new Date(date).toLocaleDateString();
+          const chat = [];
+
+          // limit the time group based on the exit date
+          if (gc.chat.length !== 0) {
+            for (let i = 0; i < gc.chat.length; i++) {
+              const msgsBeforeLeaving = [];
+              chat.push(gc.chat[i]);
+
+              // limit the messages in the time group based on the exit time
+              for (const msg of chat[i].messages) {
+                if (msg.time > date) break;
+
+                msgsBeforeLeaving.push(msg);
+              }
+              chat[i].messages = msgsBeforeLeaving;
+
+              if (gc.chat[i].date === exitDateStr) break;
+            }
+          } else {
+            if (gc.chat[0].date === exitDateStr) {
+              const msgsBeforeLeaving = [];
+              chat.push(gc.chat[0]);
+
+              // limit the messages in the time group based on the exit time
+              for (const msg of chat[i].messages) {
+                if (msg.time > date) break;
+
+                msgsBeforeLeaving.push(msg);
+              }
+              chat[i].messages = msgsBeforeLeaving;
+            }
+          }
+
+          return { ...gc, chat };
+        } else {
+          return { ...gc, chat: [gc.chat[gc.chat.length - 1]] };
+        }
+      });
 
       chats.push(...groupChats);
     }
 
     // formatting the result
     const formattedChats = chats.map((c) => {
-      let messages;
-
       switch (c.type) {
         case "private":
           const [user] = c.users.filter((user) => user._id.toString() !== _id);
@@ -307,6 +380,7 @@ export const getAllChatId = async (req, res, next) => {
             description: c.description,
             admins: c.admins,
             members: c.members,
+            hasQuit: c.hasQuit,
             chat: c.chat,
             type: c.type,
             preview: true,

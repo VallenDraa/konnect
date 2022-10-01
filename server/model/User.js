@@ -53,6 +53,12 @@ const UserSchema = new mongoose.Schema(
     privateChats: [
       { type: mongoose.Schema.Types.ObjectId, ref: "private_chat" },
     ],
+    hasQuitGroup: [
+      {
+        group: { type: mongoose.Schema.Types.ObjectId, ref: "group" },
+        date: { type: Date, default: new Date() },
+      },
+    ],
     settings: {
       general: { type: Object, default: {} },
       calls: { type: Object, default: {} },

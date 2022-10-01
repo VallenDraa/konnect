@@ -31,6 +31,22 @@ export default function inputBar({ messageLogRef }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
   const { search } = useLocation();
+  const [hasQuitGroup, setHasQuitgroup] = useState(
+    activeGroupChat &&
+      msgLogs.content[activeGroupChat].hasQuit.some(
+        (u) => u.user === userState.user._id
+      )
+  );
+
+  // for handling group chat input bar when the user has quit or been kicked
+  useEffect(() => {
+    setHasQuitgroup(
+      activeGroupChat &&
+        msgLogs.content[activeGroupChat].hasQuit.some(
+          (u) => u.user === userState.user._id
+        )
+    );
+  }, [activeGroupChat, msgLogs.content]);
 
   const handleNewMessage = (e) => {
     e.preventDefault();
@@ -99,54 +115,67 @@ export default function inputBar({ messageLogRef }) {
   const onEmojiClick = (e, data) => setnewMessage((msg) => msg + data.emoji);
 
   return (
-    <footer className="sticky bottom-0 bg-gray-100">
-      <form
-        onSubmit={(e) => handleNewMessage(e)}
-        className="flex items-center justify-center gap-3 py-3 px-5 max-w-screen-sm lg:max-w-full mx-auto"
-      >
-        {/* emoji btn */}
-        <div aria-label="message-button-group" className="self-end">
-          <EmojiBarToggle
-            isEmojiBarOnState={{ isEmojiBarOn, setIsEmojiBarOn }}
+    <footer
+      className={`sticky bottom-0 ${
+        hasQuitGroup ? "bg-gray-200" : "bg-gray-100"
+      }`}
+    >
+      <RenderIf conditionIs={!hasQuitGroup}>
+        <form
+          onSubmit={(e) => handleNewMessage(e)}
+          className="flex items-center justify-center gap-3 py-3 px-5 max-w-screen-sm lg:max-w-full mx-auto"
+        >
+          {/* emoji btn */}
+          <div aria-label="message-button-group" className="self-end">
+            <EmojiBarToggle
+              isEmojiBarOnState={{ isEmojiBarOn, setIsEmojiBarOn }}
+            />
+          </div>
+          <RenderIf conditionIs={isEmojiBarOn}>
+            <Picker
+              pickerStyle={{
+                shadow:
+                  "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+                borderRadius: "20px",
+                position: "absolute",
+                left: "25px",
+                bottom: "60px",
+              }}
+              disableAutoFocus={true}
+              native={true}
+              onEmojiClick={onEmojiClick}
+            />
+          </RenderIf>
+          {/* the input bar */}
+          <input
+            onDoubleClick={() => scrollToBottomSmooth(messageLogRef.current)}
+            type="text"
+            ref={inputRef}
+            onChange={(e) => setnewMessage(e.target.value)}
+            value={newMessage}
+            className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8"
           />
-        </div>
-        <RenderIf conditionIs={isEmojiBarOn}>
-          <Picker
-            pickerStyle={{
-              shadow:
-                "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-              borderRadius: "20px",
-              position: "absolute",
-              left: "25px",
-              bottom: "60px",
-            }}
-            disableAutoFocus={true}
-            native={true}
-            onEmojiClick={onEmojiClick}
-          />
-        </RenderIf>
-        {/* the input bar */}
-        <input
-          onDoubleClick={() => scrollToBottomSmooth(messageLogRef.current)}
-          type="text"
-          ref={inputRef}
-          onChange={(e) => setnewMessage(e.target.value)}
-          value={newMessage}
-          className="bg-gray-200 pt-1.5 outline-none shadow focus:shadow-inner w-full rounded-full px-6 resize-none flex items-center justify-center h-8"
-        />
-        {/* the send msg btn */}
-        <RenderIf conditionIs={newMessage !== ""}>
-          <button
-            className={`w-8 h-8 rounded-full bg-blue-300 text-white
+          {/* the send msg btn */}
+          <RenderIf conditionIs={newMessage !== ""}>
+            <button
+              className={`w-8 h-8 rounded-full bg-blue-300 text-white
                 hover:bg-blue-400 focus:bg-blue-400 focus:shadow-inner transition 
                 flex items-center justify-center shadow aspect-square text-xs ${
                   general?.animation ? `animate-pop-in` : ``
                 }`}
-          >
-            <FaPaperPlane className="relative right-[1px]" />
-          </button>
-        </RenderIf>
-      </form>
+            >
+              <FaPaperPlane className="relative right-[1px]" />
+            </button>
+          </RenderIf>
+        </form>
+      </RenderIf>
+      <RenderIf conditionIs={hasQuitGroup}>
+        <span className="text-gray-500 mx-2 mt-4 mb-2 block text-center font-medium">
+          You're unable to send or receive a new message, as you're no longer a
+          participant of this group
+        </span>
+        <div className="h-3 w-full bg-gray-300 shadow-xl"></div>
+      </RenderIf>
     </footer>
   );
 }

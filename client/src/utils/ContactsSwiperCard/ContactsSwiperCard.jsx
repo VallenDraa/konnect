@@ -99,9 +99,7 @@ export default function ContactsSwiperCard({
       <RenderIf conditionIs={!mini}>
         <div className="text-center space-y-3">
           <div className="flex flex-col gap-y-1 mt-5">
-            <span className="font-semibold text-gray-500">
-              Contact is empty
-            </span>
+            <span className="font-semibold text-gray-500">No users</span>
           </div>
         </div>
       </RenderIf>

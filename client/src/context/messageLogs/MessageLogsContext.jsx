@@ -65,6 +65,7 @@ export default function MessageLogsContextProvider({ children }) {
                   chat: log.chat,
                   admins: log.admins,
                   members: log.members,
+                  hasQuit: log.hasQuit,
                   type: log.type,
                   chatId: log.chatId,
                   description: log.description,
@@ -73,7 +74,9 @@ export default function MessageLogsContextProvider({ children }) {
                 };
 
                 // automatically join the group chat room via websocket
-                socket.emit("join-room", log.chatId);
+                if (!log.hasQuit.some((u) => u.user === userState.user._id)) {
+                  socket.emit("join-room", log.chatId);
+                }
                 break;
 
               default:

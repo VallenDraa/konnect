@@ -1,9 +1,11 @@
 import { useContext, createContext, useEffect, useState } from "react";
-import { cloneDeep, last } from "lodash";
+import { clone, cloneDeep, last } from "lodash";
 import MESSAGE_LOGS_ACTIONS from "../messageLogs/messageLogsActions";
 import { TitleContext } from "../titleContext/TitleContext";
 import { MessageLogsContext } from "../messageLogs/MessageLogsContext";
 import socket from "../../utils/socketClient/socketClient";
+import { UserContext } from "../user/userContext";
+import USER_ACTIONS from "../user/userAction";
 
 export const ActiveGroupChatContext = createContext("");
 
@@ -11,6 +13,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
   const [activeGroupChat, setActiveGroupChat] = useState("");
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { setTitle } = useContext(TitleContext);
+  const { userState, userDispatch } = useContext(UserContext);
 
   // change the web title according to the user we are chatting to
   useEffect(() => {
@@ -23,7 +26,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
 
       setTitle((prev) => ({ ...prev, suffix }));
     }
-  }, [activeGroupChat, msgLogs]);
+  }, [activeGroupChat, msgLogs.content]);
 
   // for receiving group edits
   useEffect(() => {
@@ -50,7 +53,51 @@ export default function ActiveGroupChatContextProvider({ children }) {
     });
 
     return () => socket.off("receive-edit-group");
-  }, [msgLogs]);
+  }, [msgLogs.content]);
+
+  useEffect(() => {
+    socket.on(
+      "receive-quit-group",
+      ({ groupId, userId, newNotices, isAdmin, exitDate }) => {
+        // picking the group chat log and cloning it
+        const newChatLogs = cloneDeep(msgLogs.content);
+        const newUserData = cloneDeep(userState.user);
+
+        // updating the group data
+        if (isAdmin) {
+          newChatLogs[groupId].admins = newChatLogs[groupId].admins.filter(
+            (a) => a !== userId
+          );
+        } else {
+          newChatLogs[groupId].members = newChatLogs[groupId].members.filter(
+            (m) => m !== userId
+          );
+        }
+        newChatLogs[groupId].hasQuit.push({ user: userId, date: exitDate });
+
+        // update user data
+        newUserData.hasQuitGroup.push({ group: groupId, date: exitDate });
+
+        // adding the new notice to the existing chat log
+        const latestTimeGroup = last(newChatLogs[groupId].chat);
+        latestTimeGroup.date === newNotices.date
+          ? latestTimeGroup.messages.push(...newNotices.messages)
+          : newChatLogs[groupId].chat.push(newNotices);
+
+        // saving the changes
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: newChatLogs,
+        });
+        userDispatch({
+          type: USER_ACTIONS.updateSuccess,
+          payload: newUserData,
+        });
+      }
+    );
+
+    return () => socket.off("receive-quit-group");
+  }, [msgLogs.content]);
 
   // useEffect(() => {
   //   console.log(activeGroupChat);
@@ -86,6 +133,7 @@ export const makeNewGroup = ({
       description: "",
       preview: true,
       profilePicture: "",
+      hasQuit: [],
       createdAt,
     },
     ...updatedLogsContent,

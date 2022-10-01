@@ -71,5 +71,38 @@ export default function groupSocket(socket) {
   socket.on("delete-group", async (groupId) => {});
   socket.on("join-group", async (groupId) => socket.join(groupId));
   socket.on("add-to-group", async (groupId) => socket.kick(groupId));
-  socket.on("quit-group", async (groupId) => socket.kick(groupId));
+  socket.on("quit-group", async ({ groupId, userId, token }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/quit_group`,
+        { groupId, userId, noticeType: "quit" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        socket.leave(groupId);
+
+        socket.emit("receive-quit-group", {
+          groupId,
+          userId,
+          token,
+          newNotices: data.newNotices,
+          isAdmin: data.isAdmin,
+          exitDate: data.exitDate,
+        });
+        socket.to(groupId).emit("receive-quit-group", {
+          groupId,
+          userId,
+          newNotices: data.newNotices,
+          isAdmin: data.isAdmin,
+          exitDate: data.exitDate,
+        });
+      } else {
+        throw new Error("Fail to quit the group");
+      }
+    } catch (error) {
+      console.error(error);
+      socket.emit("error", error);
+    }
+  });
 }
