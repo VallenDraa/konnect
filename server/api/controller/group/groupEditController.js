@@ -2,6 +2,40 @@ import GroupChat from "../../../model/group/GroupChat.js";
 import GroupMessage from "../../../model/group/GroupMessage.js";
 import User from "../../../model/User.js";
 import createError from "../../../utils/createError.js";
+import bcrypt from "bcrypt";
+
+const newNotice = async (next, gc, contents) => {
+  try {
+    const date = new Date().toLocaleDateString();
+    const newNotices = [];
+
+    // making a new notice for each content
+    for (const content of contents) {
+      newNotices.push(
+        await GroupMessage.create({
+          chatId: gc._id,
+          content,
+          msgType: "notice",
+        })
+      );
+    }
+
+    // check if there is already an existing time group
+    if (gc.chat[gc.chat.length - 1].date !== date) {
+      const newTimeGroup = { date, messages: newNotices.map((m) => m._id) };
+      gc.chat.push(newTimeGroup);
+    } else {
+      gc.chat[gc.chat.length - 1].messages.push(
+        ...newNotices.map((m) => m._id)
+      );
+    }
+    await gc.save();
+
+    return { date, messages: newNotices };
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const makeGroup = async (req, res, next) => {
   try {
@@ -33,6 +67,7 @@ export const makeGroup = async (req, res, next) => {
     const { _id } = await GroupChat.create({ admins, members, name });
     const newGc = await GroupChat.findById(_id).populate(["admins", "members"]);
 
+    // make a new notice regarding the creation of the group
     const newNoticeMsg = await GroupMessage.create({
       chatId: newGc._id,
       content: `${newGc.admins[0].username} created a new group`,
@@ -54,12 +89,15 @@ export const makeGroup = async (req, res, next) => {
 
     if (fullInfo) {
       const { _id, ...extras } = newGc._doc;
-      return res
-        .status(201)
-        .json({ chatId: _id, ...extras, newNotice, success: true });
+      return res.status.json({
+        chatId: _id,
+        ...extras,
+        newNotice,
+        success: true,
+      });
     }
 
-    res.status(201).json({
+    res.json({
       chatId: newGc._id,
       createdAt: newGc.createdAt,
       newNotice: { ...newTimeGroup, messages: [newNoticeMsg] },
@@ -72,18 +110,48 @@ export const makeGroup = async (req, res, next) => {
 
 export const editGroup = async (req, res, next) => {
   try {
-    const { newName, newDescription, _id } = req.body;
+    const { newName, newDesc, _id, userPw } = req.body;
+    const { _id: userId } = res.locals.tokenData;
 
-    const updatedGroup = await GroupChat.findById(_id);
-    const { name: oldName, description: oldDesc } = updatedGroup;
+    // for verifying the password
+    const { password, username } = await User.findById(userId)
+      .select(["password", "username"])
+      .lean();
+    const isPwValid = await bcrypt.compare(userPw, password);
 
-    if (oldName !== newName) updatedGroup.name = newName;
-    if (oldDesc !== newDescription) updatedGroup.description = newDescription;
+    if (!isPwValid) {
+      return createError(
+        next,
+        403,
+        "Invalid password, unable to make edits to the group"
+      );
+    } else {
+      // find and parse the updated data
+      const updatedGroup = await GroupChat.findById(_id);
+      const { name: oldName, description: oldDesc } = updatedGroup;
+      const newNoticeMsgs = [];
 
-    await updatedGroup.save();
+      // check for changes
+      if (oldName !== newName) {
+        updatedGroup.name = newName;
+        newNoticeMsgs.push(
+          `${username} changed the group name from '${oldName}' to '${newName}'`
+        );
+      }
+      if (oldDesc !== newDesc) {
+        updatedGroup.description = newDesc;
+        newNoticeMsgs.push(`${username} changed the group description`);
+      }
 
-    res.status(204).json({ success: true });
+      // push the new notice message
+      const newNotices = await newNotice(next, updatedGroup, newNoticeMsgs);
+
+      await updatedGroup.save();
+
+      res.json({ success: true, newNotices });
+    }
   } catch (error) {
+    console.error(error);
     next(error);
   }
 };
@@ -97,7 +165,7 @@ export const joinGroup = async (req, res, next) => {
       $pull: { hasQuit: userId },
     });
 
-    res.status(204).json({ success: true });
+    res.json({ success: true });
   } catch (error) {}
 };
 
@@ -110,7 +178,7 @@ export const quitGroup = async (req, res, next) => {
       $push: { hasQuit: userId },
     });
 
-    res.status(204).json({ success: true });
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }
@@ -118,11 +186,25 @@ export const quitGroup = async (req, res, next) => {
 
 export const deleteGroup = async (req, res, next) => {
   try {
-    const { _id } = req.body;
+    const { _id, userPw } = req.body;
+    const { _id: userId } = res.locals.tokenData;
 
-    await GroupChat.findByIdAndDelete(_id);
+    const { password } = await User.findById(userId)
+      .select(["password", "username"])
+      .lean();
+    const isPwValid = await bcrypt.compare(userPw, password);
 
-    res.status(204).json({ success: true });
+    if (!isPwValid) {
+      return createError(
+        next,
+        403,
+        "Invalid password, unable to make edits to the group"
+      );
+    } else {
+      await GroupChat.findByIdAndDelete(_id);
+
+      res.status(204).json({ success: true });
+    }
   } catch (error) {
     next(error);
   }

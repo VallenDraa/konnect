@@ -2,15 +2,14 @@ import jwt from "jsonwebtoken";
 import createError from "../../../utils/createError.js";
 
 export default function verifyToken(req, res, next) {
-  const authorization = req.headers.authorization;
-
-  // check if the client passed in an authentication token
-  if (!authorization) {
-    return createError(next, 403, "Pass in an auth token to proceed !");
-  }
-
-  // check if the body contains token key
   try {
+    // check if the body contains token key
+    const authorization = req.headers.authorization;
+
+    // check if the client passed in an authentication token
+    if (!authorization) {
+      return createError(next, 403, "Pass in an auth token to proceed !");
+    }
     const [prefix, token] = authorization.split(" ");
     const secret = process.env.JWT_SECRET;
 

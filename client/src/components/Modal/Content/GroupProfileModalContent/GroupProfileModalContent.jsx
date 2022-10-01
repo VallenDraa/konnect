@@ -6,7 +6,7 @@ import { CachedUserContext } from "../../../../context/cachedUser/CachedUserCont
 import { useEffect, useContext, useState, useRef } from "react";
 import { BiLogOut, BiRename } from "react-icons/bi";
 import { FCMContext } from "../../../../context/FCMContext/FCMContext";
-import { BsTextParagraph } from "react-icons/bs";
+import { BsTextParagraph, BsThreeDotsVertical } from "react-icons/bs";
 import GroupModalFCMItem from "../../../FloatingContextMenu/Content/GroupModalFCMItem";
 import Pill from "../../../Buttons/Pill";
 import RenderIf from "../../../../utils/React/RenderIf";
@@ -14,14 +14,23 @@ import { ImBlocked, ImPencil } from "react-icons/im";
 import { FiSave } from "react-icons/fi";
 import { UserContext } from "../../../../context/user/userContext";
 import Input from "../../../Input/Input";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
 import PasswordConfirmation from "../../../MiniModal/content/AccountOpt/PasswordConfirmation";
+import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
+import socket from "../../../../utils/socketClient/socketClient";
+import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/ActiveGroupChatContext";
+import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
+import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
+import Dropdown from "../../../Dropdown/Dropdown";
+import DropdownItem from "../../../Dropdown/DropdownItem/DropdownItem";
+import { IoPersonAdd } from "react-icons/io5";
+import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
 
-export default function GroupProfileModalContent({ data }) {
-  const { userState } = useContext(UserContext);
+export default function GroupProfileModalContent() {
   const adminsListRef = useRef();
   const membersListRef = useRef();
+  const { userState } = useContext(UserContext);
   const { fetchCachedUsers } = useContext(CachedUserContext);
   const [adminsData, setAdminsData] = useState([]);
   const [membersData, setMembersData] = useState([]);
@@ -31,37 +40,49 @@ export default function GroupProfileModalContent({ data }) {
     closeContextMenu,
     openContextMenu,
   } = useContext(FCMContext);
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
+  const { msgLogs } = useContext(MessageLogsContext);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeUser, setActiveUser] = useState(null);
-  const [description, setDescription] = useState(data?.description);
-  const [groupName, setGroupName] = useState(data?.name);
+  const [description, setDescription] = useState(
+    msgLogs.content[activeGroupChat].description || ""
+  );
+  const [groupName, setGroupName] = useState(
+    msgLogs.content[activeGroupChat].name
+  );
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // mapping the admins data for the lists
   useEffect(() => {
     (async () => {
       try {
-        const admins = await fetchCachedUsers(data.admins);
+        const admins = await fetchCachedUsers(
+          msgLogs.content[activeGroupChat].admins
+        );
 
         setAdminsData(admins.map((admin) => ({ user: { ...admin } })));
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [data.admins]);
+  }, [msgLogs.content[activeGroupChat].admins]);
 
   // mapping the members data for the lists
   useEffect(() => {
     (async () => {
       try {
-        const members = await fetchCachedUsers(data.members);
+        const members = await fetchCachedUsers(
+          msgLogs.content[activeGroupChat].members
+        );
         setMembersData(members.map((member) => ({ user: { ...member } })));
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [data.members]);
+  }, [msgLogs.content[activeGroupChat].members]);
 
   // determining if the user is admin
   useEffect(() => {
@@ -71,19 +92,29 @@ export default function GroupProfileModalContent({ data }) {
   // to close the floating context menu when profile is closed
   useEffect(() => () => closeContextMenu(), []);
 
-  // resetting the edit value back to the unedited value
+  // EDIT GROUP
   const resetEditValue = () => {
-    if (groupName !== data?.name) setGroupName(data?.name);
-    if (description !== data?.description) setDescription(data?.description);
-  };
+    const { name, description } = msgLogs.content[activeGroupChat];
 
-  // show password mini modal for group edit confirmation
-  const submitChanges = (password, payload) => {
-    console.log(password, payload);
-  };
+    if (groupName !== name) setGroupName(name);
+    if (description !== description) setDescription(description);
+  }; // resetting the edit value back to the unedited value
+  const submitChanges = async (password, payload) => {
+    // emit a socket event to save edits and broadcast the change to the other members
+    try {
+      socket.emit("edit-group", { ...payload, userPw: password });
+
+      // close the mini modal and disable edit mode
+      setIsEditMode(false);
+      miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+      miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
+    } catch (error) {
+      console.log(error);
+    }
+  }; // show password mini modal for group edit confirmation
   const handleEdits = () => {
     const payload = {
-      _id: data._id,
+      _id: msgLogs.content[activeGroupChat].chatId,
       newName: groupName,
       newDesc: description,
       token: sessionStorage.getItem("token"),
@@ -92,38 +123,79 @@ export default function GroupProfileModalContent({ data }) {
     if (!miniModalState.isActive) {
       miniModalDispatch({
         type: MINI_MODAL_ACTIONS.show,
-        payload: (
-          <PasswordConfirmation
-            cb={submitChanges}
-            title="Enter Your Password To Edit The Group"
-            payload={payload}
-          />
-        ),
+        payload: {
+          content: (
+            <PasswordConfirmation
+              cb={submitChanges}
+              title="Enter Your Password To Edit The Group"
+              caption="Changes will be broadcasted to other members"
+              payload={payload}
+            />
+          ),
+        },
       });
     }
   };
 
-  // show password mini modal for group deletion confirmation
+  // DELETE GROUP
   const deleteGroupInDb = (password, payload) => {
     console.log(password, payload);
-  };
+  }; // show password mini modal for group deletion confirmation
   const handleDeleteGroup = () => {
     const payload = {
-      _id: data._id,
+      _id: msgLogs.content[activeGroupChat].chatId,
       token: sessionStorage.getItem("token"),
     };
 
     if (!miniModalState.isActive) {
       miniModalDispatch({
         type: MINI_MODAL_ACTIONS.show,
-        payload: (
-          <PasswordConfirmation
-            cb={deleteGroupInDb}
-            title="Enter Your Password To Edit The Group"
-            payload={payload}
-          />
-        ),
+        payload: {
+          content: (
+            <PasswordConfirmation
+              cb={deleteGroupInDb}
+              title="Enter Your Password To Delete The Group"
+              caption="All data regarding this group will be wiped"
+              payload={payload}
+            />
+          ),
+        },
       });
+    }
+  };
+
+  // QUIT GROUP
+  const quitGroupInDb = (payload) => {
+    console.log(payload);
+  };
+  const handleQuitGroup = () => {
+    const payload = {
+      groupId: msgLogs.content[activeGroupChat].chatId,
+      userId: userState.user._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: {
+          content: (
+            <NormalConfirmation
+              cb={quitGroupInDb}
+              title="Are You Sure You Want To Quit This Group ?"
+              caption="You won't be able to send or receive new messages"
+              payload={payload}
+            />
+          ),
+        },
+      });
+    }
+  };
+
+  // handling auto context menu auto close
+  const handleFCMAutoClose = (e) => {
+    if (!e.target.getAttribute("data-user-card")) {
+      closeContextMenuOnClick(e);
     }
   };
 
@@ -131,11 +203,7 @@ export default function GroupProfileModalContent({ data }) {
     <section
       ref={FCMWrapperRef}
       className="w-screen lg:w-[40rem] h-full flex flex-col"
-      onClick={(e) => {
-        if (!e.target.getAttribute("data-user-card")) {
-          closeContextMenuOnClick(e);
-        }
-      }}
+      onClick={handleFCMAutoClose}
       aria-label="Group Profile"
     >
       <FloatingContextMenu>
@@ -149,27 +217,30 @@ export default function GroupProfileModalContent({ data }) {
           {/* profile pic */}
           <header className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 py-4">
             <PP
-              src={data.profilePicture || null}
-              alt={data.name}
+              src={msgLogs.content[activeGroupChat].profilePicture || null}
+              alt={msgLogs.content[activeGroupChat].name}
               type="group"
               className="rounded-full h-44 mx-auto"
             />
           </header>
-          {/* user data */}
+          {/* group data */}
           <footer className="py-3 space-y-8">
             <header
-              className="flex flex-col sm:flex-row justify-between items-center gap-3 px-5"
-              style={{ flexDirection: isEditMode ? "column-reverse" : "row" }}
+              className="flex flex-wrap justify-between items-center gap-3 px-5"
+              style={{ flexDirection: isEditMode ? "column-reverse" : "" }}
             >
               {/* group name */}
               <RenderIf conditionIs={!isEditMode}>
                 <div className="flex gap-x-2 items-center self-center">
                   <span className="text-3xl font-semibold mt-2">
-                    {data.name}
+                    {msgLogs.content[activeGroupChat].name}
                   </span>
                   {/* date created */}
                   <span className="text-xxs text-gray-400 font-medium">
-                    EST. {new Date(data?.createdAt).toLocaleDateString()}
+                    EST.{" "}
+                    {new Date(
+                      msgLogs.content[activeGroupChat].createdAt
+                    ).toLocaleDateString()}
                   </span>
                 </div>
               </RenderIf>
@@ -191,17 +262,8 @@ export default function GroupProfileModalContent({ data }) {
               {/* buttons */}
               <div
                 style={{ width: isEditMode ? "100%" : "" }}
-                className="gap-2 flex h-full self-end justify-end grow"
+                className="flex h-full self-end justify-end w-full sm:w-max"
               >
-                {/* for quitting the group */}
-                <RenderIf conditionIs={!isEditMode}>
-                  {/* for triggering edit mode and cancelling it */}
-                  <Pill className="text-sm px-4 py-1 font-bold flex items-center gap-x-1.5 bg-red-400 hover:shadow-red-100 hover:bg-red-300 text-white w-24">
-                    <BiLogOut />
-                    Quit
-                  </Pill>
-                </RenderIf>
-
                 {/* enable edit mode if the user is an admin */}
                 <RenderIf conditionIs={isAdmin}>
                   {/* for triggering edit mode and cancelling it */}
@@ -230,21 +292,49 @@ export default function GroupProfileModalContent({ data }) {
 
                   {/* for saving edits */}
                   <Pill
-                    type="submit"
+                    onClick={handleEdits}
                     disabled={!isEditMode}
                     style={{
-                      position: isEditMode ? "static" : "absolute",
-                      zIndex: isEditMode ? "" : "-1",
                       cursor: isEditMode ? "pointer" : "default",
                       padding: isEditMode ? "0.25rem 1rem" : "0",
                       opacity: isEditMode ? "1" : "0",
                       width: isEditMode ? "50%" : "0%",
+                      marginLeft: isEditMode ? "0.5rem" : "",
                     }}
                     className="text-sm font-bold bg-blue-400 hover:bg-blue-300 hover:shadow-blue-100 active:shadow-blue-100 text-white flex items-center gap-x-1.5"
                   >
                     <FiSave />
                     Save
                   </Pill>
+                </RenderIf>
+                <RenderIf conditionIs={!isEditMode}>
+                  {/* for more info regarding the group */}
+                  <Dropdown
+                    className="ml-2"
+                    style={{ padding: "0.5rem 0.5rem" }}
+                    offset={15}
+                    fontSize={16}
+                    icon={<BsThreeDotsVertical />}
+                    position={"origin-top-right right-0"}
+                  >
+                    <DropdownItem
+                      className="flex items-center gap-x-1 text-sm"
+                      style={{ color: "rgb(75 85 99)" }}
+                    >
+                      <IoPersonAdd className="text-xs" />
+                      <span className="text-xs capitalize">
+                        Add Participants
+                      </span>
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={handleQuitGroup}
+                      className="flex items-center gap-x-1 text-sm"
+                      style={{ color: "rgb(239 68 68)" }}
+                    >
+                      <BiLogOut className="text-xs" />
+                      <span className="text-xs capitalize">Quit</span>
+                    </DropdownItem>
+                  </Dropdown>
                 </RenderIf>
               </div>
             </header>
@@ -268,17 +358,22 @@ export default function GroupProfileModalContent({ data }) {
                     Group Description :
                   </h3>
                   <span className="text-base text-gray-600 font-semibold px-2">
-                    {data?.description || "-"}
+                    {msgLogs.content[activeGroupChat].description || "-"}
                   </span>
                 </RenderIf>
               </div>
 
               {/* Delete group button for admins  */}
               <RenderIf conditionIs={isAdmin && isEditMode}>
-                <Pill className="text-sm px-4 py-1 font-bold flex items-center gap-x-1.5 bg-red-400 hover:shadow-red-100 hover:bg-red-300 text-white max-w-sm mx-auto">
-                  <FaTrash />
-                  Delete Group
-                </Pill>
+                <div className="mx-5">
+                  <Pill
+                    onClick={handleDeleteGroup}
+                    className="text-sm px-4 py-1 font-bold flex items-center max-w-sm mx-auto gap-x-1.5 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-500 text-red-400 hover:text-white active:text-white shadow-red-100 hover:shadow-red-200 active:shadow-red-200"
+                  >
+                    <FaTrashAlt />
+                    Delete Group
+                  </Pill>
+                </div>
               </RenderIf>
 
               {/* Participants */}

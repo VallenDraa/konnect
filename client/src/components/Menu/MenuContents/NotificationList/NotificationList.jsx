@@ -99,7 +99,7 @@ export default function NotificationList() {
           <Dropdown
             offset={8}
             fontSize={12}
-            icon={activeBox.icon()}
+            icon={<activeBox.icon />}
             text={activeBox.name}
             position={"origin-top-left left-0"}
           >
@@ -111,7 +111,7 @@ export default function NotificationList() {
                 isActive={tab.name === activeBox.name}
                 className="flex items-center gap-x-1"
               >
-                {tab.icon({ className: "text-sm" })}
+                {<tab.icon className="text-sm" />}
                 <span className="text-xs capitalize">{tab.name}</span>
               </DropdownItem>
             ))}

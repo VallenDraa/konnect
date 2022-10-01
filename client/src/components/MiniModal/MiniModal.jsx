@@ -46,7 +46,7 @@ export default function MiniModal() {
       >
         <div
           ref={miniModalRef}
-          className={`min-h-[350px] min-w-[350px] bg-white shadow-xl rounded-xl overflow-clip flex flex-col mx-5 ${
+          className={`min-w-full sm:min-w-[350px] bg-white shadow-xl rounded-xl overflow-clip flex flex-col mx-5 ${
             general?.animation ? "animate-pop-in" : ""
           }`}
         >

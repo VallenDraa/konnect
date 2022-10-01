@@ -1,14 +1,15 @@
 import { useContext, createContext, useEffect, useState } from "react";
-import { cloneDeep } from "lodash";
+import { cloneDeep, last } from "lodash";
 import MESSAGE_LOGS_ACTIONS from "../messageLogs/messageLogsActions";
 import { TitleContext } from "../titleContext/TitleContext";
 import { MessageLogsContext } from "../messageLogs/MessageLogsContext";
+import socket from "../../utils/socketClient/socketClient";
 
 export const ActiveGroupChatContext = createContext("");
 
 export default function ActiveGroupChatContextProvider({ children }) {
   const [activeGroupChat, setActiveGroupChat] = useState("");
-  const { msgLogs } = useContext(MessageLogsContext);
+  const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const { setTitle } = useContext(TitleContext);
 
   // change the web title according to the user we are chatting to
@@ -23,6 +24,33 @@ export default function ActiveGroupChatContextProvider({ children }) {
       setTitle((prev) => ({ ...prev, suffix }));
     }
   }, [activeGroupChat, msgLogs]);
+
+  // for receiving group edits
+  useEffect(() => {
+    socket.on("receive-edit-group", (newGroupInfos) => {
+      const { _id, newName, newDesc, newNotices } = newGroupInfos;
+
+      // picking the group chat log and cloning it
+      const newChatLogs = cloneDeep(msgLogs.content);
+
+      // updating the group data
+      newChatLogs[_id].name = newName;
+      newChatLogs[_id].description = newDesc;
+
+      // adding the new notice to the existing chat log
+      const latestTimeGroup = last(newChatLogs[_id].chat);
+      latestTimeGroup.date === newNotices.date
+        ? latestTimeGroup.messages.push(...newNotices.messages)
+        : newChatLogs[_id].chat.push(newNotices);
+
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: newChatLogs,
+      });
+    });
+
+    return () => socket.off("receive-edit-group");
+  }, [msgLogs]);
 
   // useEffect(() => {
   //   console.log(activeGroupChat);

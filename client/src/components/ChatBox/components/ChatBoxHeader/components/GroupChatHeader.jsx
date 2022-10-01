@@ -29,9 +29,7 @@ export default function GroupChatHeader({ invisibleWallRef }) {
       type: MODAL_ACTIONS.show,
       prevUrl: urlHistory?.current,
       onExitReturnToHome: false,
-      content: (
-        <GroupProfileModalContent data={msgLogs.content[activeGroupChat]} />
-      ),
+      content: <GroupProfileModalContent />,
       title: msgLogs.content[activeGroupChat]?.name,
     });
   };
@@ -47,9 +45,9 @@ export default function GroupChatHeader({ invisibleWallRef }) {
                 onClick={() => {
                   closeChatLog();
 
-                  invisibleWallRef.current.classList.remove("hidden");
+                  invisibleWallRef.current?.classList.remove("hidden");
                   setTimeout(
-                    () => invisibleWallRef.current.classList.add("hidden"),
+                    () => invisibleWallRef.current?.classList.add("hidden"),
                     400
                   );
                 }}

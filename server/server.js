@@ -20,7 +20,7 @@ import socketInit from "./socketServer/socketServer.js";
 const app = express();
 export const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: ["http://localhost:3000"] },
+  cors: { origin: ["http://localhost:3000", "http://192.168.1.6:3000"] },
 });
 
 // can be accessed and edited from anywhere
@@ -41,7 +41,7 @@ if (process.env.NODE_ENV !== "production") {
     cors({
       credentials: true,
       allowedHeaders: ["Content-Type", "Authorization"],
-      origin: ["http://localhost:3000"],
+      origin: ["http://localhost:3000", "http://192.168.1.6:3000"],
     })
   );
 }
@@ -67,7 +67,7 @@ app.get("/api", (req, res) => {
 // error handling
 app.use((err, req, res, next) => {
   const { stack, status, message, ...additionalInfo } = err;
-
+  const isProduction = process.env.NODE_ENV === "production";
   const TEMPLATE = {
     success: false,
     status: status || 500,
@@ -75,9 +75,7 @@ app.use((err, req, res, next) => {
     additionalInfo,
   };
 
-  const isProduction = process.env.NODE_ENV === "production";
-
-  if (!isProduction) console.error(message);
+  if (!isProduction) console.error(err);
 
   return res
     .status(status || 500)

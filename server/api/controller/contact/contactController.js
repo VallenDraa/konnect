@@ -1,9 +1,8 @@
 import User from "../../../model/User.js";
 
 export const findUsersFromContact = async (req, res, next) => {
-  const { query } = req.query;
-
   try {
+    const { query } = req.query;
     const { _id } = res.locals.tokenData;
     const results = [];
 

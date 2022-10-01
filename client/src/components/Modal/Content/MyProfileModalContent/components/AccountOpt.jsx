@@ -14,7 +14,7 @@ import api from "../../../../../utils/apiAxios/apiAxios";
 import USER_ACTIONS from "../../../../../context/user/userAction";
 import { SettingsContext } from "../../../../../context/settingsContext/SettingsContext";
 
-const AccountOpt = () => {
+export default function AccountOpt() {
   const { userState, userDispatch } = useContext(UserContext);
   const [email, setEmail] = useState(userState.user.email);
   const [username, setUsername] = useState(userState.user.username);
@@ -39,6 +39,7 @@ const AccountOpt = () => {
         sessionStorage.setItem("token", data.token);
         userDispatch({ type: USER_ACTIONS.updateSuccess, payload: data.user });
         miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+        miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
       } else {
         userDispatch({ type: USER_ACTIONS.updateFail, payload: data.message });
       }
@@ -139,6 +140,4 @@ const AccountOpt = () => {
       </ul>
     </div>
   );
-};
-
-export default AccountOpt;
+}

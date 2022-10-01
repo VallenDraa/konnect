@@ -18,7 +18,7 @@ export default function NewGroupConfirmation({ cb, selected }) {
   return (
     <form
       onSubmit={handleMakeNewGroup}
-      className="flex flex-col grow text-center p-5"
+      className="flex flex-col grow text-center p-5 h-80"
     >
       <header className="flex flex-col w-full relative">
         <div className="space-y-1">

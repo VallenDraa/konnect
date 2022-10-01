@@ -24,7 +24,7 @@ export default function FCMItem({
             onClick && onClick(e);
             closeContextMenu();
           }}
-          className={`${className} block cursor-pointer p-2 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 duration-200 ${
+          className={`${className} block cursor-pointer p-2 text-sm text-gray-600 hover:bg-gray-100 active:bg-gray-200 duration-200 ${
             general?.animation ? "duration-200" : ""
           }`}
           to={link}
@@ -40,7 +40,7 @@ export default function FCMItem({
             onClick && onClick(e);
             closeContextMenu();
           }}
-          className={`${className} cursor-pointer p-2 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 duration-200 ${
+          className={`${className} cursor-pointer p-2 text-sm text-gray-600 hover:bg-gray-100 active:bg-gray-200 duration-200 ${
             general?.animation ? "duration-200" : ""
           }`}
           style={style}

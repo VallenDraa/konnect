@@ -61,7 +61,7 @@ export default function GroupModalFCMItem({ user }) {
             </FCMItem>
           </RenderIf>
           {/* kick user from group*/}
-          <FCMItem className="bg-red-100 hover:bg-red-200">
+          <FCMItem>
             <div className="text-red-400 flex items-center gap-2 truncate">
               <FaBan className="basis-3" />
               Kick user from group
@@ -84,10 +84,10 @@ export default function GroupModalFCMItem({ user }) {
           Revoke admin access
         </FCMItem>
         {/* quit from this group*/}
-        <FCMItem className="bg-red-100 hover:bg-red-200">
+        <FCMItem>
           <div className="text-red-400 flex items-center gap-2 truncate">
             <BiLogOut className="text-sm basis-3" />
-            Quit this group
+            Quit
           </div>
         </FCMItem>
       </RenderIf>

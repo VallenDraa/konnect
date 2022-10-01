@@ -11,12 +11,13 @@ export default function DropdownItem({
   isActive,
   onClick,
   to,
+  style,
 }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
   const [defaultClasses, setDefaultClasses] = useState(`
-  text-xs cursor-pointer rounded 
+  cursor-pointer rounded 
   ${!to ? "w-full flex items-center gap-x-1" : ""}
   ${isActive ? "bg-gray-200" : "active:bg-gray-200"}
   ${isActive ? "shadow" : "hover:shadow-sm"}
@@ -46,14 +47,18 @@ export default function DropdownItem({
   return (
     <li onClick={onClick}>
       <RenderIf conditionIs={!to}>
-        <button className={`${className} ${defaultClasses}`}>
+        <button style={style} className={`${className} ${defaultClasses}`}>
           <span className="w-full px-2 py-3 flex items-center gap-x-1">
             {children}
           </span>
         </button>
       </RenderIf>
       <RenderIf conditionIs={to}>
-        <Link to={to} className={`${className} ${defaultClasses}`}>
+        <Link
+          to={to}
+          style={style}
+          className={`${className} ${defaultClasses}`}
+        >
           <span className="w-full px-2 py-3 flex items-center gap-x-1">
             {children}
           </span>

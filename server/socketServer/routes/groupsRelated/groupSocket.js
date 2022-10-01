@@ -35,12 +35,41 @@ export default function groupSocket(socket) {
             socket.to(targetSocketId).emit("join-group", info.chatId);
           }
         }
+      } else {
+        throw new Error("Fail to make group !");
       }
     } catch (error) {
       console.error(error);
       socket.emit("error", error);
     }
   });
+  socket.on("edit-group", async ({ token, userPw, ...newGroupInfos }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/edit_group`,
+        { ...newGroupInfos, userPw },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      if (data.success) {
+        socket.emit("receive-edit-group", {
+          ...newGroupInfos,
+          newNotices: data.newNotices,
+        });
+        socket.to(newGroupInfos._id).emit("receive-edit-group", {
+          ...newGroupInfos,
+          newNotices: data.newNotices,
+        });
+      } else {
+        throw new Error("Fail to save the group edit");
+      }
+    } catch (error) {
+      // console.error(error);
+      socket.emit("error", error);
+    }
+  });
+  socket.on("delete-group", async (groupId) => {});
   socket.on("join-group", async (groupId) => socket.join(groupId));
+  socket.on("add-to-group", async (groupId) => socket.kick(groupId));
+  socket.on("quit-group", async (groupId) => socket.kick(groupId));
 }

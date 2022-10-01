@@ -12,6 +12,7 @@ export default function Dropdown({
   btnClassName = "",
   listClassName = "",
   offset = 0,
+  style = {},
   listStyle = {},
   children,
   icon,
@@ -60,10 +61,9 @@ export default function Dropdown({
     "bg-gray-50",
     "shadow-md",
     "rounded-lg",
-    "p-2",
     "flex",
     "flex-col",
-    "gap-y-2",
+    "divide-y-2",
     "overflow-y-auto",
     "border-2",
     "border-gray-200",
@@ -167,7 +167,7 @@ export default function Dropdown({
           ref={btn}
           onClick={handleOpen}
           className={`${btnDefaultClasses.join(" ")} ${btnClassName}`}
-          style={{ fontSize }}
+          style={{ fontSize, ...style }}
         >
           {icon}
           {text}
