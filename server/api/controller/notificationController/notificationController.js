@@ -1,9 +1,9 @@
-import User from '../../../model/User.js';
+import User from "../../../model/User.js";
 
 export const getAllNotifications = async (req, res, next) => {
   const { full } = req.query; //only accepts true or false
   const { _id } = res.locals.tokenData;
-  const box = ['inbox', 'outbox'];
+  const box = ["inbox", "outbox"];
 
   try {
     const { notifications, requests } = await User.findById(_id)
@@ -13,12 +13,12 @@ export const getAllNotifications = async (req, res, next) => {
           ? []
           : [
               {
-                path: 'requests.contacts.inbox.by',
-                select: ['username', 'initials', 'profilePicture'],
+                path: "requests.contacts.inbox.by",
+                select: ["username", "initials", "profilePicture"],
               },
               {
-                path: 'requests.contacts.outbox.by',
-                select: ['username', 'initials', 'profilePicture'],
+                path: "requests.contacts.outbox.by",
+                select: ["username", "initials", "profilePicture"],
               },
             ]
       );
@@ -34,7 +34,7 @@ export const getAllNotifications = async (req, res, next) => {
     let largestReqLen = 0;
 
     // loop over the requests key and determine which array is the largest
-    for (const key of Object.keys(requests)) {
+    for (const key in requests) {
       const inboxLen = requests[key].inbox.length;
       const outboxLen = requests[key].outbox.length;
 
@@ -50,23 +50,23 @@ export const getAllNotifications = async (req, res, next) => {
       largestNotifLen >= largestReqLen ? largestNotifLen : largestReqLen;
     for (let i = 0; i < biggestArrayLen; i++) {
       if (notifOutbox[i]) {
-        result.outbox.push({ ...notifOutbox[i], type: 'notifications' });
+        result.outbox.push({ ...notifOutbox[i], type: "notifications" });
       }
 
       if (notifInbox[i]) {
-        result.inbox.push({ ...notifInbox[i], type: 'notifications' });
+        result.inbox.push({ ...notifInbox[i], type: "notifications" });
       }
 
       if (requests.contacts.outbox[i]) {
         result.outbox.push({
           ...requests.contacts.outbox[i],
-          type: 'contact_request',
+          type: "contact_request",
         });
       }
       if (requests.contacts.inbox[i]) {
         result.inbox.push({
           ...requests.contacts.inbox[i],
-          type: 'contact_request',
+          type: "contact_request",
         });
       }
     }
@@ -89,15 +89,15 @@ export const contactRequestDetails = async (req, res, next) => {
   try {
     const { requests } = await User.findById(_id)
       .lean()
-      .select(['requests', '-_id'])
+      .select(["requests", "-_id"])
       .populate([
         {
-          path: 'notifications.inbox.by',
-          select: ['username', 'initials', 'profilePicture'],
+          path: "notifications.inbox.by",
+          select: ["username", "initials", "profilePicture"],
         },
         {
-          path: 'requests.contacts.outbox.by',
-          select: ['username', 'initials', 'profilePicture'],
+          path: "requests.contacts.outbox.by",
+          select: ["username", "initials", "profilePicture"],
         },
       ]);
     const result = { inbox: [], outbox: [] };

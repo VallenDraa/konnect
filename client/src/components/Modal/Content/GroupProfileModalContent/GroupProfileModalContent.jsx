@@ -23,6 +23,7 @@ import { ActiveGroupChatContext } from "../../../../context/activeGroupChat/Acti
 import { MessageLogsContext } from "../../../../context/messageLogs/MessageLogsContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import MoreMenu from "./components/MoreMenu";
+import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
 
 export default function GroupProfileModalContent() {
   const adminsListRef = useRef();
@@ -182,6 +183,38 @@ export default function GroupProfileModalContent() {
     if (!e.target.getAttribute("data-user-card")) closeContextMenuOnClick(e);
   };
 
+  // QUIT GROUP
+  const quitGroupInDb = (payload) => {
+    socket.emit("quit-group", payload);
+
+    // close the mini modal
+    miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+    miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
+  };
+  const handleQuitGroup = () => {
+    const payload = {
+      groupId: msgLogs.content[activeGroupChat].chatId,
+      userId: userState.user._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: {
+          content: (
+            <NormalConfirmation
+              cb={quitGroupInDb}
+              title="Are You Sure You Want To Quit This Group ?"
+              caption="You won't be able to send or receive new messages"
+              payload={payload}
+            />
+          ),
+        },
+      });
+    }
+  };
+
   return (
     <section
       ref={FCMWrapperRef}
@@ -190,7 +223,7 @@ export default function GroupProfileModalContent() {
       aria-label="Group Profile"
     >
       <FloatingContextMenu>
-        <GroupModalFCMItem user={activeUser} />
+        <GroupModalFCMItem user={activeUser} funcs={{ handleQuitGroup }} />
       </FloatingContextMenu>
       <div className="grow shadow-md lg:shadow-inner">
         <div
@@ -291,7 +324,7 @@ export default function GroupProfileModalContent() {
                   </Pill>
                 </RenderIf>
                 <RenderIf conditionIs={!isEditMode && !hasQuitGroup}>
-                  <MoreMenu />
+                  <MoreMenu funcs={{ handleQuitGroup }} />
                 </RenderIf>
               </div>
             </header>

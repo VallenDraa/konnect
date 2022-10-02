@@ -53,7 +53,7 @@ export default function ContactList() {
               {nameList.map((contact) => (
                 <Link
                   to={`/user/${contact.user.username}`}
-                  key={contact}
+                  key={contact._id}
                   className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-200 p-2 mx-2 rounded shadow
                             ${general?.animation ? "duration-200" : ""}`}
                 >

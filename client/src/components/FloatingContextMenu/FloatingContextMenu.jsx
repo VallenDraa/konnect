@@ -14,7 +14,7 @@ export default function FloatingContextMenu({ children }) {
     <div
       aria-label="floating-context-menu"
       ref={FCMRef}
-      className="min-h-[4rem] w-48 max-w-[12rem] fixed divide-y-2 bg-gray-50 border-2 border-gray-200 text-gray-800 rounded-md overflow-clip shadow-md  origin-top"
+      className="min-h-[4rem] w-48 max-w-[12rem] fixed divide-y-2 bg-gray-50 border-2 border-gray-200 text-gray-800 rounded-md overflow-clip shadow-md origin-top"
       style={{
         top: pos?.y,
         left: pos?.x,

@@ -74,7 +74,7 @@ export default function MessageLogsContextProvider({ children }) {
                 };
 
                 // automatically join the group chat room via websocket
-                if (!log.hasQuit.some((u) => u.user === userState.user._id)) {
+                if (!log.hasQuit.some((u) => u.user === userState.user?._id)) {
                   socket.emit("join-room", log.chatId);
                 }
                 break;
@@ -98,12 +98,12 @@ export default function MessageLogsContextProvider({ children }) {
     );
 
     return () => socket.off("download-all-chats");
-  }, []);
+  }, [userState.user]);
 
   /* refresh messageLog*/
   useEffect(() => {
     const refreshMsgLogs = () => {
-      if (!userState.user || !userState) return;
+      if (!userState.user) return;
       if (contacts.length === 0) return;
 
       msgLogsDispatch({ type: MESSAGE_LOGS_ACTIONS.startUpdate });
@@ -138,7 +138,7 @@ export default function MessageLogsContextProvider({ children }) {
     socket.on("refresh-msg-log", refreshMsgLogs);
 
     return () => socket.off("refresh-msg-log");
-  }, [userState, contacts, msgLogs]);
+  }, [userState.user, contacts, msgLogs]);
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
   useEffect(() => console.log(msgLogs.content), [msgLogs]);

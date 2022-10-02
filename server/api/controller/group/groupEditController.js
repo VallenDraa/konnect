@@ -162,18 +162,27 @@ export const joinGroup = async (req, res, next) => {
 
     await GroupChat.findByIdAndUpdate(groupId, {
       $push: { admins: userId, members: userId },
-      $pull: { hasQuit: userId },
+      $pull: { hasQuit: { user: userId } },
+    });
+
+    await User.findByIdAndUpdate(userId, {
+      $push: { groupChats: groupId },
+      $pull: { hasQuitGroup: { group: groupId } },
     });
 
     res.json({ success: true });
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const quitGroup = async (req, res, next) => {
   try {
-    let newNoticeMsg,
-      isAdmin = false;
-    const { groupId, userId, noticeType } = req.body;
+    let newNoticeMsg;
+    let isAdmin = false;
+    let adminShift = false;
+
+    const { groupId, userId } = req.body;
     const user = await User.findById(userId);
     const newGc = await GroupChat.findById(groupId);
     const exitDate = new Date();
@@ -194,34 +203,104 @@ export const quitGroup = async (req, res, next) => {
     // push the target user into the hasQuit array
     newGc.hasQuit.push({ user: userId, date: exitDate });
 
+    // check if there is no admin left
+    if (newGc.admins.length === 0 && newGc.members.length > 0) {
+      newGc.admins.push(newGc.members[0]);
+
+      newGc.members.shift();
+      adminShift = true;
+    }
+
     // USER UPDATE
     user.groupChats = user.groupChats.filter((gc) => gc.toString !== userId);
     user.hasQuitGroup.push({ group: groupId, date: exitDate });
 
-    switch (noticeType) {
-      case "quit":
-        newNoticeMsg = await newNotice(next, newGc, [
-          `${user.username} has quit this group`,
-        ]);
-        break;
-
-      case "kick":
-        newNoticeMsg = await newNotice(next, newGc, [
-          `${user.username} has been kicked from the group`,
-        ]);
-        break;
-
-      default:
-        createError(next, 400, "Invalid notice type !");
-        break;
-    }
+    // create new notice
+    newNoticeMsg = await newNotice(next, newGc, [
+      `${user.username} has quit this group`,
+    ]);
 
     await newGc.save();
     await user.save();
-    res.json({ success: true, newNotices: newNoticeMsg, isAdmin, exitDate });
+    res.json({
+      success: true,
+      newNotices: newNoticeMsg,
+      isAdmin,
+      exitDate,
+      newAdmin: adminShift ? newGc.admins[0] : null,
+    });
   } catch (error) {
     next(error);
   }
+};
+
+export const kickGroup = async (req, res, next) => {
+  try {
+    let newNoticeMsg;
+    let isAdmin = false;
+    let adminShift = false;
+
+    const { groupId, kickedId, kickerId } = req.body;
+    const user = await User.findById(kickedId);
+    const { username: kickerUsername } = await User.findById(kickerId)
+      .lean()
+      .select("username");
+    const newGc = await GroupChat.findById(groupId);
+    const exitDate = new Date();
+
+    // GROUP UPDATE
+    // update the admin list
+    newGc.admins = newGc.admins.filter((a) => {
+      if (a._id.toString() === kickedId) {
+        isAdmin = true;
+      }
+
+      return a._id.toString() !== kickedId;
+    });
+    // update the members list if the target user is not an admin
+    if (!isAdmin) {
+      newGc.members = newGc.members.filter(
+        (m) => m._id.toString() !== kickedId
+      );
+    }
+    // push the target user into the hasQuit array
+    newGc.hasQuit.push({ user: kickedId, date: exitDate });
+
+    // check if there is no admin left
+    if (newGc.admins.length === 0 && newGc.members.length > 0) {
+      newGc.admins.push(newGc.members[0]);
+
+      newGc.members.shift();
+      adminShift = true;
+    }
+
+    // USER UPDATE
+    user.groupChats = user.groupChats.filter((gc) => gc.toString !== kickedId);
+    user.hasQuitGroup.push({ group: groupId, date: exitDate });
+
+    // create new notice
+    newNoticeMsg = await newNotice(next, newGc, [
+      `${user.username} has been kicked from the group by ${kickerUsername}`,
+    ]);
+
+    await newGc.save();
+    await user.save();
+    res.json({
+      success: true,
+      newNotices: newNoticeMsg,
+      isAdmin,
+      exitDate,
+      newAdmin: adminShift ? newGc.admins[0] : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+
+  // send notification
+  // user.notifications.inbox.push({
+  //   iat: exitDate,
+  //   contents: `You have been kicked from ${newGc.name} by ${kickerUsername}`,
+  // });
 };
 
 export const deleteGroup = async (req, res, next) => {
@@ -229,19 +308,27 @@ export const deleteGroup = async (req, res, next) => {
     const { _id, userPw } = req.body;
     const { _id: userId } = res.locals.tokenData;
 
-    const { password } = await User.findById(userId)
-      .select(["password", "username"])
-      .lean();
-    const isPwValid = await bcrypt.compare(userPw, password);
+    const user = await User.findById(userId);
+    const isPwValid = await bcrypt.compare(userPw, user.password);
 
     if (!isPwValid) {
       return createError(
         next,
         403,
-        "Invalid password, unable to make edits to the group"
+        "Invalid password, unable to delete the group"
       );
     } else {
+      // delete the group from the database
       await GroupChat.findByIdAndDelete(_id);
+
+      // remove the group id from the groupChats dan HasQuitGroup arrays
+      user.groupChats = user.groupChats.filter(
+        (group) => group.toString() !== _id
+      );
+      user.hasQuitGroup = user.hasQuitGroup.filter(
+        ({ group }) => group.toString() !== _id
+      );
+      await user.save();
 
       res.status(200).json({ success: true });
     }
@@ -269,3 +356,6 @@ export const removeGroup = async (req, res, next) => {
     next(error);
   }
 };
+
+export const giveAdminStatus = async (req, res, next) => {};
+export const revokeAdminStatus = async (req, res, next) => {};

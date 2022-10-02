@@ -6,8 +6,12 @@ import { UserContext } from "../../../context/user/userContext";
 import RenderIf from "../../../utils/React/RenderIf";
 import { FaBan, FaKey, FaPaperPlane, FaUserAlt } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
+import NormalConfirmation from "../../MiniModal/content/NormalConfirmation";
+import MINI_MODAL_ACTIONS from "../../../context/miniModal/miniModalActions";
+import { MiniModalContext } from "../../../context/miniModal/miniModalContext";
+import socket from "../../../utils/socketClient/socketClient";
 
-export default function GroupModalFCMItem({ user }) {
+export default function GroupModalFCMItem({ user, funcs }) {
   const { activeGroupChat } = useContext(ActiveGroupChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const { userState } = useContext(UserContext);
@@ -18,6 +22,40 @@ export default function GroupModalFCMItem({ user }) {
   const [isTargetAdmin, setIsTargetAdmin] = useState(
     msgLogs.content[activeGroupChat]?.admins.some((id) => id === user?._id)
   );
+  const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
+  const { handleQuitGroup } = funcs;
+
+  // KICK USER FROM GROUP
+  const kickFromGroupInDb = (payload) => {
+    socket.emit("kick-from-group", payload);
+
+    miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+    miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
+  };
+  const handleKick = () => {
+    const payload = {
+      groupId: msgLogs.content[activeGroupChat].chatId,
+      kickedId: user._id,
+      kickerId: userState.user._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: {
+          content: (
+            <NormalConfirmation
+              cb={kickFromGroupInDb}
+              title={`Are You Sure You Want To Kick ${user.username} ?`}
+              caption={`${user.username} won't be able to send or receive new messages`}
+              payload={payload}
+            />
+          ),
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     setIsAdmin(
@@ -47,21 +85,21 @@ export default function GroupModalFCMItem({ user }) {
         </FCMItem>
         <RenderIf conditionIs={isAdmin}>
           <RenderIf conditionIs={!isTargetAdmin}>
-            {/* give admin access to target user */}
+            {/* give admin status to target user */}
             <FCMItem className="flex items-center gap-2 truncate">
               <FaKey className="basis-3" />
-              Give admin access
+              Give admin status
             </FCMItem>
           </RenderIf>
           <RenderIf conditionIs={isTargetAdmin}>
-            {/* revoke admin access from target user*/}
+            {/* revoke admin status from target user*/}
             <FCMItem className="flex items-center gap-2 truncate">
               <FaKey className="basis-3" />
-              Revoke admin access
+              Revoke admin status
             </FCMItem>
           </RenderIf>
           {/* kick user from group*/}
-          <FCMItem>
+          <FCMItem onClick={handleKick}>
             <div className="text-red-400 flex items-center gap-2 truncate">
               <FaBan className="basis-3" />
               Kick user from group
@@ -81,10 +119,10 @@ export default function GroupModalFCMItem({ user }) {
         </FCMItem>
         <FCMItem className="flex items-center gap-2 truncate">
           <FaKey className="basis-3" />
-          Revoke admin access
+          Revoke admin status
         </FCMItem>
         {/* quit from this group*/}
-        <FCMItem>
+        <FCMItem onClick={handleQuitGroup}>
           <div className="text-red-400 flex items-center gap-2 truncate">
             <BiLogOut className="text-sm basis-3" />
             Quit

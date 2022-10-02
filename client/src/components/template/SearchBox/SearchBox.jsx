@@ -175,7 +175,7 @@ export default function SearchBox({
 
       {/* where the selected would go */}
       <footer className="basis-1/6 w-full py-2 px-4 bg-gray-200 shadow-inner shadow-gray-100 mt-auto">
-        <h3 className="font-bold text-sm">Selected:</h3>
+        <h3 className="font-bold text-sm">Selected ({selected.length}):</h3>
         <div className="mt-1">
           <ContactsSwiperCard
             itemWidth={60}

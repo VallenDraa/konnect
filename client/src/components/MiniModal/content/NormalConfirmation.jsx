@@ -1,4 +1,5 @@
 import { useContext, useState } from "react";
+import MINI_MODAL_ACTIONS from "../../../context/miniModal/miniModalActions";
 import { MiniModalContext } from "../../../context/miniModal/miniModalContext";
 import { SettingsContext } from "../../../context/settingsContext/SettingsContext";
 import Pill from "../../Buttons/Pill";
@@ -29,6 +30,9 @@ export default function NormalConfirmation({ cb, title, caption, payload }) {
       <footer className="flex w-full gap-x-2 h-10 grow-[1] pt-3 border-t-2">
         <Pill
           disabled={hasBeenPressed}
+          onClick={() =>
+            miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing })
+          }
           className={`h-full text-xs bg-gray-300 disabled:bg-gray-200 text-gray-600 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
           type="button"
         >

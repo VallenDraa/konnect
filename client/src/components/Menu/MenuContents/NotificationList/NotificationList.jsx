@@ -130,7 +130,7 @@ export default function NotificationList() {
         {/* if notifs are fine */}
         <RenderIf conditionIs={!notifs.isLoading && !notifs.error}>
           <ul
-            className={`absolute inset-0 ${
+            className={`absolute inset-0 overflow-y-auto ${
               notifs?.content[activeBox.name]?.length === 0 ? "" : "border-t-2"
             }`}
           >

@@ -92,7 +92,7 @@ export default function groupSocket(socket) {
     try {
       const { data } = await axios.put(
         `${process.env.API_URL}/group/quit_group`,
-        { groupId, userId, noticeType: "quit" },
+        { groupId, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -106,6 +106,7 @@ export default function groupSocket(socket) {
           newNotices: data.newNotices,
           isAdmin: data.isAdmin,
           exitDate: data.exitDate,
+          newAdmin: data.newAdmin,
         });
         socket.to(groupId).emit("receive-quit-group", {
           groupId,
@@ -113,13 +114,51 @@ export default function groupSocket(socket) {
           newNotices: data.newNotices,
           isAdmin: data.isAdmin,
           exitDate: data.exitDate,
+          newAdmin: data.newAdmin,
         });
       } else {
         throw new Error("Fail to quit the group");
       }
     } catch (error) {
-      console.error(error);
       socket.emit("error", error);
     }
   });
+  socket.on(
+    "kick-from-group",
+    async ({ groupId, kickedId, kickerId, token }) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.API_URL}/group/kick_from_group`,
+          { groupId, kickedId, kickerId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (data.success) {
+          socket.leave(groupId);
+
+          socket.emit("receive-kick-from-group", {
+            groupId,
+            userId: kickedId,
+            token,
+            newNotices: data.newNotices,
+            isAdmin: data.isAdmin,
+            exitDate: data.exitDate,
+            newAdmin: data.newAdmin,
+          });
+          socket.to(groupId).emit("receive-kick-from-group", {
+            groupId,
+            userId: kickedId,
+            newNotices: data.newNotices,
+            isAdmin: data.isAdmin,
+            exitDate: data.exitDate,
+            newAdmin: data.newAdmin,
+          });
+        } else {
+          throw new Error("Fail to quit the group");
+        }
+      } catch (error) {
+        socket.emit("error", error);
+      }
+    }
+  );
 }

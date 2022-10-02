@@ -23,7 +23,6 @@ const NOTIF_DEFAULT = {
     outbox: [],
   },
   error: null,
-
   // content
   //    {
   //     notifications: {
