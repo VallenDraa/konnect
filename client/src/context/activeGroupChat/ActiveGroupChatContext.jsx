@@ -185,6 +185,63 @@ export default function ActiveGroupChatContextProvider({ children }) {
     return () => socket.off("receive-kick-from-group");
   }, [msgLogs.content, userState.user]);
 
+  // for receiving give admin status
+  useEffect(() => {
+    socket.on("receive-give-admin-status", ({ newNotice, groupId, userId }) => {
+      // picking the group chat log and cloning it
+      const newChatLogs = cloneDeep(msgLogs.content);
+
+      // updating the group participants data
+      newChatLogs[groupId].members = newChatLogs[groupId].members.filter(
+        (m) => m !== userId
+      );
+      newChatLogs[groupId].admins.push(userId);
+
+      // adding the new notice to the existing chat log
+      const latestTimeGroup = last(newChatLogs[groupId].chat);
+      latestTimeGroup.date === newNotice.date
+        ? latestTimeGroup.messages.push(...newNotice.messages)
+        : newChatLogs[groupId].chat.push(newNotice);
+
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: newChatLogs,
+      });
+    });
+
+    return () => socket.off("receive-give-admin-status");
+  }, [msgLogs.content]);
+
+  // for receiving revoke admin status
+  useEffect(() => {
+    socket.on(
+      "receive-revoke-admin-status",
+      ({ newNotice, groupId, userId }) => {
+        // picking the group chat log and cloning it
+        const newChatLogs = cloneDeep(msgLogs.content);
+
+        // updating the group participants data
+        newChatLogs[groupId].admins = newChatLogs[groupId].admins.filter(
+          (m) => m !== userId
+        );
+        newChatLogs[groupId].members.push(userId);
+
+        // adding the new notice to the existing chat log
+        const latestTimeGroup = last(newChatLogs[groupId].chat);
+        latestTimeGroup.date === newNotice.date
+          ? latestTimeGroup.messages.push(...newNotice.messages)
+          : newChatLogs[groupId].chat.push(newNotice);
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: newChatLogs,
+        });
+      }
+    );
+
+    return () => socket.off("receive-revoke-admin-status");
+  }, [msgLogs.content]);
+
   // useEffect(() => {
   //   console.log(activeGroupChat);
   // }, [activeGroupChat]);

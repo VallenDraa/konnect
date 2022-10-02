@@ -34,18 +34,18 @@ export default function SearchBox({
   // will perform search callback
   useEffect(() => {
     const searchDebounce = setTimeout(async () => {
-      setIsTyping(false);
-
-      resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.start });
-
-      if (!searchCb) {
-        return resultsDispatch({
-          type: SEARCH_RESULTS_ACTIONS.loaded,
-          payload: [],
-        });
-      }
-
       try {
+        setIsTyping(false);
+
+        resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.start });
+
+        if (!searchCb) {
+          return resultsDispatch({
+            type: SEARCH_RESULTS_ACTIONS.loaded,
+            payload: [],
+          });
+        }
+
         resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.loading });
 
         const payload = await searchCb(query);
@@ -122,8 +122,6 @@ export default function SearchBox({
         {/* if user is not typing */}
         <RenderIf conditionIs={!isTyping}>
           <ul className="h-0">
-            {/* if it is still loading */}
-
             {/* if the result is not empty*/}
             <RenderIf
               conditionIs={!results.loading && results.content?.length !== 0}
@@ -133,12 +131,9 @@ export default function SearchBox({
                   <li
                     key={i}
                     onClick={() => handleSelect(user)}
-                    className={`cursor-pointer hover:bg-pink-100 rounded-sm flex
-                              ${
-                                general?.animation
-                                  ? "animate-fade-in duration-200"
-                                  : ""
-                              }`}
+                    className={`cursor-pointer hover:bg-pink-100 rounded-sm flex ${
+                      general?.animation ? "animate-fade-in duration-200" : ""
+                    }`}
                   >
                     <button className="flex items-center gap-2 py-2 px-5 grow">
                       <img

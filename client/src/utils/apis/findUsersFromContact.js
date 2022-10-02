@@ -7,7 +7,6 @@ export default async function findUsersFromContact(query, token) {
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    // console.log(data);
     return data;
   } catch (error) {
     throw error;

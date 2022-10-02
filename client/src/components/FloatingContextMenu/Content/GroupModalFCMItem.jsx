@@ -10,6 +10,7 @@ import NormalConfirmation from "../../MiniModal/content/NormalConfirmation";
 import MINI_MODAL_ACTIONS from "../../../context/miniModal/miniModalActions";
 import { MiniModalContext } from "../../../context/miniModal/miniModalContext";
 import socket from "../../../utils/socketClient/socketClient";
+import PasswordConfirmation from "../../MiniModal/content/AccountOpt/PasswordConfirmation";
 
 export default function GroupModalFCMItem({ user, funcs }) {
   const { activeGroupChat } = useContext(ActiveGroupChatContext);
@@ -57,11 +58,61 @@ export default function GroupModalFCMItem({ user, funcs }) {
     }
   };
 
+  // GIVE ADMIN STATUS
+  const editAdminStatus = (type) => {
+    const payload = {
+      userId: user._id,
+      groupId: activeGroupChat,
+      token: sessionStorage.getItem("token"),
+    };
+
+    if (!miniModalState.isActive) {
+      miniModalDispatch({
+        type: MINI_MODAL_ACTIONS.show,
+        payload: {
+          content: (
+            <PasswordConfirmation
+              cb={(password, payload) => {
+                socket.emit(
+                  type === "give" ? "give-admin-status" : "revoke-admin-status",
+                  { ...payload, userPw: password }
+                );
+
+                // close the mini modal and disable edit mode
+                miniModalDispatch({ type: MINI_MODAL_ACTIONS.closing });
+                miniModalDispatch({ type: MINI_MODAL_ACTIONS.closed });
+              }}
+              title={
+                type === "give"
+                  ? `Enter Your Pasword To Make ${user?.username} An Admin`
+                  : `Enter Your Pasword To Revoke ${user?.username}'s Admin Status`
+              }
+              caption={
+                type === "give"
+                  ? `${user?.username} will be able to edit this group's data`
+                  : `${user?.username} will lose the abiity to edit this group's data`
+              }
+              payload={payload}
+            />
+          ),
+        },
+      });
+    }
+  };
+
+  // to check if logged in user is admin
   useEffect(() => {
     setIsAdmin(
       msgLogs.content[activeGroupChat]?.admins.some((id) => id === _id)
     );
-  }, [msgLogs[activeGroupChat], _id, activeGroupChat]);
+  }, [msgLogs.content, _id, activeGroupChat]);
+
+  // to check if target user is admin
+  useEffect(() => {
+    setIsTargetAdmin(
+      msgLogs.content[activeGroupChat]?.admins.some((id) => id === user?._id)
+    );
+  }, [msgLogs.content, user?._id, activeGroupChat]);
 
   return (
     <>
@@ -84,16 +135,30 @@ export default function GroupModalFCMItem({ user, funcs }) {
           Send Message
         </FCMItem>
         <RenderIf conditionIs={isAdmin}>
+          {/* give admin status to target user */}
           <RenderIf conditionIs={!isTargetAdmin}>
-            {/* give admin status to target user */}
-            <FCMItem className="flex items-center gap-2 truncate">
+            <FCMItem
+              onClick={() => editAdminStatus("give")}
+              className="flex items-center gap-2 truncate"
+            >
               <FaKey className="basis-3" />
               Give admin status
             </FCMItem>
           </RenderIf>
-          <RenderIf conditionIs={isTargetAdmin}>
-            {/* revoke admin status from target user*/}
-            <FCMItem className="flex items-center gap-2 truncate">
+          {/* revoke admin status from target user*/}
+          <RenderIf
+            conditionIs={
+              isTargetAdmin &&
+              msgLogs.content[activeGroupChat].admins.length > 1
+            }
+          >
+            <FCMItem
+              onClick={() =>
+                msgLogs.content[activeGroupChat].admins.length > 1 &&
+                editAdminStatus("revoke")
+              }
+              className="flex items-center gap-2 truncate"
+            >
               <FaKey className="basis-3" />
               Revoke admin status
             </FCMItem>
@@ -117,10 +182,20 @@ export default function GroupModalFCMItem({ user, funcs }) {
           <FaUserAlt className="text-xs basis-3" />
           View Profile
         </FCMItem>
-        <FCMItem className="flex items-center gap-2 truncate">
-          <FaKey className="basis-3" />
-          Revoke admin status
-        </FCMItem>
+        <RenderIf
+          conditionIs={msgLogs.content[activeGroupChat].admins.length > 1}
+        >
+          <FCMItem
+            onClick={() =>
+              msgLogs.content[activeGroupChat].admins.length > 1 &&
+              editAdminStatus("revoke")
+            }
+            className="flex items-center gap-2 truncate"
+          >
+            <FaKey className="basis-3" />
+            Revoke admin status
+          </FCMItem>
+        </RenderIf>
         {/* quit from this group*/}
         <FCMItem onClick={handleQuitGroup}>
           <div className="text-red-400 flex items-center gap-2 truncate">

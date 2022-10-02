@@ -151,33 +151,6 @@ export default function GroupProfileModalContent() {
     }
   };
 
-  // DELETE GROUP
-  const deleteGroupInDb = (password, payload) => {
-    console.log(password, payload);
-  }; // show password mini modal for group deletion confirmation
-  const handleDeleteGroup = () => {
-    const payload = {
-      _id: msgLogs.content[activeGroupChat].chatId,
-      token: sessionStorage.getItem("token"),
-    };
-
-    if (!miniModalState.isActive) {
-      miniModalDispatch({
-        type: MINI_MODAL_ACTIONS.show,
-        payload: {
-          content: (
-            <PasswordConfirmation
-              cb={deleteGroupInDb}
-              title="Enter Your Password To Delete The Group"
-              caption="All data regarding this group will be wiped"
-              payload={payload}
-            />
-          ),
-        },
-      });
-    }
-  };
-
   // handling auto context menu auto close
   const handleFCMAutoClose = (e) => {
     if (!e.target.getAttribute("data-user-card")) closeContextMenuOnClick(e);
@@ -352,19 +325,6 @@ export default function GroupProfileModalContent() {
                   </span>
                 </RenderIf>
               </div>
-
-              {/* Delete group button for admins  */}
-              <RenderIf conditionIs={isAdmin && isEditMode}>
-                <div className="mx-5">
-                  <Pill
-                    onClick={handleDeleteGroup}
-                    className="text-sm px-4 py-1 font-bold flex items-center max-w-sm mx-auto gap-x-1.5 border-red-500 bg-red-100 hover:bg-red-500 active:bg-red-500 text-red-400 hover:text-white active:text-white shadow-red-100 hover:shadow-red-200 active:shadow-red-200"
-                  >
-                    <FaTrashAlt />
-                    Delete Group
-                  </Pill>
-                </div>
-              </RenderIf>
 
               {/* Participants */}
               <div ref={adminsListRef} className="space-y-3 border-t-2 pt-3">

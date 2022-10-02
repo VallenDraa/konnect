@@ -156,6 +156,44 @@ export const editGroup = async (req, res, next) => {
   }
 };
 
+export const inviteToGroup = async (req, res, next) => {
+  try {
+    const { invitedId, groupId } = req.body;
+    const { _id: inviterId } = res.locals.tokenData;
+    const inviteDate = new Date();
+
+    // find the invited user data and update
+    await User.findByIdAndUpdate(invitedId, {
+      $push: {
+        "requests.groups.inbox": { by: inviterId, groupId, iat: inviteDate },
+      },
+    });
+
+    // find the inviter group and add the invited user id to the invitedList
+    await GroupChat.findByIdAndUpdate(groupId, {
+      $push: { invited: { user: invitedId, date: inviteDate } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const acceptInvitation = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const declineInvitation = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const joinGroup = async (req, res, next) => {
   try {
     const { groupId, userId } = req.body;
@@ -303,40 +341,6 @@ export const kickGroup = async (req, res, next) => {
   // });
 };
 
-export const deleteGroup = async (req, res, next) => {
-  try {
-    const { _id, userPw } = req.body;
-    const { _id: userId } = res.locals.tokenData;
-
-    const user = await User.findById(userId);
-    const isPwValid = await bcrypt.compare(userPw, user.password);
-
-    if (!isPwValid) {
-      return createError(
-        next,
-        403,
-        "Invalid password, unable to delete the group"
-      );
-    } else {
-      // delete the group from the database
-      await GroupChat.findByIdAndDelete(_id);
-
-      // remove the group id from the groupChats dan HasQuitGroup arrays
-      user.groupChats = user.groupChats.filter(
-        (group) => group.toString() !== _id
-      );
-      user.hasQuitGroup = user.hasQuitGroup.filter(
-        ({ group }) => group.toString() !== _id
-      );
-      await user.save();
-
-      res.status(200).json({ success: true });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
 // remove group id from the groupchats list in database
 export const removeGroup = async (req, res, next) => {
   try {
@@ -357,5 +361,81 @@ export const removeGroup = async (req, res, next) => {
   }
 };
 
-export const giveAdminStatus = async (req, res, next) => {};
-export const revokeAdminStatus = async (req, res, next) => {};
+export const giveAdminStatus = async (req, res, next) => {
+  try {
+    const { groupId, userId, userPw } = req.body;
+    const { _id } = res.locals.tokenData;
+    const { username: giver, password } = await User.findById(_id)
+      .lean()
+      .select(["username", "password"]);
+    const isPwValid = await bcrypt.compare(userPw, password);
+
+    if (!isPwValid) {
+      return createError(
+        next,
+        403,
+        "Invalid password, unable to give admin access"
+      );
+    } else {
+      const { username: receiver } = await User.findById(userId)
+        .lean()
+        .select("username");
+
+      await GroupChat.findByIdAndUpdate(groupId, {
+        $pull: { members: userId },
+        $push: { admins: userId },
+      });
+
+      // make new notice about the status change
+      const newNoticeMsg = await newNotice(
+        next,
+        await GroupChat.findById(groupId),
+        [`${giver} has given ${receiver} admin status`]
+      );
+
+      res.json({ success: true, newNotice: newNoticeMsg });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const revokeAdminStatus = async (req, res, next) => {
+  try {
+    const { groupId, userId, userPw } = req.body;
+    const { _id } = res.locals.tokenData;
+    const { username: revoker, password } = await User.findById(_id)
+      .lean()
+      .select(["username", "password"]);
+
+    const isPwValid = await bcrypt.compare(userPw, password);
+
+    if (!isPwValid) {
+      return createError(
+        next,
+        403,
+        "Invalid password, unable to give admin access"
+      );
+    } else {
+      const { username: revoked } = await User.findById(userId)
+        .lean()
+        .select("username");
+
+      await GroupChat.findByIdAndUpdate(groupId, {
+        $pull: { admins: userId },
+        $push: { members: userId },
+      });
+
+      // make new notice about the status change
+      const newNoticeMsg = await newNotice(
+        next,
+        await GroupChat.findById(groupId),
+        [`${revoked} has revoked ${revoker}'s admin status`]
+      );
+
+      res.json({ success: true, newNotice: newNoticeMsg });
+    }
+  } catch (error) {
+    next(error);
+  }
+};

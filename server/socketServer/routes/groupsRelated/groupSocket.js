@@ -2,9 +2,8 @@ import axios from "axios";
 
 export default function groupSocket(socket) {
   socket.on("make-new-group", async (name, users, token) => {
-    const { members, admins } = users;
-
     try {
+      const { members, admins } = users;
       const { data } = await axios.post(
         `${process.env.API_URL}/group/make_group`,
         { users, name },
@@ -43,32 +42,35 @@ export default function groupSocket(socket) {
       socket.emit("error", error);
     }
   });
-  socket.on("edit-group", async ({ token, userPw, ...newGroupInfos }) => {
+  socket.on("edit-group", async ({ token, userPw, newName, newDesc, _id }) => {
     try {
       const { data } = await axios.put(
         `${process.env.API_URL}/group/edit_group`,
-        { ...newGroupInfos, userPw },
+        { newName, newDesc, _id, userPw },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (data.success) {
         socket.emit("receive-edit-group", {
-          ...newGroupInfos,
+          newName,
+          newDesc,
+          _id,
           newNotices: data.newNotices,
         });
-        socket.to(newGroupInfos._id).emit("receive-edit-group", {
-          ...newGroupInfos,
+        socket.to(_id).emit("receive-edit-group", {
+          newName,
+          newDesc,
+          _id,
           newNotices: data.newNotices,
         });
       } else {
         throw new Error("Fail to save the group edit");
       }
     } catch (error) {
-      // console.error(error);
+      console.error(error);
       socket.emit("error", error);
     }
   });
-  socket.on("delete-group", async (groupId) => {});
   socket.on("remove-group", async ({ token, groupId }) => {
     try {
       const { data } = await axios.put(
@@ -86,8 +88,22 @@ export default function groupSocket(socket) {
       socket.emit(error);
     }
   });
-  socket.on("join-group", async (groupId) => socket.join(groupId));
-  socket.on("add-to-group", async (groupId) => socket.kick(groupId));
+  socket.on("invite-to-group", async (groupId, userId) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/remove_group`,
+        { groupId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (error) {}
+
+    socket.join(groupId);
+  });
+
+  socket.on("accept-group-invite", async () => {});
+
+  socket.on("decline-group-invite", async () => {});
+
   socket.on("quit-group", async ({ groupId, userId, token }) => {
     try {
       const { data } = await axios.put(
@@ -102,12 +118,12 @@ export default function groupSocket(socket) {
         socket.emit("receive-quit-group", {
           groupId,
           userId,
-          token,
           newNotices: data.newNotices,
           isAdmin: data.isAdmin,
           exitDate: data.exitDate,
           newAdmin: data.newAdmin,
         });
+
         socket.to(groupId).emit("receive-quit-group", {
           groupId,
           userId,
@@ -157,6 +173,66 @@ export default function groupSocket(socket) {
           throw new Error("Fail to quit the group");
         }
       } catch (error) {
+        socket.emit("error", error);
+      }
+    }
+  );
+  socket.on("give-admin-status", async ({ groupId, userId, userPw, token }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/give_admin_status`,
+        { groupId, userId, userPw },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        socket.emit("receive-give-admin-status", {
+          groupId,
+          userId,
+          newNotice: data.newNotice,
+        });
+        socket.to(groupId).emit("receive-give-admin-status", {
+          groupId,
+          userId,
+          newNotice: data.newNotice,
+        });
+      } else {
+        throw new Error("Fail to give admin status");
+      }
+    } catch (error) {
+      console.log(
+        "🚀 ~ file: groupSocket.js ~ line 161 ~ socket.on ~ error",
+        error
+      );
+      socket.emit("error", error);
+    }
+  });
+  socket.on(
+    "revoke-admin-status",
+    async ({ groupId, userId, userPw, token }) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.API_URL}/group/revoke_admin_status`,
+          { groupId, userId, userPw },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (data.success) {
+          socket.emit("receive-revoke-admin-status", {
+            groupId,
+            userId,
+            newNotice: data.newNotice,
+          });
+          socket.to(groupId).emit("receive-revoke-admin-status", {
+            groupId,
+            userId,
+            newNotice: data.newNotice,
+          });
+        } else {
+          throw new Error("Fail to revoke admin status");
+        }
+      } catch (error) {
+        console.log("🚀 ~ file: groupSocket.js ~ line 185 ~ error", error);
         socket.emit("error", error);
       }
     }

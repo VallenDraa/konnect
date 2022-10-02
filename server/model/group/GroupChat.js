@@ -22,6 +22,12 @@ const GroupChatSchema = new mongoose.Schema(
         date: { type: Date, default: new Date() },
       },
     ],
+    invited: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        date: { type: Date, default: new Date() },
+      },
+    ],
   },
   { timestamps: true }
 );

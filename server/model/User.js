@@ -48,6 +48,26 @@ const UserSchema = new mongoose.Schema(
           },
         ],
       },
+      groups: {
+        inbox: [
+          {
+            by: { type: mongoose.Schema.ObjectId, ref: "user" },
+            groupId: { type: mongoose.Schema.ObjectId, ref: "group" },
+            seen: { type: Boolean, default: false },
+            answer: { type: Boolean, default: null },
+            iat: { type: Date, default: new Date() },
+          },
+        ],
+        outbox: [
+          {
+            by: { type: mongoose.Schema.ObjectId, ref: "user" },
+            groupId: { type: mongoose.Schema.ObjectId, ref: "group" },
+            seen: { type: Boolean, default: false },
+            answer: { type: Boolean, default: null },
+            iat: { type: Date, default: new Date() },
+          },
+        ],
+      },
     },
     groupChats: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
     privateChats: [
@@ -59,6 +79,7 @@ const UserSchema = new mongoose.Schema(
         date: { type: Date, default: new Date() },
       },
     ],
+
     settings: {
       general: { type: Object, default: {} },
       calls: { type: Object, default: {} },

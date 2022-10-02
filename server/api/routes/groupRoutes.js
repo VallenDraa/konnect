@@ -5,7 +5,6 @@ import {
   editGroup,
   quitGroup,
   joinGroup,
-  deleteGroup,
   removeGroup,
   kickGroup,
   giveAdminStatus,
@@ -18,10 +17,9 @@ router.put("/edit_group", verifyToken, editGroup); //✅
 router.put("/quit_group", verifyToken, quitGroup); //✅
 router.put("/kick_from_group", verifyToken, kickGroup); //✅
 router.put("/remove_group", verifyToken, removeGroup); //✅
-router.put("/give_admin_status", verifyToken, giveAdminStatus);
-router.put("/revoke_admin_status", verifyToken, revokeAdminStatus);
-router.put("/add_to_group", verifyToken, joinGroup);
-router.put("/delete_group", verifyToken, deleteGroup);
+router.put("/give_admin_status", verifyToken, giveAdminStatus); //✅
+router.put("/revoke_admin_status", verifyToken, revokeAdminStatus); //✅
+router.put("/invite_to_group", verifyToken, joinGroup);
 // replace with .delete when you figure out how to send a json response with the delete method
 
 export default router;
