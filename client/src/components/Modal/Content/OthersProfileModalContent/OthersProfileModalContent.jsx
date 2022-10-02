@@ -222,7 +222,7 @@ export const OthersProfileModalContent = ({ username, userId }) => {
     // check if the other user target sent a contact request to me
     if (outbox.length > 0) {
       for (const { by, answer } of outbox) {
-        if (by._id === otherUserId && answer === null) {
+        if (by?._id === otherUserId && answer === null) {
           setIsRequesting(true);
           break;
         }
@@ -235,7 +235,7 @@ export const OthersProfileModalContent = ({ username, userId }) => {
     // check if i've sent the other user a contact request
     if (inbox.length > 0) {
       for (const { by, answer } of inbox) {
-        if (by._id === otherUserId && answer === null) {
+        if (by?._id === otherUserId && answer === null) {
           setIsRequested(true);
           break;
         }

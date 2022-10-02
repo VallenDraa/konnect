@@ -10,6 +10,7 @@ import ContactsSwiperCard from "../../../utils/ContactsSwiperCard/ContactsSwiper
 import RenderIf from "../../../utils/React/RenderIf";
 import Pill from "../../Buttons/Pill";
 import Input from "../../Input/Input";
+import PP from "../../PP/PP";
 
 export default function SearchBox({
   multipleSelect = false,
@@ -93,7 +94,11 @@ export default function SearchBox({
   };
 
   return (
-    <div className="w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2 bg-white max-w-screen-sm">
+    <div
+      className={`w-screen lg:w-[40rem] flex flex-col min-h-full text-gray-800 space-y-2 bg-white max-w-screen-sm ${
+        general?.animation ? "animate-fade-in" : ""
+      }`}
+    >
       <header className="px-6 flex flex-col gap-y-2">
         <div className="flex flex-wrap justify-between items-center">
           <h2 className="font-semibold text-xl">Search For People</h2>
@@ -126,29 +131,45 @@ export default function SearchBox({
             <RenderIf
               conditionIs={!results.loading && results.content?.length !== 0}
             >
-              {results.content?.map(({ user }, i) => {
-                return (
-                  <li
-                    key={i}
-                    onClick={() => handleSelect(user)}
-                    className={`cursor-pointer hover:bg-pink-100 rounded-sm flex ${
-                      general?.animation ? "animate-fade-in duration-200" : ""
-                    }`}
-                  >
-                    <button className="flex items-center gap-2 py-2 px-5 grow">
-                      <img
-                        src="https://picsum.photos/200/200"
-                        alt=""
-                        className="rounded-full h-12 w-12"
-                      />
+              {results.content?.map(
+                (
+                  { user, username, profilePicture, status, initials, _id },
+                  i
+                ) => {
+                  return (
+                    <li
+                      key={i}
+                      onClick={() =>
+                        handleSelect(
+                          user || {
+                            username,
+                            profilePicture,
+                            status,
+                            initials,
+                            _id,
+                          }
+                        )
+                      }
+                      className={`cursor-pointer hover:bg-pink-100 rounded-sm flex ${
+                        general?.animation ? "animate-fade-in duration-200" : ""
+                      }`}
+                    >
+                      <button className="flex items-center gap-2 py-2 px-5 grow">
+                        <PP
+                          src={user?.profilePicture || profilePicture || null}
+                          alt={user?.username || username}
+                          type="private"
+                          className="rounded-full h-12 w-12"
+                        />
 
-                      <span className="font-semibold text-lg truncate">
-                        {user.username}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
+                        <span className="font-semibold text-lg truncate">
+                          {user?.username || username}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                }
+              )}
             </RenderIf>
 
             {/* if results are empty */}
@@ -170,7 +191,7 @@ export default function SearchBox({
 
       {/* where the selected would go */}
       <footer className="basis-1/6 w-full py-2 px-4 bg-gray-200 shadow-inner shadow-gray-100 mt-auto">
-        <h3 className="font-bold text-sm">Selected ({selected.length}):</h3>
+        <h3 className="font-bold text-sm">Selected ({selected.length}) :</h3>
         <div className="mt-1">
           <ContactsSwiperCard
             itemWidth={60}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import RenderIf from "../../../../utils/React/RenderIf";
 import { ContactsContext } from "../../../../context/contactContext/ContactContext";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
+import PP from "../../../PP/PP";
 
 export default function ContactList() {
   const { groupedContacts } = useContext(ContactsContext);
@@ -50,16 +51,18 @@ export default function ContactList() {
               <span className="block sticky top-0 bg-gray-100 px-2 font-bold uppercase text-blue-400">
                 {letter}
               </span>
-              {nameList.map((contact) => (
+              {nameList.map((contact, i) => (
                 <Link
                   to={`/user/${contact.user.username}`}
-                  key={contact._id}
-                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-200 p-2 mx-2 rounded shadow
-                            ${general?.animation ? "duration-200" : ""}`}
+                  key={contact._id || `${letter}-${i}`}
+                  className={`group cursor-pointer flex items-center gap-2 hover:bg-pink-100 bg-gray-200 p-2 mx-2 rounded shadow ${
+                    general?.animation ? "duration-200" : ""
+                  }`}
                 >
-                  <img
-                    src="https://picsum.photos/200/200"
-                    alt=""
+                  <PP
+                    src={contact.user.profilePicture || null}
+                    alt={contact.user.username}
+                    type="private"
                     className="rounded-full h-8 w-8"
                   />
 

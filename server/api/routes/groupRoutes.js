@@ -4,11 +4,11 @@ import {
   makeGroup,
   editGroup,
   quitGroup,
-  joinGroup,
   removeGroup,
   kickGroup,
   giveAdminStatus,
   revokeAdminStatus,
+  inviteToGroup,
 } from "../controller/group/groupEditController.js";
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.put("/kick_from_group", verifyToken, kickGroup); //✅
 router.put("/remove_group", verifyToken, removeGroup); //✅
 router.put("/give_admin_status", verifyToken, giveAdminStatus); //✅
 router.put("/revoke_admin_status", verifyToken, revokeAdminStatus); //✅
-router.put("/invite_to_group", verifyToken, joinGroup);
+router.put("/invite_to_group", verifyToken, inviteToGroup);
 // replace with .delete when you figure out how to send a json response with the delete method
 
 export default router;

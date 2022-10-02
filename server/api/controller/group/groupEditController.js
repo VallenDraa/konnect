@@ -158,23 +158,54 @@ export const editGroup = async (req, res, next) => {
 
 export const inviteToGroup = async (req, res, next) => {
   try {
-    const { invitedId, groupId } = req.body;
+    const { invitedIds, groupId } = req.body;
     const { _id: inviterId } = res.locals.tokenData;
+    const { username, initials, profilePicture } = await User.findById(
+      inviterId
+    )
+      .select(["username", "initials", "profilePicture"])
+      .lean();
     const inviteDate = new Date();
+    const invitedNames = [];
 
-    // find the invited user data and update
-    await User.findByIdAndUpdate(invitedId, {
-      $push: {
-        "requests.groups.inbox": { by: inviterId, groupId, iat: inviteDate },
-      },
-    });
+    for (const invitedId of invitedIds) {
+      // find the invited user data and update
+      const invited = await User.findById(invitedId);
+      invited.requests.groups.inbox.push({
+        by: inviterId,
+        group: groupId,
+        iat: inviteDate,
+      });
+      invitedNames.push(invited.username);
+      await invited.save();
+    }
 
     // find the inviter group and add the invited user id to the invitedList
-    await GroupChat.findByIdAndUpdate(groupId, {
-      $push: { invited: { user: invitedId, date: inviteDate } },
-    });
+    const newGc = await GroupChat.findById(groupId);
+    newGc.invited.push(
+      ...invitedIds.map((id) => ({ user: id, date: inviteDate }))
+    );
 
-    res.json({ success: true });
+    const newNoticeMsg = await newNotice(next, newGc, [
+      `${username} has invited ${invitedNames.map((name) => name)}`,
+    ]);
+
+    res.json({
+      success: true,
+      newNotice: newNoticeMsg,
+      notif: {
+        type: "group_request",
+        iat: inviteDate,
+        group: {
+          _id: groupId,
+          name: newGc.name,
+          profilePicture: newGc.profilePicture,
+        },
+        by: { _id: inviterId, username, initials, profilePicture },
+        seen: false,
+        answer: null,
+      },
+    });
   } catch (error) {
     next(error);
   }

@@ -52,7 +52,7 @@ const UserSchema = new mongoose.Schema(
         inbox: [
           {
             by: { type: mongoose.Schema.ObjectId, ref: "user" },
-            groupId: { type: mongoose.Schema.ObjectId, ref: "group" },
+            group: { type: mongoose.Schema.ObjectId, ref: "group_chat" },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
             iat: { type: Date, default: new Date() },
@@ -61,7 +61,7 @@ const UserSchema = new mongoose.Schema(
         outbox: [
           {
             by: { type: mongoose.Schema.ObjectId, ref: "user" },
-            groupId: { type: mongoose.Schema.ObjectId, ref: "group" },
+            group: { type: mongoose.Schema.ObjectId, ref: "group_chat" },
             seen: { type: Boolean, default: false },
             answer: { type: Boolean, default: null },
             iat: { type: Date, default: new Date() },
@@ -69,13 +69,13 @@ const UserSchema = new mongoose.Schema(
         ],
       },
     },
-    groupChats: [{ type: mongoose.Schema.Types.ObjectId, ref: "group" }],
+    groupChats: [{ type: mongoose.Schema.Types.ObjectId, ref: "group_chat" }],
     privateChats: [
       { type: mongoose.Schema.Types.ObjectId, ref: "private_chat" },
     ],
     hasQuitGroup: [
       {
-        group: { type: mongoose.Schema.Types.ObjectId, ref: "group" },
+        group: { type: mongoose.Schema.Types.ObjectId, ref: "group_chat" },
         date: { type: Date, default: new Date() },
       },
     ],

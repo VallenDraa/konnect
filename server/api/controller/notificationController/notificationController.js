@@ -3,7 +3,6 @@ import User from "../../../model/User.js";
 export const getAllNotifications = async (req, res, next) => {
   const { full } = req.query; //only accepts true or false
   const { _id } = res.locals.tokenData;
-  const box = ["inbox", "outbox"];
 
   try {
     const { notifications, requests } = await User.findById(_id)
@@ -19,6 +18,22 @@ export const getAllNotifications = async (req, res, next) => {
               {
                 path: "requests.contacts.outbox.by",
                 select: ["username", "initials", "profilePicture"],
+              },
+              {
+                path: "requests.groups.inbox.by",
+                select: ["username", "initials", "profilePicture"],
+              },
+              {
+                path: "requests.groups.inbox.group",
+                select: ["name", "profilePicture"],
+              },
+              {
+                path: "requests.groups.outbox.by",
+                select: ["username", "initials", "profilePicture"],
+              },
+              {
+                path: "requests.groups.outbox.group",
+                select: ["name", "profilePicture"],
               },
             ]
       );
@@ -57,17 +72,19 @@ export const getAllNotifications = async (req, res, next) => {
         result.inbox.push({ ...notifInbox[i], type: "notifications" });
       }
 
-      if (requests.contacts.outbox[i]) {
-        result.outbox.push({
-          ...requests.contacts.outbox[i],
-          type: "contact_request",
-        });
-      }
-      if (requests.contacts.inbox[i]) {
-        result.inbox.push({
-          ...requests.contacts.inbox[i],
-          type: "contact_request",
-        });
+      for (const key in requests) {
+        if (requests[key].outbox[i]) {
+          result.outbox.push({
+            ...requests[key].outbox[i],
+            type: key === "contacts" ? "contact_request" : "group_request",
+          });
+        }
+        if (requests[key].inbox[i]) {
+          result.inbox.push({
+            ...requests[key].inbox[i],
+            type: key === "contacts" ? "contact_request" : "group_request",
+          });
+        }
       }
     }
 

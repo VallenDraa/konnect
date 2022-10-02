@@ -35,7 +35,7 @@ export default function GroupModalFCMItem({ user, funcs }) {
   };
   const handleKick = () => {
     const payload = {
-      groupId: msgLogs.content[activeGroupChat].chatId,
+      groupId: msgLogs.content[activeGroupChat]?.chatId,
       kickedId: user._id,
       kickerId: userState.user._id,
       token: sessionStorage.getItem("token"),
@@ -149,12 +149,12 @@ export default function GroupModalFCMItem({ user, funcs }) {
           <RenderIf
             conditionIs={
               isTargetAdmin &&
-              msgLogs.content[activeGroupChat].admins.length > 1
+              msgLogs.content[activeGroupChat]?.admins.length > 1
             }
           >
             <FCMItem
               onClick={() =>
-                msgLogs.content[activeGroupChat].admins.length > 1 &&
+                msgLogs.content[activeGroupChat]?.admins.length > 1 &&
                 editAdminStatus("revoke")
               }
               className="flex items-center gap-2 truncate"
@@ -183,11 +183,11 @@ export default function GroupModalFCMItem({ user, funcs }) {
           View Profile
         </FCMItem>
         <RenderIf
-          conditionIs={msgLogs.content[activeGroupChat].admins.length > 1}
+          conditionIs={msgLogs.content[activeGroupChat]?.admins.length > 1}
         >
           <FCMItem
             onClick={() =>
-              msgLogs.content[activeGroupChat].admins.length > 1 &&
+              msgLogs.content[activeGroupChat]?.admins.length > 1 &&
               editAdminStatus("revoke")
             }
             className="flex items-center gap-2 truncate"

@@ -14,7 +14,6 @@ import { ImBlocked, ImPencil } from "react-icons/im";
 import { FiSave } from "react-icons/fi";
 import { UserContext } from "../../../../context/user/userContext";
 import Input from "../../../Input/Input";
-import { FaTrashAlt } from "react-icons/fa";
 import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
 import PasswordConfirmation from "../../../MiniModal/content/AccountOpt/PasswordConfirmation";
 import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
@@ -26,6 +25,9 @@ import MoreMenu from "./components/MoreMenu";
 import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
 
 export default function GroupProfileModalContent() {
+  const { activeGroupChat } = useContext(ActiveGroupChatContext);
+  if (!activeGroupChat) return;
+
   const adminsListRef = useRef();
   const membersListRef = useRef();
   const { userState } = useContext(UserContext);
@@ -38,23 +40,22 @@ export default function GroupProfileModalContent() {
     closeContextMenu,
     openContextMenu,
   } = useContext(FCMContext);
-  const { activeGroupChat } = useContext(ActiveGroupChatContext);
   const { msgLogs } = useContext(MessageLogsContext);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeUser, setActiveUser] = useState(null);
   const [description, setDescription] = useState(
-    msgLogs.content[activeGroupChat].description || ""
+    msgLogs.content[activeGroupChat]?.description || ""
   );
   const [groupName, setGroupName] = useState(
-    msgLogs.content[activeGroupChat].name
+    msgLogs.content[activeGroupChat]?.name
   );
   const { miniModalState, miniModalDispatch } = useContext(MiniModalContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
   const [hasQuitGroup, setHasQuitgroup] = useState(
     activeGroupChat &&
-      msgLogs.content[activeGroupChat].hasQuit.some(
+      msgLogs.content[activeGroupChat]?.hasQuit.some(
         (u) => u.user === userState.user._id
       )
   );
@@ -63,7 +64,7 @@ export default function GroupProfileModalContent() {
   useEffect(() => {
     setHasQuitgroup(
       activeGroupChat &&
-        msgLogs.content[activeGroupChat].hasQuit.some(
+        msgLogs.content[activeGroupChat]?.hasQuit.some(
           (u) => u.user === userState.user._id
         )
     );
@@ -74,29 +75,29 @@ export default function GroupProfileModalContent() {
     (async () => {
       try {
         const admins = await fetchCachedUsers(
-          msgLogs.content[activeGroupChat].admins
+          msgLogs.content[activeGroupChat]?.admins
         );
 
-        setAdminsData(admins.map((admin) => ({ user: { ...admin } })));
+        setAdminsData(admins?.map((admin) => ({ user: { ...admin } })));
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [msgLogs.content[activeGroupChat].admins]);
+  }, [msgLogs.content, activeGroupChat]);
 
   // mapping the members data for the lists
   useEffect(() => {
     (async () => {
       try {
         const members = await fetchCachedUsers(
-          msgLogs.content[activeGroupChat].members
+          msgLogs.content[activeGroupChat]?.members
         );
         setMembersData(members.map((member) => ({ user: { ...member } })));
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [msgLogs.content[activeGroupChat].members]);
+  }, [msgLogs.content, activeGroupChat]);
 
   // determining if the user is admin
   useEffect(() => {
@@ -128,7 +129,7 @@ export default function GroupProfileModalContent() {
   }; // show password mini modal for group edit confirmation
   const handleEdits = () => {
     const payload = {
-      _id: msgLogs.content[activeGroupChat].chatId,
+      _id: msgLogs.content[activeGroupChat]?.chatId,
       newName: groupName,
       newDesc: description,
       token: sessionStorage.getItem("token"),
@@ -166,7 +167,7 @@ export default function GroupProfileModalContent() {
   };
   const handleQuitGroup = () => {
     const payload = {
-      groupId: msgLogs.content[activeGroupChat].chatId,
+      groupId: msgLogs.content[activeGroupChat]?.chatId,
       userId: userState.user._id,
       token: sessionStorage.getItem("token"),
     };
@@ -206,8 +207,8 @@ export default function GroupProfileModalContent() {
           {/* profile pic */}
           <header className="bg-gradient-to-br from-blue-200 via-blue-400 to-pink-400 py-4">
             <PP
-              src={msgLogs.content[activeGroupChat].profilePicture || null}
-              alt={msgLogs.content[activeGroupChat].name}
+              src={msgLogs.content[activeGroupChat]?.profilePicture || null}
+              alt={msgLogs.content[activeGroupChat]?.name}
               type="group"
               className="rounded-full h-44 mx-auto"
             />
@@ -222,13 +223,13 @@ export default function GroupProfileModalContent() {
               <RenderIf conditionIs={!isEditMode}>
                 <div className="flex gap-x-2 items-center self-center">
                   <span className="text-3xl font-semibold mt-2">
-                    {msgLogs.content[activeGroupChat].name}
+                    {msgLogs.content[activeGroupChat]?.name}
                   </span>
                   {/* date created */}
                   <span className="text-xxs text-gray-400 font-medium">
                     EST.{" "}
                     {new Date(
-                      msgLogs.content[activeGroupChat].createdAt
+                      msgLogs.content[activeGroupChat]?.createdAt
                     ).toLocaleDateString()}
                   </span>
                 </div>
@@ -321,7 +322,7 @@ export default function GroupProfileModalContent() {
                     Group Description :
                   </h3>
                   <span className="text-base text-gray-600 font-semibold px-2">
-                    {msgLogs.content[activeGroupChat].description || "-"}
+                    {msgLogs.content[activeGroupChat]?.description || "-"}
                   </span>
                 </RenderIf>
               </div>

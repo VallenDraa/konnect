@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 import { NotifContext } from "../../../../context/notifContext/NotifContext";
 import NOTIF_CONTEXT_ACTIONS from "../../../../context/notifContext/notifContextActions";
 import { cloneDeep } from "lodash";
+import GroupInviteNotif from "./type/GroupInviteNotif/GroupInviteNotif";
 
 export default function NotificationList() {
   const { notifs, notifsDispatch, NOTIFICATION_TABS, activeBox, setActiveBox } =
@@ -156,12 +157,17 @@ export default function NotificationList() {
             <RenderIf
               conditionIs={notifs?.content[activeBox.name]?.length !== 0}
             >
-              {notifs?.content[activeBox.name]?.map((info) => {
+              {notifs?.content[activeBox.name]?.map((info, i) => {
                 return (
-                  <Fragment key={info._id}>
+                  <Fragment key={i}>
                     <RenderIf conditionIs={info.type === "contact_request"}>
                       <NotifListItem>
                         <ContactNotif info={info} type={activeBox.name} />
+                      </NotifListItem>
+                    </RenderIf>
+                    <RenderIf conditionIs={info.type === "group_request"}>
+                      <NotifListItem>
+                        <GroupInviteNotif info={info} />
                       </NotifListItem>
                     </RenderIf>
                   </Fragment>

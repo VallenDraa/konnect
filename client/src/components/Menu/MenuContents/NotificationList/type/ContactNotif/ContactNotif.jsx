@@ -3,14 +3,12 @@ import { ImBlocked } from "react-icons/im";
 import { Link } from "react-router-dom";
 import { UserContext } from "../../../../../../context/user/userContext";
 import { useContext } from "react";
-import generateRgb from "../../../../../../utils/generateRgb/generateRgb";
-
-import PicturelessProfile from "../../../../../PicturelessProfile/PicturelessProfile";
 import socket from "../../../../../../utils/socketClient/socketClient";
 import RenderIf from "../../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../../context/settingsContext/SettingsContext";
 import { useCallback } from "react";
 import Pill from "../../../../../Buttons/Pill";
+import PP from "../../../../../PP/PP";
 
 export default function ContactNotif({ info, type }) {
   const { userState } = useContext(UserContext);
@@ -59,18 +57,17 @@ export default function ContactNotif({ info, type }) {
       {/* notif info*/}
       <main className={`flex items-center gap-3`}>
         <aside>
-          <RenderIf conditionIs={!info.by?.profilePicture}>
-            <Link
-              title={`Go to ${info.by?.username}'s profile`}
-              to={`/user/${info.by?.username}`}
-            >
-              <PicturelessProfile
-                width={info.answer !== null ? 40 : 50}
-                initials={info.by?.initials}
-                bgColor={() => generateRgb(info.by?.initials)}
-              />
-            </Link>
-          </RenderIf>
+          <Link
+            title={`Go to ${info.by?.username}'s profile`}
+            to={`/user/${info.by?.username}`}
+          >
+            <PP
+              alt={info.by?.username}
+              src={info.by?.profilePicture || null}
+              className="w-12 h-12 rounded-full"
+              type="private"
+            />
+          </Link>
         </aside>
 
         <main className="flex flex-col items-center gap-y-1">

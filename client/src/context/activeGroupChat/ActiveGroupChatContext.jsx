@@ -8,6 +8,8 @@ import { UserContext } from "../user/userContext";
 import USER_ACTIONS from "../user/userAction";
 import MINI_MODAL_ACTIONS from "../miniModal/miniModalActions";
 import { MiniModalContext } from "../miniModal/miniModalContext";
+import { NotifContext } from "../notifContext/NotifContext";
+import NOTIF_CONTEXT_ACTIONS from "../notifContext/notifContextActions";
 
 export const ActiveGroupChatContext = createContext("");
 
@@ -17,6 +19,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
   const { setTitle } = useContext(TitleContext);
   const { userState, userDispatch } = useContext(UserContext);
   const { miniModalDispatch } = useContext(MiniModalContext);
+  const { notifs, notifsDispatch } = useContext(NotifContext);
 
   // change the web title according to the user we are chatting to
   useEffect(() => {
@@ -241,6 +244,42 @@ export default function ActiveGroupChatContextProvider({ children }) {
 
     return () => socket.off("receive-revoke-admin-status");
   }, [msgLogs.content]);
+
+  // for receiving group invites
+  useEffect(() => {
+    socket.on("receive-invite-to-group", ({ newNotice, notif, groupId }) => {
+      console.log(notif);
+
+      // add the notification to the invited user
+      if (notif) {
+        notifsDispatch({
+          type: NOTIF_CONTEXT_ACTIONS.loaded,
+          payload: {
+            ...notifs.content,
+            inbox: [...notifs.content.inbox, notif],
+          },
+        });
+      }
+
+      // add the new notice message to the group
+      if (newNotice) {
+        const newChatLogs = cloneDeep(msgLogs.content);
+
+        // adding the new notice to the existing chat log
+        const latestTimeGroup = last(newChatLogs[groupId].chat);
+        latestTimeGroup.date === newNotice.date
+          ? latestTimeGroup.messages.push(...newNotice.messages)
+          : newChatLogs[groupId].chat.push(newNotice);
+
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: newChatLogs,
+        });
+      }
+    });
+
+    return () => socket.off("receive-invite-to-group");
+  }, [msgLogs.content, userState.user]);
 
   // useEffect(() => {
   //   console.log(activeGroupChat);

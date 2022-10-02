@@ -10,6 +10,7 @@ import searchResultsReducer, {
 } from "../../../../reducer/searchResultsReducer/searchResultsReducer";
 import { FaUserAlt } from "react-icons/fa";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
+import PP from "../../../PP/PP";
 
 export default function SearchList() {
   const [query, setQuery] = useState("");
@@ -121,7 +122,7 @@ export default function SearchList() {
                 !searchResults.loading && searchResults.content?.length !== 0
               }
             >
-              {searchResults.content?.map(({ username }, i) => (
+              {searchResults.content?.map(({ username, profilePicture }, i) => (
                 <li key={i}>
                   <Link
                     // this link will open a modal containing info of the user (code is ini Menu.jsx)
@@ -132,12 +133,12 @@ export default function SearchList() {
                     }`}
                   >
                     <div className="flex items-center gap-2 grow border-r-2 group-hover:border-pink-200">
-                      <img
-                        src="https://picsum.photos/200/200"
-                        alt=""
+                      <PP
+                        src={profilePicture || null}
+                        alt={username}
+                        type="private"
                         className="rounded-full h-12 w-12"
                       />
-
                       <span className="text-lg truncate font-medium group-hover:text-pink-700">
                         {username}
                       </span>

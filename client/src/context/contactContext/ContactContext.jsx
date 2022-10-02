@@ -29,7 +29,7 @@ export default function ContactsContextProvider({ children }) {
   // get all the contact data from the current logged in user initial load
   useEffect(() => {
     if (contacts.length > 0 || !userState.user) return;
-    const getAllContacts = async () => {
+    (async () => {
       try {
         const result = [];
         const cachedContacts = {};
@@ -39,6 +39,8 @@ export default function ContactsContextProvider({ children }) {
 
         if (fetchedContacts.length > 0) {
           for (const contact of fetchedContacts) {
+            if (!contact.user) continue;
+
             result.push(contact);
             cachedContacts[contact.user._id] = contact.user;
           }
@@ -51,8 +53,7 @@ export default function ContactsContextProvider({ children }) {
       } catch (error) {
         console.error(error);
       }
-    };
-    getAllContacts();
+    })();
   }, [userState]);
 
   //  group the contacts

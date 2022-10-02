@@ -6,7 +6,13 @@ import { useState } from "react";
 import Pill from "../../../Buttons/Pill";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 
-export default function PasswordConfirmation({ cb, title, caption, payload }) {
+export default function PasswordConfirmation({
+  cb,
+  title,
+  caption,
+  payload,
+  proceedText = "Change",
+}) {
   const { miniModalDispatch } = useContext(MiniModalContext);
   const [password, setPassword] = useState("");
   const { settings } = useContext(SettingsContext);
@@ -46,7 +52,7 @@ export default function PasswordConfirmation({ cb, title, caption, payload }) {
           className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
           type="submit"
         >
-          Change
+          {proceedText}
         </Pill>
       </footer>
     </form>

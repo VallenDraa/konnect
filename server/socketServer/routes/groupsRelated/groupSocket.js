@@ -88,14 +88,40 @@ export default function groupSocket(socket) {
       socket.emit(error);
     }
   });
-  socket.on("invite-to-group", async (groupId, userId) => {
+  socket.on("invite-to-group", async ({ groupId, invitedIds, token }) => {
     try {
       const { data } = await axios.put(
-        `${process.env.API_URL}/group/remove_group`,
-        { groupId },
+        `${process.env.API_URL}/group/invite_to_group`,
+        { invitedIds, groupId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    } catch (error) {}
+
+      if (data.success) {
+        for (const id of invitedIds) {
+          if (id in global.onlineUsers) {
+            const targetSocketId = global.onlineUsers[id];
+
+            socket
+              .to(targetSocketId)
+              .emit("receive-invite-to-group", { notif: data.notif });
+          }
+        }
+
+        socket.emit("receive-invite-to-group", {
+          newNotice: data.newNotice,
+          groupId,
+        });
+
+        socket.to(groupId).emit("receive-invite-to-group", {
+          newNotice: data.newNotice,
+          groupId,
+        });
+      } else {
+        throw new Error("Fail to invite new participants to the group");
+      }
+    } catch (error) {
+      socket.emit(error);
+    }
 
     socket.join(groupId);
   });
