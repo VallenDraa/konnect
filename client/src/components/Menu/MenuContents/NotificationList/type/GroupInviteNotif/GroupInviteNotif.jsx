@@ -12,6 +12,18 @@ export default function GroupInviteNotif({ info }) {
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
 
+  const handleResponse = (answer) => {
+    const payload = {
+      groupId: info.group._id,
+      userId: userState.user._id,
+      token: sessionStorage.getItem("token"),
+    };
+
+    answer
+      ? socket.emit("accept-group-invite", payload)
+      : socket.emit("reject-group-invite", payload);
+  };
+
   return (
     <div
       className={`"block w-full hover:bg-gray-100 p-3 space-y-3 ${
@@ -63,7 +75,7 @@ export default function GroupInviteNotif({ info }) {
           <Pill
             className={`h-full text-xs bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
             type="button"
-            onClick={() => handleResponse(false, type)}
+            onClick={() => handleResponse(false)}
           >
             <FaTimes />
             Reject
@@ -71,7 +83,7 @@ export default function GroupInviteNotif({ info }) {
           <Pill
             className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
             type="button"
-            onClick={() => handleResponse(true, type)}
+            onClick={() => handleResponse(true)}
           >
             <FaCheck />
             Accept

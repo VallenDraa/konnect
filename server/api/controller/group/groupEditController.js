@@ -213,31 +213,86 @@ export const inviteToGroup = async (req, res, next) => {
 
 export const acceptInvitation = async (req, res, next) => {
   try {
+    const { groupId, userId } = req.body;
+
+    // update the group invite answer
+    const user = await User.findById(userId);
+    if (user.requests.groups.inbox.length === 0) {
+      if (user.requests.groups.inbox[0].group.toString() === groupId) {
+        user.requests.groups.inbox[0] = {
+          ...user.requests.groups.inbox[0],
+          answer: true,
+        };
+      }
+    } else {
+      for (let i = 0; i < user.requests.groups.inbox.length; i++) {
+        if (user.requests.groups.inbox[i].group.toString() === groupId) {
+          user.requests.groups.inbox[i] = {
+            ...user.requests.groups.inbox[i],
+            answer: true,
+          };
+        }
+      }
+    }
+    user.hasQuitGroup = user.hasQuitGroup.filter(
+      (g) => g.group.toString() !== groupId
+    );
+
+    await user.save();
+
+    // update the groupData
+    const newGc = await GroupChat.findById(groupId);
+    newGc.invited = newGc.invited.filter((inv) => {
+      return inv.user.toString() !== userId;
+    });
+    newGc.hasQuit = newGc.hasQuit.filter(({ user }) => {
+      user.toString() !== userId;
+    });
+    newGc.members.push(userId);
+
+    // make a new notice about a new participant that has entered the group
+    const newNoticeMsg = await newNotice(next, newGc, [
+      `${user.username} has joined this group`,
+    ]);
+
+    res.json({ success: true, newNotice: newNoticeMsg });
   } catch (error) {
     next(error);
   }
 };
 
-export const declineInvitation = async (req, res, next) => {
-  try {
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const joinGroup = async (req, res, next) => {
+export const rejectInvitation = async (req, res, next) => {
   try {
     const { groupId, userId } = req.body;
 
-    await GroupChat.findByIdAndUpdate(groupId, {
-      $push: { admins: userId, members: userId },
-      $pull: { hasQuit: { user: userId } },
+    // update the group invite answer
+    const user = await User.findById(userId);
+    if (user.requests.groups.inbox.length === 0) {
+      if (user.requests.groups.inbox[0].group.toString() === groupId) {
+        user.requests.groups.inbox[0] = {
+          ...user.requests.groups.inbox[0],
+          answer: false,
+        };
+      }
+    } else {
+      for (let i = 0; i < user.requests.groups.inbox.length; i++) {
+        if (user.requests.groups.inbox[i].group.toString() === groupId) {
+          user.requests.groups.inbox[i] = {
+            ...user.requests.groups.inbox[i],
+            answer: false,
+          };
+        }
+      }
+    }
+    await user.save();
+
+    // update the groupData
+    const newGc = await GroupChat.findById(groupId);
+    newGc.invited = newGc.invited.filter((inv) => {
+      return inv.user.toString() !== userId;
     });
 
-    await User.findByIdAndUpdate(userId, {
-      $push: { groupChats: groupId },
-      $pull: { hasQuitGroup: { group: groupId } },
-    });
+    await newGc.save();
 
     res.json({ success: true });
   } catch (error) {

@@ -122,13 +122,65 @@ export default function groupSocket(socket) {
     } catch (error) {
       socket.emit(error);
     }
-
-    socket.join(groupId);
   });
 
-  socket.on("accept-group-invite", async () => {});
+  socket.on("accept-group-invite", async ({ groupId, userId, token }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/accept_invitation`,
+        { userId, groupId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-  socket.on("decline-group-invite", async () => {});
+      if (data.success) {
+        socket.join(groupId);
+
+        socket.emit("receive-accept-invitation", {
+          newNotice: data.newNotice,
+          groupId,
+          userId,
+        });
+
+        socket.to(groupId).emit("receive-accept-invitation", {
+          newNotice: data.newNotice,
+          groupId,
+          userId,
+        });
+      } else {
+        throw new Error("Fail to accept group invitation");
+      }
+    } catch (error) {
+      socket.emit(error);
+    }
+  });
+
+  socket.on("reject-group-invite", async ({ groupId, userId, token }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.API_URL}/group/reject_invitation`,
+        { userId, groupId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        socket.emit("receive-reject-invitation", {
+          success: data.success,
+          groupId,
+          userId,
+        });
+
+        socket.to(groupId).emit("receive-reject-invitation", {
+          success: data.success,
+          groupId,
+          userId,
+        });
+      } else {
+        throw new Error("Fail to reject group invitation");
+      }
+    } catch (error) {
+      socket.emit(error);
+    }
+  });
 
   socket.on("quit-group", async ({ groupId, userId, token }) => {
     try {
