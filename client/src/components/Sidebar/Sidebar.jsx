@@ -152,7 +152,7 @@ export const Sidebar = ({ urlHistory }) => {
 
   return (
     <aside ref={sidebar}>
-      <div className="min-h-full flex flex-col bg-white max-w-screen-sm mx-auto">
+      <div className="min-h-full flex flex-col bg-white dark:bg-gray-800 max-w-screen-sm mx-auto">
         <header className="space-y-5 basis-1/6 p-3 border-b-2 border-slate-200">
           {/* profile and more menu */}
           <div className="flex justify-between items-center gap-2">

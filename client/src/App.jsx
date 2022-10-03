@@ -9,12 +9,15 @@ import ActiveChatHandlerProvider from "./context/activeChatHandler/ActiveChatHan
 import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
 import { NotifContext } from "./context/notifContext/NotifContext";
 import { TitleContext } from "./context/titleContext/TitleContext";
+import { SettingsContext } from "./context/settingsContext/SettingsContext";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
   const { msgUnread } = useContext(MessageLogsContext);
   const { notifUnseen } = useContext(NotifContext);
   const { setTitle } = useContext(TitleContext);
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   // for displaying the amount of notifications available
   useEffect(() => {
@@ -28,7 +31,11 @@ export const App = () => {
 
   return (
     <ActiveChatHandlerProvider>
-      <div className="text-gray-800 antialiased font-sans">
+      <div
+        className={`text-gray-800 antialiased font-sans ${
+          general?.theme === "dark" ? "dark" : ""
+        }`}
+      >
         <BrowserRouter>
           <Routes>
             <Route
