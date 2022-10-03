@@ -82,7 +82,7 @@ export default function NotifContextProvider({ children }) {
   const { userState } = useContext(UserContext);
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
 
-  useEffect(() => console.log(notifs.content), [notifs.content]);
+  // useEffect(() => console.log(notifs.content), [notifs.content]);
   // get all notifications for initial loading
   useEffect(() => {
     if (

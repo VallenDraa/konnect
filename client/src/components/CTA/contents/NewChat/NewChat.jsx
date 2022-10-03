@@ -15,8 +15,9 @@ export default function NewChat() {
         </>
       }
       submitCb={(results, query, selected) => {
+        console.log(selected);
         if (selected.length > 0) {
-          navigate(`/chats?id=${selected[0].user._id}&type=user`);
+          navigate(`/chats?id=${selected[0].user._id}&type=private`);
         }
       }}
       searchCb={(query) =>

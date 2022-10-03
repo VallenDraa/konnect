@@ -142,7 +142,7 @@ export default function MessageLogsContextProvider({ children }) {
   }, [userState.user, contacts, msgLogs]);
 
   // useEffect(() => console.log(msgUnread), [msgUnread]);
-  useEffect(() => console.log(msgLogs.content), [msgLogs]);
+  // useEffect(() => console.log(msgLogs.content), [msgLogs]);
 
   return (
     <MessageLogsContext.Provider
