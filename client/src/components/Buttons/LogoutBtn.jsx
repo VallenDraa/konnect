@@ -32,6 +32,7 @@ export default function LogoutBtn() {
 
         userDispatch({ type: USER_ACTIONS.logout });
         sessionStorage.removeItem("token");
+        sessionStorage.removeItem("refreshToken");
         Navigate("/login");
       } else {
         console.error(message);

@@ -3,6 +3,7 @@ import createError from "../../../utils/createError.js";
 import bcrypt from "bcrypt";
 import { renewToken } from "./tokenController.js";
 import emojiTest from "../../../utils/emojiTest.js";
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res, next) => {
   const isUsingEmoji = emojiTest(Object.values(req.body));
@@ -41,7 +42,7 @@ export const register = async (req, res, next) => {
         initials,
         password: hashedPW,
         email,
-        settings: { general: { animation: true } },
+        settings: { general: { animation: true, menuSwiping: true } },
       });
     } catch (error) {
       next(error);
@@ -70,9 +71,12 @@ export const login = async (req, res, next) => {
       const { password, ...otherData } = user;
 
       // send user data back as a JWT token
-      const secret = process.env.JWT_SECRET;
-      const token = renewToken(otherData, secret);
-      res.json({ token, user: otherData });
+      const token = renewToken(otherData, process.env.JWT_SECRET);
+      const refreshToken = jwt.sign(otherData, process.env.JWT_REFRESH_SECRET);
+
+      global.refreshTokens[user._id.toString()] = refreshToken;
+
+      res.json({ token, refreshToken, user: otherData });
     } else {
       return createError(next, 401, "Username or password is invalid !");
     }

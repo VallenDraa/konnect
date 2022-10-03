@@ -24,7 +24,8 @@ const io = new Server(httpServer, {
 });
 
 // can be accessed and edited from anywhere
-global.onlineUsers = {};
+global.onlineUsers = { aliases: {} };
+global.refreshTokens = {};
 global.lastSeen = {};
 global.exemptedUserInfos = [
   "-contacts",

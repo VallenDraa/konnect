@@ -19,7 +19,10 @@ export default class Authenticate {
     const isUserOnline = this.userId in onlineList;
 
     if (!isUserOnline) {
-      const user = { [this.userId]: this.socketId };
+      const user = {
+        [this.userId]: this.socketId,
+        aliases: { ...onlineList.aliases, [this.socketId]: this.userId },
+      };
       return { success: true, user, message: null };
     } else {
       return { success: false, user: null, message: "User is already online" };
@@ -37,7 +40,10 @@ export default class Authenticate {
     const isUserOnline = this.userId in onlineList;
 
     if (isUserOnline) {
-      const user = { [this.userId]: this.socketId };
+      const user = {
+        [this.userId]: this.socketId,
+        aliases: { ...onlineList.aliases, [this.socketId]: this.userId },
+      };
       return { success: true, user, message: null };
     } else {
       return { success: false, user: null, message: "Invalid user" };

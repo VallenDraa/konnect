@@ -10,6 +10,15 @@ import Input from "../../components/Input/Input";
 import { isInitialLoadingContext } from "../../context/isInitialLoading/isInitialLoading";
 import { IsLoginViaRefreshContext } from "../../context/isLoginViaRefresh/isLoginViaRefresh";
 import Pill from "../../components/Buttons/Pill";
+import {
+  ActivePrivateChatContext,
+  ACTIVE_PRIVATE_CHAT_DEFAULT,
+} from "../../context/activePrivateChat/ActivePrivateChatContext";
+import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
+import { ModalContext } from "../../context/modal/modalContext";
+import MODAL_ACTIONS from "../../context/modal/modalActions";
+
+const THREE_HOURS = 1000 * 60 * 60 * 3;
 
 export const Login = ({ user }) => {
   const { userState, userDispatch } = user;
@@ -19,6 +28,9 @@ export const Login = ({ user }) => {
   const [password, setPassword] = useState("");
   const { setIsInitialLoading } = useContext(isInitialLoadingContext);
   const { setIsLoginViaRefresh } = useContext(IsLoginViaRefreshContext);
+  const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
+  const { setActiveGroupChat } = useContext(ActiveGroupChatContext);
+  const { modalDispatch } = useContext(ModalContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,13 +49,31 @@ export const Login = ({ user }) => {
           },
         }
       );
+
       const loginCb = (success, message) => {
         if (success) {
           sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("refreshToken", data.refreshToken);
           userDispatch({ type: USER_ACTIONS.loginSuccess, payload: data.user });
           setIsLoginViaRefresh(false);
           setIsInitialLoading(true);
           navigate("/chats");
+
+          // log user out and prompt them to log back in (TEMPORARY)
+          setTimeout(() => {
+            // deactivate chat
+            setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+            setActiveGroupChat(null);
+
+            // close the modal so that when a user logs back in, it doesn't jitter
+            modalDispatch({ type: MODAL_ACTIONS.close });
+
+            userDispatch({ type: USER_ACTIONS.logout });
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("refreshToken");
+            navigate("/login");
+            alert("Your Token Has Expired, Please Re-Login To Continue !");
+          }, THREE_HOURS - 5000);
         } else {
           alert(message);
         }
@@ -55,8 +85,11 @@ export const Login = ({ user }) => {
         { userId: data.user._id, token: data.token },
         loginCb
       );
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <main className="flex min-h-screen w-full">
       <div

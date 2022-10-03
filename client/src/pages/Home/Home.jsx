@@ -128,7 +128,34 @@ export default function Home() {
         socket.emit(
           "login",
           { userId: userState.user._id, token },
-          (success, message) => !success && alert(message)
+          (success, message) => {
+            if (success) {
+              const TOKEN_TIMER =
+                JSON.parse(atob(sessionStorage.getItem("token").split(".")[1]))
+                  .exp *
+                  1000 -
+                Date.now() -
+                5000;
+
+              // log user out and prompt them to log back in (TEMPORARY)
+              setTimeout(() => {
+                // deactivate chat
+                setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
+                setActiveGroupChat(null);
+
+                // close the modal so that when a user logs back in, it doesn't jitter
+                modalDispatch({ type: MODAL_ACTIONS.close });
+
+                userDispatch({ type: USER_ACTIONS.logout });
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("refreshToken");
+                navigate("/login");
+                alert("Your Token Has Expired, Please Re-Login To Continue !");
+              }, TOKEN_TIMER);
+            } else {
+              alert(message);
+            }
+          }
         );
       }
     }

@@ -20,14 +20,10 @@ export default function verifyToken(req, res, next) {
       next();
     }
   } catch (error) {
-    console.log(
-      "🚀 ~ file: tokenController.js ~ line 24 ~ verifyToken ~ error",
-      error
-    );
     next(error);
   }
 }
 
 export function renewToken(data, secret) {
-  return jwt.sign(data, secret, { expiresIn: "6h" });
+  return jwt.sign(data, secret, { expiresIn: "3h" });
 }

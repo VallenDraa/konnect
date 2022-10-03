@@ -11,6 +11,8 @@ export default function authenticationSocket(socket) {
 
     if (success) {
       Object.assign(global.onlineUsers, user);
+      Object.assign(global.onlineUsers.aliases, { [socket.id]: userId });
+
       cb(success, null);
       socket.emit("is-authorized", { authorized: true });
 
@@ -27,15 +29,12 @@ export default function authenticationSocket(socket) {
 
         socket.emit("download-all-chat-ids", data);
       } catch (error) {
-        console.error(error);
-
         socket.emit("error", error);
       }
     } else {
       cb(success, message);
       socket.emit("is-authorized", { authorized: false });
     }
-    console.log(global.onlineUsers, "login");
   });
 
   socket.on("logout", async (userId, cb) => {
@@ -47,6 +46,8 @@ export default function authenticationSocket(socket) {
 
     if (success) {
       delete global.onlineUsers[userId];
+      delete global.onlineUsers.aliases[socket.id];
+      delete global.refreshTokens[userId];
       cb(success, null);
     } else {
       cb(success, message);
@@ -58,7 +59,8 @@ export default function authenticationSocket(socket) {
     global.lastSeen[userId] = time;
     socket.to("chats").emit("change-user-status", userId, time);
 
-    console.log(global.onlineUsers, "log out");
+    console.log(global.onlineUsers, "logged out");
+    console.log(global.refreshTokens);
   });
 }
 
@@ -67,16 +69,16 @@ export default function authenticationSocket(socket) {
  * @param {*} socket
  */
 export const tabClose = async (socket) => {
-  const userId = Object.keys(global.onlineUsers).filter(
-    (key) => global.onlineUsers[key] === socket.id
-  )[0];
+  const userId = global.onlineUsers.aliases[socket.id];
 
   delete global.onlineUsers[userId];
+  delete global.onlineUsers.aliases[socket.id];
+  delete global.refreshTokens[userId];
 
   // emit the status to the user that is currently chatting
   const time = new Date();
   global.lastSeen[userId] = time;
   socket.to("chats").emit("change-user-status", userId, time);
 
-  console.log(`user ${socket.id} has been force removed`);
+  console.log(`user with the socket id of ${socket.id} has forced quit`);
 };
