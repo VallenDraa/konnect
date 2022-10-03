@@ -27,14 +27,6 @@ export const getAllNotifications = async (req, res, next) => {
                 path: "requests.groups.inbox.group",
                 select: ["name", "profilePicture"],
               },
-              {
-                path: "requests.groups.outbox.by",
-                select: ["username", "initials", "profilePicture"],
-              },
-              {
-                path: "requests.groups.outbox.group",
-                select: ["name", "profilePicture"],
-              },
             ]
       );
 

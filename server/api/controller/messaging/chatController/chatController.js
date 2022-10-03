@@ -86,7 +86,7 @@ export const getAllChatHistory = async (req, res, next) => {
 
 export const getChatHistory = async (req, res, next) => {
   try {
-    const { pcIds, gcIds, hasQuit } = req.query;
+    const { pcIds, gcIds } = req.query;
     const { _id } = res.locals.tokenData;
     const parsedPcIds = pcIds ? pcIds.split(",") : []; //private chat ids
     const parsedGcIds = gcIds ? gcIds.split(",") : []; //group chat ids
@@ -154,6 +154,31 @@ export const getChatHistory = async (req, res, next) => {
     }
 
     res.json({ success: true, privateChats, groupChats });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAFullChat = async (req, res, next) => {
+  try {
+    const { gcId, pcId } = req.query;
+    const returnValue = {};
+
+    if (gcId) {
+      returnValue.groupChat = await GroupChat.findById(gcId)
+        .populate("chat.messages")
+        .select(["-__v"])
+        .lean();
+    }
+
+    if (pcId) {
+      returnValue.privateChat = await PrivateChat.findById(pcId)
+        .populate("chat.messages")
+        .select(["-__v"])
+        .lean();
+    }
+
+    res.json(returnValue);
   } catch (error) {
     next(error);
   }
@@ -381,6 +406,7 @@ export const getAllChatId = async (req, res, next) => {
             admins: c.admins,
             members: c.members,
             hasQuit: c.hasQuit,
+            invited: c.invited,
             chat: c.chat,
             type: c.type,
             preview: true,

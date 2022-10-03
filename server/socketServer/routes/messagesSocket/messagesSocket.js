@@ -97,11 +97,12 @@ export default function messagesSocket(socket) {
   });
 
   socket.on("download-a-chat-history", async ({ token, pcIds, gcIds }) => {
-    const url = `${
-      process.env.API_URL
-    }/chat/get_chat_history?pcIds=${pcIds.join(",")}&gcIds=${gcIds.join(",")}`;
-
     try {
+      const url = `${
+        process.env.API_URL
+      }/chat/get_chat_history?pcIds=${pcIds.join(",")}&gcIds=${gcIds.join(
+        ","
+      )}`;
       const { data } = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -109,6 +110,20 @@ export default function messagesSocket(socket) {
       socket.emit("a-chat-history-downloaded", data);
     } catch (error) {
       socket.emit("error", error);
+    }
+  });
+
+  socket.on("get-a-full-chat", async ({ token, pcId, gcId }) => {
+    try {
+      const url = `${process.env.API_URL}/chat/get_a_full_chat?pcId=${pcId}&gcId=${gcId}`;
+
+      const { data } = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      socket.emit("receive-get-a-full-chat", data);
+    } catch (error) {
+      socket.emit(error);
     }
   });
 }

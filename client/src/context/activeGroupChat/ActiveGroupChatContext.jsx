@@ -281,58 +281,72 @@ export default function ActiveGroupChatContextProvider({ children }) {
 
   // for receiving group invite acceptance
   useEffect(() => {
-    socket.on("receive-accept-invitation", ({ newNotice, groupId, userId }) => {
-      // update the group invite notification
-      notifsDispatch({
-        type: NOTIF_CONTEXT_ACTIONS.loaded,
-        payload: {
-          ...notifs.content,
-          inbox: notifs.content.inbox.map((ibx) => {
-            if (ibx.group._id !== groupId) return ibx;
-            return { ...ibx, answer: true };
-          }),
-        },
-      });
+    socket.on(
+      "receive-accept-invitation",
+      ({ newNotice, groupId, userId, isForInvited }) => {
+        const newChatLogs = cloneDeep(msgLogs.content);
 
-      // update the message log
-      const newChatLogs = cloneDeep(msgLogs.content);
+        // for the new invited participants
+        if (isForInvited) {
+          // update the group invite notification
+          notifsDispatch({
+            type: NOTIF_CONTEXT_ACTIONS.loaded,
+            payload: {
+              ...notifs.content,
+              inbox: notifs.content.inbox.map((ibx) => {
+                if (ibx.group?._id !== groupId) return ibx;
+                return { ...ibx, answer: true };
+              }),
+            },
+          });
 
-      newChatLogs[groupId].invited = newChatLogs[groupId].invited.filter(
-        (inv) => inv.user !== userId
-      );
-      newChatLogs[groupId].hasQuit = newChatLogs[groupId].hasQuit.filter(
-        ({ user }) => user !== userId
-      );
-      newChatLogs[groupId].members.push(userId);
+          socket.emit("get-a-full-chat", {
+            token: sessionStorage.getItem("token"),
+            gcId: groupId,
+            pcId: "",
+          });
+        } else {
+          // update the message log
+          newChatLogs[groupId].invited = newChatLogs[groupId].invited.filter(
+            (inv) => inv.user !== userId
+          );
+          newChatLogs[groupId].hasQuit = newChatLogs[groupId].hasQuit.filter(
+            ({ user }) => user !== userId
+          );
+          newChatLogs[groupId].members.push(userId);
 
-      // adding the new notice to the existing chat log
-      const latestTimeGroup = last(newChatLogs[groupId].chat);
-      latestTimeGroup.date === newNotice.date
-        ? latestTimeGroup.messages.push(...newNotice.messages)
-        : newChatLogs[groupId].chat.push(newNotice);
+          // adding the new notice to the existing chat log
+          const latestTimeGroup = last(newChatLogs[groupId].chat);
+          latestTimeGroup.date === newNotice.date
+            ? latestTimeGroup.messages.push(...newNotice.messages)
+            : newChatLogs[groupId].chat.push(newNotice);
 
-      msgLogsDispatch({
-        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-        payload: newChatLogs,
-      });
-    });
+          msgLogsDispatch({
+            type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+            payload: newChatLogs,
+          });
+        }
+      }
+    );
 
     return () => socket.off("receive-accept-invitation");
-  }, [msgLogs.content, userState.user]);
+  }, [msgLogs.content, userState.user, notifs.content]);
 
   // for receiving group invite rejection
   useEffect(() => {
     socket.on("receive-reject-invitation", ({ groupId, userId }) => {
       // update the group invite notification
+
+      const newNotifs = {
+        ...notifs.content,
+        inbox: notifs.content.inbox.map((ibx) =>
+          ibx.group?._id !== groupId ? ibx : { ...ibx, answer: false }
+        ),
+      };
+
       notifsDispatch({
         type: NOTIF_CONTEXT_ACTIONS.loaded,
-        payload: {
-          ...notifs.content,
-          inbox: notifs.content.inbox.map((ibx) => {
-            if (ibx.group._id !== groupId) return ibx;
-            return { ...ibx, answer: false };
-          }),
-        },
+        payload: { ...newNotifs },
       });
 
       // update the message log
@@ -351,7 +365,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
     });
 
     return () => socket.off("receive-reject-invitation");
-  }, [userState.user]);
+  }, [userState.user, notifs.content]);
 
   // useEffect(() => {
   //   console.log(activeGroupChat);

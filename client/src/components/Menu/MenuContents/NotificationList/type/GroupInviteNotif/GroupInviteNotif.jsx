@@ -53,7 +53,7 @@ export default function GroupInviteNotif({ info }) {
           <span className="text-slate-500 text-sm">
             <RenderIf conditionIs={info.answer === null}>
               <span className="font-bold text-slate-800">
-                {info.group?.name}
+                {info.by?.username}
               </span>{" "}
               has invited you to join {info.group?.name} !
             </RenderIf>

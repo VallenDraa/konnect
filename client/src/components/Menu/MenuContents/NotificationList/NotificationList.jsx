@@ -157,22 +157,24 @@ export default function NotificationList() {
             <RenderIf
               conditionIs={notifs?.content[activeBox.name]?.length !== 0}
             >
-              {notifs?.content[activeBox.name]?.map((info, i) => {
-                return (
-                  <Fragment key={i}>
-                    <RenderIf conditionIs={info.type === "contact_request"}>
-                      <NotifListItem>
-                        <ContactNotif info={info} type={activeBox.name} />
-                      </NotifListItem>
-                    </RenderIf>
-                    <RenderIf conditionIs={info.type === "group_request"}>
-                      <NotifListItem>
-                        <GroupInviteNotif info={info} />
-                      </NotifListItem>
-                    </RenderIf>
-                  </Fragment>
-                );
-              })}
+              {notifs?.content[activeBox.name]
+                ?.sort((a, b) => b.iat > a.iat)
+                ?.map((info, i) => {
+                  return (
+                    <Fragment key={i}>
+                      <RenderIf conditionIs={info.type === "contact_request"}>
+                        <NotifListItem>
+                          <ContactNotif info={info} type={activeBox.name} />
+                        </NotifListItem>
+                      </RenderIf>
+                      <RenderIf conditionIs={info.type === "group_request"}>
+                        <NotifListItem>
+                          <GroupInviteNotif info={info} />
+                        </NotifListItem>
+                      </RenderIf>
+                    </Fragment>
+                  );
+                })}
             </RenderIf>
           </ul>
         </RenderIf>

@@ -22,12 +22,6 @@ export default function contactRequestSocket(socket) {
       });
       // check if the recipient is online
       if (isRecipientOnline) {
-        console.log(
-          "🚀 ~ file: sendContactRequestSocket.js ~ line 30 ~ socket.to ~ recipientSocketId",
-          recipientSocketId,
-          isRecipientOnline,
-          new Date().toLocaleTimeString()
-        );
         socket.to(recipientSocketId).emit("receive-send-add-contact", {
           success: data.success,
           notif: data.recipientNotif,

@@ -205,7 +205,7 @@ export const ChatBox = () => {
 
       socket.emit("download-a-chat-history", { token, ...ids });
     }
-  }, [activePrivateChat, activeGroupChat, msgLogs]); //tell the server to download the chat log based on the active chat
+  }, [activePrivateChat, activeGroupChat, msgLogs]); //tell the server to download the chat history based on the active chat
   useEffect(() => {
     let downloaded = false;
 
@@ -222,7 +222,9 @@ export const ChatBox = () => {
           ...newChatLogs,
           [user]: { ...newChatLogs[user], chat, type, preview: false },
         };
-      } else {
+      }
+
+      if (groupChats.length > 0) {
         const { chat, type, _id } = groupChats[0];
 
         result = {
@@ -243,9 +245,46 @@ export const ChatBox = () => {
       if (messageLogRef.current && downloaded) {
         scrollToBottom(messageLogRef.current);
       }
-      socket.off("a-chat-history-downloaded");
+      socket.off("a-chat-log-downloaded");
     };
-  }, [messageLogRef, msgLogs]); //receive the downloaded full active chat log
+  }, [messageLogRef, msgLogs]); //receive the downloaded active chat histury
+
+  useEffect(() => {
+    socket.on("receive-get-a-full-chat", ({ groupChat, privateChat }) => {
+      const newChatLogs = _.cloneDeep(msgLogs.content);
+
+      if (groupChat) {
+        newChatLogs[groupChat._id] = {
+          name: groupChat.name,
+          profilePicture: groupChat.profilePicture,
+          chat: groupChat.chat,
+          admins: groupChat.admins,
+          members: groupChat.members,
+          hasQuit: groupChat.hasQuit,
+          invited: groupChat.invited,
+          type: groupChat.type,
+          chatId: groupChat._id,
+          description: groupChat.description,
+          preview: groupChat.preview,
+          createdAt: groupChat.createdAt,
+        };
+      }
+      if (privateChat) {
+        newChatLogs[privateChat._id] = {
+          chat: privateChat.chat,
+          user: privateChat.user,
+          type: privateChat.type,
+          chatId: privateChat.chatId,
+          preview: privateChat.preview,
+        };
+      }
+
+      msgLogsDispatch({
+        type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+        payload: newChatLogs,
+      });
+    });
+  }, [msgLogs.content]);
 
   useEffect(() => {
     if (activePrivateChat._id !== null) scrollToBottom(messageLogRef.current);
@@ -507,42 +546,6 @@ export const ChatBox = () => {
       );
     }
   }, [activeGroupChat, msgLogs]); //set the message to read for group chat
-  // useEffect(() => {
-  //   socket.on("group-msg-on-read", (isRead, groupId, userId, time) => {
-  //     if (isRead) {
-  //       if (!msgLogs.content[groupId]) return;
-  //       // if (!msgLogs.content[activeGroupChat]) return;
-
-  //       // console.log(userId, userState.user._id);
-  //       /* NEW MSG LOGS*/
-  //       const updatedChatLogs = _.cloneDeep(msgLogs.content);
-  //       const { chat: newChat } = updatedChatLogs[groupId];
-  //       const date = new Date().toLocaleDateString();
-  //       const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
-  //       const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
-  //       const msgsMaxLen = msgsInTimeLog.length - 1;
-
-  //       if (msgsMaxLen > 0) {
-  //         for (let i = msgsMaxLen; i > 0; i--) {
-  //           if (msgsInTimeLog[i]?.beenReadBy?.some((i) => i.user === userId)) {
-  //             break;
-  //           }
-
-  //           msgsInTimeLog[i].beenReadBy.push({ user: userId, readAt: time });
-  //         }
-  //       } else {
-  //         msgsInTimeLog[0].beenReadBy.push({ user: userId, readAt: time });
-  //       }
-
-  //       msgLogsDispatch({
-  //         type: MESSAGE_LOGS_ACTIONS.updateLoaded,
-  //         payload: updatedChatLogs,
-  //       });
-  //     }
-  //   });
-
-  //   return () => socket.off("group-msg-on-read");
-  // }, [msgLogs]); //group msg onread
 
   return (
     <>
@@ -571,3 +574,39 @@ export const ChatBox = () => {
 };
 
 // WIP group message read status
+// useEffect(() => {
+//   socket.on("group-msg-on-read", (isRead, groupId, userId, time) => {
+//     if (isRead) {
+//       if (!msgLogs.content[groupId]) return;
+//       // if (!msgLogs.content[activeGroupChat]) return;
+
+//       // console.log(userId, userState.user._id);
+//       /* NEW MSG LOGS*/
+//       const updatedChatLogs = _.cloneDeep(msgLogs.content);
+//       const { chat: newChat } = updatedChatLogs[groupId];
+//       const date = new Date().toLocaleDateString();
+//       const updatedTimeLogIdx = newChat.findIndex((m) => m.date === date);
+//       const msgsInTimeLog = newChat[updatedTimeLogIdx].messages;
+//       const msgsMaxLen = msgsInTimeLog.length - 1;
+
+//       if (msgsMaxLen > 0) {
+//         for (let i = msgsMaxLen; i > 0; i--) {
+//           if (msgsInTimeLog[i]?.beenReadBy?.some((i) => i.user === userId)) {
+//             break;
+//           }
+
+//           msgsInTimeLog[i].beenReadBy.push({ user: userId, readAt: time });
+//         }
+//       } else {
+//         msgsInTimeLog[0].beenReadBy.push({ user: userId, readAt: time });
+//       }
+
+//       msgLogsDispatch({
+//         type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+//         payload: updatedChatLogs,
+//       });
+//     }
+//   });
+
+//   return () => socket.off("group-msg-on-read");
+// }, [msgLogs]); //group msg onread

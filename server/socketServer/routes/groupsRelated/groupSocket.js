@@ -133,19 +133,21 @@ export default function groupSocket(socket) {
       );
 
       if (data.success) {
-        socket.join(groupId);
-
         socket.emit("receive-accept-invitation", {
           newNotice: data.newNotice,
           groupId,
           userId,
+          isForInvited: true,
         });
 
         socket.to(groupId).emit("receive-accept-invitation", {
           newNotice: data.newNotice,
           groupId,
           userId,
+          isForInvited: false,
         });
+
+        socket.join(groupId);
       } else {
         throw new Error("Fail to accept group invitation");
       }

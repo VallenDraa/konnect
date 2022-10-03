@@ -66,6 +66,7 @@ export default function MessageLogsContextProvider({ children }) {
                   admins: log.admins,
                   members: log.members,
                   hasQuit: log.hasQuit,
+                  invited: log.invited,
                   type: log.type,
                   chatId: log.chatId,
                   description: log.description,

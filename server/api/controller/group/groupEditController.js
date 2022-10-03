@@ -218,17 +218,27 @@ export const acceptInvitation = async (req, res, next) => {
     // update the group invite answer
     const user = await User.findById(userId);
     if (user.requests.groups.inbox.length === 0) {
-      if (user.requests.groups.inbox[0].group.toString() === groupId) {
+      if (user.requests.groups.inbox[0].group + "" === groupId) {
+        const { group, by, seen, iat, _id } = user.requests.groups.inbox[0];
         user.requests.groups.inbox[0] = {
-          ...user.requests.groups.inbox[0],
+          group,
+          by,
+          seen,
+          iat,
+          _id,
           answer: true,
         };
       }
     } else {
       for (let i = 0; i < user.requests.groups.inbox.length; i++) {
-        if (user.requests.groups.inbox[i].group.toString() === groupId) {
+        if (user.requests.groups.inbox[i].group + "" === groupId) {
+          const { group, by, seen, iat, _id } = user.requests.groups.inbox[i];
           user.requests.groups.inbox[i] = {
-            ...user.requests.groups.inbox[i],
+            group,
+            by,
+            seen,
+            iat,
+            _id,
             answer: true,
           };
         }
@@ -237,7 +247,7 @@ export const acceptInvitation = async (req, res, next) => {
     user.hasQuitGroup = user.hasQuitGroup.filter(
       (g) => g.group.toString() !== groupId
     );
-
+    user.groupChats.push(groupId);
     await user.save();
 
     // update the groupData
@@ -268,17 +278,27 @@ export const rejectInvitation = async (req, res, next) => {
     // update the group invite answer
     const user = await User.findById(userId);
     if (user.requests.groups.inbox.length === 0) {
-      if (user.requests.groups.inbox[0].group.toString() === groupId) {
+      if (user.requests.groups.inbox[0].group + "" === groupId) {
+        const { group, by, seen, iat, _id } = user.requests.groups.inbox[0];
         user.requests.groups.inbox[0] = {
-          ...user.requests.groups.inbox[0],
+          group,
+          by,
+          seen,
+          iat,
+          _id,
           answer: false,
         };
       }
     } else {
       for (let i = 0; i < user.requests.groups.inbox.length; i++) {
-        if (user.requests.groups.inbox[i].group.toString() === groupId) {
+        if (user.requests.groups.inbox[i].group + "" === groupId) {
+          const { group, by, seen, iat, _id } = user.requests.groups.inbox[i];
           user.requests.groups.inbox[i] = {
-            ...user.requests.groups.inbox[i],
+            group,
+            by,
+            seen,
+            iat,
+            _id,
             answer: false,
           };
         }
