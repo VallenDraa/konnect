@@ -171,20 +171,39 @@ export const inviteToGroup = async (req, res, next) => {
     for (const invitedId of invitedIds) {
       // find the invited user data and update
       const invited = await User.findById(invitedId);
-      invited.requests.groups.inbox.push({
-        by: inviterId,
-        group: groupId,
-        iat: inviteDate,
-      });
+      const { inbox } = invited.requests.groups;
+      const oldInvNotif = inbox.findIndex(
+        (i) => i.group.toString() === groupId
+      );
+
+      if (oldInvNotif !== -1) {
+        const { group, _id, by } = invited.requests.groups.inbox[oldInvNotif];
+        invited.requests.groups.inbox[oldInvNotif] = {
+          _id,
+          by,
+          group,
+          seen: false,
+          answer: null,
+          iat: inviteDate,
+        };
+      } else {
+        invited.requests.groups.inbox.push({
+          by: inviterId,
+          group: groupId,
+          iat: inviteDate,
+        });
+      }
       invitedNames.push(invited.username);
       await invited.save();
     }
 
     // find the inviter group and add the invited user id to the invitedList
     const newGc = await GroupChat.findById(groupId);
-    newGc.invited.push(
-      ...invitedIds.map((id) => ({ user: id, date: inviteDate }))
-    );
+    for (const id of invitedIds) {
+      if (newGc.invited.some(({ user }) => user.toString() === id)) continue;
+
+      newGc.invited.push({ user: id, date: inviteDate });
+    }
 
     const newNoticeMsg = await newNotice(next, newGc, [
       `${username} has invited ${invitedNames.map((name) => name)}`,

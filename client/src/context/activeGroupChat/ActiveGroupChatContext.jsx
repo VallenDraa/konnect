@@ -250,12 +250,19 @@ export default function ActiveGroupChatContextProvider({ children }) {
     socket.on("receive-invite-to-group", ({ newNotice, notif, groupId }) => {
       // add the notification to the invited user
       if (notif) {
+        const newNotifs = {
+          ...notifs.content,
+          inbox: notifs.content.inbox.map((ibx) => {
+            if (ibx.type === "group_request") {
+              return ibx.group._id === notif.group._id ? notif : ibx;
+            } else {
+              return ibx;
+            }
+          }),
+        };
         notifsDispatch({
           type: NOTIF_CONTEXT_ACTIONS.loaded,
-          payload: {
-            ...notifs.content,
-            inbox: [...notifs.content.inbox, notif],
-          },
+          payload: newNotifs,
         });
       }
 
@@ -277,7 +284,7 @@ export default function ActiveGroupChatContextProvider({ children }) {
     });
 
     return () => socket.off("receive-invite-to-group");
-  }, [msgLogs.content, userState.user]);
+  }, [msgLogs.content, userState.user, notifs.content]);
 
   // for receiving group invite acceptance
   useEffect(() => {

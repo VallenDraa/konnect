@@ -3,6 +3,7 @@ import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
 import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
 import Pill from "../../../Buttons/Pill";
 import Input from "../../../Input/Input";
+import PP from "../../../PP/PP";
 
 export default function NewGroupConfirmation({ cb, selected }) {
   const { miniModalDispatch } = useContext(MiniModalContext);
@@ -39,10 +40,10 @@ export default function NewGroupConfirmation({ cb, selected }) {
                 key={i}
                 className={`cursor-default bg-gray-100 rounded-lg shadow flex items-center gap-2 py-2 px-3 grow`}
               >
-                <img
-                  src="https://picsum.photos/200/200"
-                  alt=""
-                  className="rounded-full h-8 w-8"
+                <PP
+                  src={user.profilePicture || null}
+                  alt={user.username}
+                  className="rounded-full w-8 h-8"
                 />
 
                 <span className="font-semibold truncate">{user.username}</span>

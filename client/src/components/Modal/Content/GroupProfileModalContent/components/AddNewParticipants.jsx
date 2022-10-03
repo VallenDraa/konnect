@@ -29,6 +29,7 @@ export default function AddNewParticipants() {
         payload: {
           content: (
             <PasswordConfirmation
+              proceedText="Invite"
               cb={(userPw, payload) => {
                 console.log(payload);
                 socket.emit("invite-to-group", { ...payload, userPw });
@@ -44,7 +45,6 @@ export default function AddNewParticipants() {
                 selected.length > 1 ? "participants" : "participant"
               } will be able to receive or send new messages`}
               payload={payload}
-              proceedtext={"Add"}
             />
           ),
         },

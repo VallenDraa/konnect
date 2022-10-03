@@ -112,7 +112,6 @@ export default function Home() {
     return () => socket.off("receive-make-new-group");
   }, [msgLogs]); //make new group
 
-  // join the chat-tab room when the url contains /chats
   useEffect(() => {
     const isPathValid = /^\/chats/.test(pathname);
 

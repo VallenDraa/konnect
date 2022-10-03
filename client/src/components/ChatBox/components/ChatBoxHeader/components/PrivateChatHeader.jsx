@@ -54,9 +54,9 @@ export default function PrivateChatHeader({ invisibleWallRef }) {
               onClick={() => {
                 closeChatLog();
 
-                invisibleWallRef.current.classList.remove("hidden");
+                invisibleWallRef.current?.classList.remove("hidden");
                 setTimeout(
-                  () => invisibleWallRef.current.classList.add("hidden"),
+                  () => invisibleWallRef.current?.classList.add("hidden"),
                   400
                 );
               }}

@@ -77,7 +77,7 @@ export default function CTA({
         {/* call */}
         <Pill
           link="/new/call"
-          className="bg-gray-200 text-gray-500 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-600 hover:bg-slate-100 lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
@@ -97,7 +97,7 @@ export default function CTA({
         {/* message */}
         <Pill
           link="/new/chat"
-          className="bg-gray-200 text-gray-500 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-600 hover:bg-slate-100 lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,
@@ -117,7 +117,7 @@ export default function CTA({
         {/* group */}
         <Pill
           link="/new/group"
-          className="bg-gray-200 text-gray-500 hover:bg-slate-100 lg:max-w-[130px]"
+          className="bg-gray-200 text-gray-600 hover:bg-slate-100 lg:max-w-[130px]"
           onClick={() => {
             modalDispatch({
               type: MODAL_ACTIONS.show,

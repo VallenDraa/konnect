@@ -6,9 +6,25 @@ import { Register } from "./pages/Register/Register";
 import Home from "./pages/Home/Home";
 import RenderIf from "./utils/React/RenderIf";
 import ActiveChatHandlerProvider from "./context/activeChatHandler/ActiveChatHandler";
+import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
+import { NotifContext } from "./context/notifContext/NotifContext";
+import { TitleContext } from "./context/titleContext/TitleContext";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
+  const { msgUnread } = useContext(MessageLogsContext);
+  const { notifUnseen } = useContext(NotifContext);
+  const { setTitle } = useContext(TitleContext);
+
+  // for displaying the amount of notifications available
+  useEffect(() => {
+    const total = msgUnread.total + notifUnseen.total;
+
+    setTitle((prev) => ({
+      ...prev,
+      prefix: total > 0 ? `(${total}) ` : "",
+    }));
+  }, [msgUnread.total, notifUnseen.total]);
 
   return (
     <ActiveChatHandlerProvider>

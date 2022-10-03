@@ -284,7 +284,7 @@ export const ChatBox = () => {
         payload: newChatLogs,
       });
     });
-  }, [msgLogs.content]);
+  }, [msgLogs.content]); //get the full chat when the user accpeted a group invitation
 
   useEffect(() => {
     if (activePrivateChat._id !== null) scrollToBottom(messageLogRef.current);
