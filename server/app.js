@@ -1,6 +1,5 @@
-import dotenv from "dotenv";
+import path from "express";
 import express from "express";
-import cors from "cors";
 import { createServer } from "http";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
@@ -37,14 +36,21 @@ global.exemptedUserInfos = [
 ];
 
 if (process.env.NODE_ENV !== "production") {
-  dotenv.config();
-  app.use(
-    cors({
-      credentials: true,
-      allowedHeaders: ["Content-Type", "Authorization"],
-      origin: ["http://localhost:3000", "http://192.168.1.6:3000"],
-    })
-  );
+  try {
+    const dotenv = await import("dotenv");
+    const { default: cors } = await import("cors");
+
+    dotenv.config();
+    app.use(
+      cors({
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"],
+        origin: ["http://localhost:3000", "http://192.168.1.6:3000"],
+      })
+    );
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 app.use(cookieParser(process.env.COOKIE_SECRET));
