@@ -23,7 +23,7 @@ const io = new Server(httpServer, {
     origin:
       process.env.NODE_ENV === "production"
         ? ["https://kon-nect.herokuapp.com/"]
-        : ["http://localhost:3000", "http://192.168.1.6:3000"],
+        : ["http://localhost:3000", "http://192.168.1.13:3000"],
   },
 });
 
@@ -53,7 +53,7 @@ if (process.env.NODE_ENV !== "production") {
         origin:
           process.env.NODE_ENV === "production"
             ? ["https://kon-nect.herokuapp.com/"]
-            : ["http://localhost:3000", "http://192.168.1.6:3000"],
+            : ["http://localhost:3000", "http://192.168.1.13:3000"],
       })
     );
   } catch (error) {
