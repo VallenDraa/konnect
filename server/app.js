@@ -71,6 +71,12 @@ app.get("/api", (req, res) => {
   res.send("this is the konnect API & web sockets");
 });
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("dist"));
+  app.get("*", (req, res) => {
+    res.sendFile(__dirname, "dist", "index.html");
+  });
+}
 // error handling
 app.use((err, req, res, next) => {
   const { stack, status, message, ...additionalInfo } = err;
