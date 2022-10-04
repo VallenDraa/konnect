@@ -19,7 +19,12 @@ import socketInit from "./socketServer/socketServer.js";
 const app = express();
 export const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: ["http://localhost:3000", "http://192.168.1.6:3000"] },
+  cors: {
+    origin:
+      process.env.NODE_ENV === "production"
+        ? ["https://kon-nect.herokuapp.com/"]
+        : ["http://localhost:3000", "http://192.168.1.6:3000"],
+  },
 });
 
 // can be accessed and edited from anywhere
@@ -45,7 +50,10 @@ if (process.env.NODE_ENV !== "production") {
       cors({
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
-        origin: ["http://localhost:3000", "http://192.168.1.6:3000"],
+        origin:
+          process.env.NODE_ENV === "production"
+            ? ["https://kon-nect.herokuapp.com/"]
+            : ["http://localhost:3000", "http://192.168.1.6:3000"],
       })
     );
   } catch (error) {

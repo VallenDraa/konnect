@@ -1,9 +1,7 @@
 import axios from "axios";
 
-const link = ["192.168.1.6", "localhost"];
-
 const api = axios.create({
-  baseURL: `http://${link[1]}:3001/api/`,
+  baseURL: `https://kon-nect.herokuapp.com/api/`,
   withCredentials: true,
 });
 
