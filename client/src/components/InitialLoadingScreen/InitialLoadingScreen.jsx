@@ -3,6 +3,7 @@ import { IsAuthorizedContext } from "../../context/isAuthorized/isAuthorized";
 import { isInitialLoadingContext } from "../../context/isInitialLoading/isInitialLoading";
 import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import RenderIf from "../../utils/React/RenderIf";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 export const InitialLoadingScreen = () => {
   const { isInitialLoading, setIsInitialLoading } = useContext(
@@ -33,9 +34,9 @@ export const InitialLoadingScreen = () => {
     <RenderIf conditionIs={isInitialLoading}>
       <div
         ref={loading}
-        className="fixed inset-0 bg-white z-40 flex items-center justify-center"
+        className="bg-tile fixed inset-0 bg-white z-40 flex items-center justify-center"
       >
-        Loading...
+        <LoadingSpinner />
       </div>
     </RenderIf>
   );

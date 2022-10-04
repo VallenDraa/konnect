@@ -14,7 +14,7 @@ export const MyProfileModalContent = () => {
   return (
     <section
       aria-label="settings"
-      className="w-screen lg:w-[40rem] flex flex-col h-full shadow-md lg:shadow-inner "
+      className="w-screen lg:w-[40rem] bg-tile flex flex-col h-full shadow-md lg:shadow-inner "
     >
       <div className="flex flex-col lg:flex-row grow ">
         <div className="flex flex-col lg:flex-row grow max-w-screen-sm container mx-auto overflow-auto lg:overflow-hidden">

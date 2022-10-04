@@ -3,6 +3,9 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
+      backgroundImage: {
+        tile: "url('./src/svg/home/tile.png')",
+      },
       fontSize: {
         xxs: "0.65rem",
       },

@@ -22,7 +22,7 @@ export default function PrivateLog({ messageLogRef }) {
       aria-label="message-log"
       className={`relative flex flex-col grow pb-3`}
     >
-      <ul className="h-0 w-full grow overflow-auto max-w-screen-sm lg:max-w-screen-lg">
+      <ul className="h-0 w-full grow overflow-auto mx-auto max-w-screen-sm lg:max-w-screen-lg">
         {msgLogs.content[activePrivateChat._id] &&
           msgLogs?.content[activePrivateChat._id]?.chat?.map(
             ({ date, messages }, i) => {

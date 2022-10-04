@@ -2,11 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "server": "nodemon server.js"
+    "start": "node app.js",
+    "server": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +24,6 @@
     "unicode-encode": "^1.4.2"
   },
   "devDependencies": {
-    "@faker-js/faker": "^7.3.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "nodemon": "^2.0.16"

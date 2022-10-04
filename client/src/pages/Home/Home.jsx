@@ -32,6 +32,7 @@ import {
   makeNewGroup,
 } from "../../context/activeGroupChat/ActiveGroupChatContext";
 import { MessageLogsContext } from "../../context/messageLogs/MessageLogsContext";
+import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 
 // url history context
 export const UrlHistoryContext = createContext(null);
@@ -57,6 +58,8 @@ export default function Home() {
     useContext(NotifContext);
   const { msgLogs, msgLogsDispatch } = useContext(MessageLogsContext);
   const navigate = useNavigate();
+  const { settings } = useContext(SettingsContext);
+  const { general } = settings;
 
   const closeChatLog = () => {
     const delay = window.innerWidth <= 1024 ? 400 : 0;
@@ -250,11 +253,15 @@ export default function Home() {
     <>
       <SidebarContext.Provider value={{ isSidebarOn, setIsSidebarOn }}>
         <UrlHistoryContext.Provider value={urlHistory}>
-          <div className="min-h-screen max-w-screen-2xl shadow-xl mx-auto">
+          <div className={`min-h-screen max-w-screen-2xl shadow-xl mx-auto`}>
             <MiniModal />
             <Modal />
             <InitialLoadingScreen />
-            <div className={`flex duration-200`}>
+            <div
+              className={`${
+                general?.animation ? "animate-d-down-open" : ""
+              } flex duration-200`}
+            >
               <ChatboxContextProvider>
                 <CloseChatLogContext.Provider value={{ closeChatLog }}>
                   <Sidebar urlHistory={urlHistory} />

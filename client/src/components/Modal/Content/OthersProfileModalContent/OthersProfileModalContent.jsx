@@ -251,7 +251,7 @@ export const OthersProfileModalContent = ({ username, userId }) => {
   return (
     <section
       aria-label="Profile"
-      className="w-screen lg:w-[40rem] flex flex-col h-full"
+      className="w-screen lg:w-[40rem] bg-tile flex flex-col h-full"
     >
       <div className="grow shadow-md lg:shadow-inner">
         <div className="w-full min-h-full h-0 bg-white overflow-y-auto flex flex-col container max-w-screen-sm mx-auto">

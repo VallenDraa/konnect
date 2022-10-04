@@ -47,7 +47,7 @@ export const Register = () => {
           backgroundPosition: "center",
         }}
       />
-      <section className="lg:basis-1/3 lg:min-w-[400px] h-screen overflow-y-auto lg:bg-gray-50 shadow-xl absolute lg:static inset-x-0 flex flex-col">
+      <section className="lg:bg-tile lg:basis-1/3 lg:min-w-[400px] h-screen overflow-y-auto lg:bg-gray-50 shadow-xl absolute lg:static inset-x-0 flex flex-col">
         <div className="px-5 py-10 space-y-10 h-full flex flex-col max-w-screen-sm lg:max-w-full container mx-auto">
           <header className="space-y-3 lg:space-y-5">
             <div className="absolute top-0 h-16 inset-x-0 p-2 z-20">

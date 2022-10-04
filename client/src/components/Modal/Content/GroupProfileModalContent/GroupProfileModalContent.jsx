@@ -192,7 +192,7 @@ export default function GroupProfileModalContent() {
   return (
     <section
       ref={FCMWrapperRef}
-      className="w-screen lg:w-[40rem] h-full flex flex-col"
+      className="w-screen bg-tile lg:w-[40rem] h-full flex flex-col"
       onClick={handleFCMAutoClose}
       aria-label="Group Profile"
     >
