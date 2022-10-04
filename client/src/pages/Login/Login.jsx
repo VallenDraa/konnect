@@ -93,7 +93,7 @@ export const Login = ({ user }) => {
   return (
     <main className="flex min-h-screen w-full">
       <div
-        className="basis-full lg:basis-2/3 min-h-screen shadow-inner blur-2xl lg:blur-none"
+        className="basis-full lg:basis-2/3 min-h-screen shadow-inner blur-2xl lg:blur-none sticky top-0"
         style={{
           backgroundImage: `url(${patternBgLight})`,
           backgroundSize: "cover",
@@ -103,9 +103,9 @@ export const Login = ({ user }) => {
       />
       <section
         aria-label="login-section"
-        className="lg:basis-1/3 lg:min-w-[400px] min-h-screen lg:bg-gray-50 shadow-xl absolute lg:static inset-x-0 flex flex-col"
+        className="lg:basis-1/3 lg:min-w-[400px] h-screen overflow-y-auto lg:bg-gray-50 shadow-xl absolute lg:static inset-x-0 flex flex-col"
       >
-        <div className="px-5 py-10 space-y-10 h-full flex flex-col grow sticky top-0 max-w-screen-sm lg:max-w-full container mx-auto">
+        <div className="px-5 py-10 space-y-10 h-full flex flex-col max-w-screen-sm lg:max-w-full container mx-auto">
           <header className="space-y-3 lg:space-y-5">
             <div className="absolute top-0 h-16 inset-x-0 p-2 z-20">
               <Logo />
@@ -137,7 +137,7 @@ export const Login = ({ user }) => {
                   customState={[password, setPassword]}
                 />
               </div>
-              <div className="text-xs flex justify-between text-gray-500">
+              {/* <div className="text-xs flex justify-between text-gray-500">
                 <div className="flex items-center gap-1">
                   <input
                     id="remember"
@@ -155,7 +155,7 @@ export const Login = ({ user }) => {
                 >
                   Forgot Password
                 </Link>
-              </div>
+              </div> */}
             </div>
 
             {/* login button */}
@@ -177,7 +177,7 @@ export const Login = ({ user }) => {
               </span>
             </div>
           </form>
-          <footer className="grow flex items-end justify-center">
+          <footer className="grow flex items-end justify-center pb-3">
             <span className="text-xxs text-gray-400">
               Copyright &copy; 2022 | Konnect
             </span>

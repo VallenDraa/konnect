@@ -75,7 +75,7 @@ const GeneralOpt = () => {
           >
             <span className="flex items-center gap-2 font-semibold text-sm">
               <IoInvertModeSharp />
-              Theme
+              Theme (WIP)
             </span>
             <SwitchBtn
               on={theme === "dark" && true}

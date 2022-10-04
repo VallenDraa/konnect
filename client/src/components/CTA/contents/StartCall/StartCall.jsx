@@ -4,7 +4,6 @@ import MINI_MODAL_ACTIONS from "../../../../context/miniModal/miniModalActions";
 import { MiniModalContext } from "../../../../context/miniModal/miniModalContext";
 import MODAL_ACTIONS from "../../../../context/modal/modalActions";
 import { ModalContext } from "../../../../context/modal/modalContext";
-import findUsersFromContact from "../../../../utils/apis/findUsersFromContact";
 import NormalConfirmation from "../../../MiniModal/content/NormalConfirmation";
 import SearchBox from "../../../template/SearchBox/SearchBox";
 
@@ -17,6 +16,7 @@ export default function StartCall() {
 
   return (
     <SearchBox
+      title="Search For Users In Contact"
       submitBtn={
         <>
           <IoCall />

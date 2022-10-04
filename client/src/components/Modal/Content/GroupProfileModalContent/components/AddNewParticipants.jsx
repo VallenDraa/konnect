@@ -31,7 +31,6 @@ export default function AddNewParticipants() {
             <PasswordConfirmation
               proceedText="Invite"
               cb={(userPw, payload) => {
-                console.log(payload);
                 socket.emit("invite-to-group", { ...payload, userPw });
 
                 // close the mini modal and disable edit mode

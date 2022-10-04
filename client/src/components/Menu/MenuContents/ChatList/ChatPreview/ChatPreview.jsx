@@ -31,10 +31,10 @@ export const ChatPreview = ({
       <Link
         onClick={() => isActive && closeChatLog()}
         to={isActive ? "/chats" : `/chats?id=${chatId}&type=${type}`}
-        className={`flex items-center p-2 cursor-pointer rounded-lg shadow group ${
+        className={`flex items-center p-2 cursor-pointer rounded-lg shadow-md group ${
           isActive
-            ? "bg-blue-100 font-semibold"
-            : "hover:bg-pink-100 bg-gray-100"
+            ? "bg-blue-100 shadow-blue-200 font-semibold"
+            : "hover:bg-pink-100 hover:shadow-pink-200 bg-gray-100 shadow-gray-200"
         } ${general?.animation ? "duration-200" : ""}`}
       >
         <div className="flex overflow-hidden grow">

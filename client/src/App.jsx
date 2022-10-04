@@ -10,6 +10,8 @@ import { MessageLogsContext } from "./context/messageLogs/MessageLogsContext";
 import { NotifContext } from "./context/notifContext/NotifContext";
 import { TitleContext } from "./context/titleContext/TitleContext";
 import { SettingsContext } from "./context/settingsContext/SettingsContext";
+import newNotifSfx from "./audio/newNotifSfx.mp3";
+import useDetectFirstRender from "./utils/React/hooks/useDetectFirstRender/useDetectFirstRender";
 
 export const App = () => {
   const { userState, userDispatch } = useContext(UserContext);
@@ -18,6 +20,7 @@ export const App = () => {
   const { setTitle } = useContext(TitleContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const isFirstRender = useDetectFirstRender();
 
   // for displaying the amount of notifications available
   useEffect(() => {
@@ -27,7 +30,7 @@ export const App = () => {
       ...prev,
       prefix: total > 0 ? `(${total}) ` : "",
     }));
-  }, [msgUnread.total, notifUnseen.total]);
+  }, [msgUnread.total, notifUnseen.total, isFirstRender]);
 
   return (
     <ActiveChatHandlerProvider>

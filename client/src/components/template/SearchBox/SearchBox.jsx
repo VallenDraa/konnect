@@ -11,6 +11,7 @@ import RenderIf from "../../../utils/React/RenderIf";
 import Pill from "../../Buttons/Pill";
 import Input from "../../Input/Input";
 import PP from "../../PP/PP";
+import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 
 export default function SearchBox({
   multipleSelect = false,
@@ -18,6 +19,7 @@ export default function SearchBox({
   selectedCb,
   submitCb,
   submitBtn,
+  title = "Search For People",
 }) {
   // the object structure
   // [{user: { initials, username, profilePicture }}]
@@ -50,7 +52,6 @@ export default function SearchBox({
         resultsDispatch({ type: SEARCH_RESULTS_ACTIONS.loading });
 
         const payload = await searchCb(query);
-        // console.log(payload);
         resultsDispatch({
           type: SEARCH_RESULTS_ACTIONS.loaded,
           payload,
@@ -101,7 +102,7 @@ export default function SearchBox({
     >
       <header className="px-6 flex flex-col gap-y-2">
         <div className="flex flex-wrap justify-between items-center">
-          <h2 className="font-semibold text-xl">Search For People</h2>
+          <h2 className="font-semibold text-xl">{title}</h2>
           <Pill
             onClick={() => handleSubmit(results, query, selected)}
             className="w-[150px] text-sm font-medium shadow hover:shadow-lg hover:shadow-blue-100 bg-gray-200 hover:bg-blue-400 active:bg-blue-500 hover:text-white"
@@ -123,7 +124,11 @@ export default function SearchBox({
       {/* where the results will show up */}
       <main className="overflow-y-auto grow w-full">
         {/* if user is typing */}
-        <RenderIf conditionIs={isTyping || results.loading}>loading</RenderIf>
+        <RenderIf conditionIs={isTyping || results.loading}>
+          <div className="mt-6">
+            <LoadingSpinner />
+          </div>
+        </RenderIf>
         {/* if user is not typing */}
         <RenderIf conditionIs={!isTyping}>
           <ul className="h-0">
@@ -176,9 +181,13 @@ export default function SearchBox({
             <RenderIf
               conditionIs={!results.loading && results.content?.length === 0}
             >
-              <li className="text-center space-y-10 mt-10">
+              <li
+                className={`text-center space-y-10 mt-10 ${
+                  general?.animation ? "animate-fade-in" : ""
+                }`}
+              >
                 <span className="block font-semibold text-xl lg:text-lg text-gray-600">
-                  Welp nothing here :(
+                  No Results Found
                 </span>
                 <span className="text-gray-400 text-xs">
                   Try other keywords and maybe we can find something for you

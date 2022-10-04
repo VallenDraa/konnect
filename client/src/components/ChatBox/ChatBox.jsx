@@ -5,7 +5,6 @@ import { StartScreen } from "../StartScreen/StartScreen";
 import socket from "../../utils/socketClient/socketClient";
 import { useContext } from "react";
 import { UserContext } from "../../context/user/userContext";
-import getUsersPreview from "../../utils/apis/getusersPreview";
 import {
   ActivePrivateChatContext,
   ACTIVE_PRIVATE_CHAT_DEFAULT,
@@ -19,7 +18,8 @@ import {
 } from "../../context/messageLogs/MessageLogsContext";
 import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
 import getScrollPercentage from "../../utils/scroll/getScrollPercentage";
-import newMsgSfx from "../../audio/newMsgSfx.mp3";
+import msgSent from "../../audio/msgSent.wav";
+import newNotifSfx from "../../audio/newNotifSfx.mp3";
 import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
 import { CloseChatLogContext, SidebarContext } from "../../pages/Home/Home";
 import { ContactsContext } from "../../context/contactContext/ContactContext";
@@ -36,6 +36,10 @@ import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGrou
 import lastIdx from "../../utils/others/lastIdx";
 import { CachedUserContext } from "../../context/cachedUser/CachedUserContext";
 
+const msgSentAudio = new Audio(msgSent);
+const newNotifAudio = new Audio(newNotifSfx);
+newNotifAudio.volume = 0.6;
+
 const userOnlineStatusSwitcher = (status) => {
   if (status === "online") {
     return { isOnline: true, lastSeen: null };
@@ -48,7 +52,6 @@ const userOnlineStatusSwitcher = (status) => {
 };
 
 export const ChatBox = () => {
-  const newMsgSound = new Audio(newMsgSfx);
   const { fetchCachedUsers } = useContext(CachedUserContext);
   const { activePrivateChat, setActivePrivateChat } = useContext(
     ActivePrivateChatContext
@@ -326,6 +329,8 @@ export const ChatBox = () => {
           payload: updatedChatLogs,
         });
       }
+
+      playAudio(msgSentAudio);
     });
 
     return () => socket.off("msg-sent");
@@ -363,9 +368,7 @@ export const ChatBox = () => {
           chatId: targetId,
         });
 
-        // play notification audio when receiving a message
-        playAudio(newMsgSound);
-
+        playAudio(newNotifAudio);
         // scroll to the bottom of the screen if user is in chat mode
         if (messageLogRef.current) {
           if (getScrollPercentage(messageLogRef.current) > 70) {

@@ -10,6 +10,10 @@ import MINI_MODAL_ACTIONS from "../miniModal/miniModalActions";
 import { MiniModalContext } from "../miniModal/miniModalContext";
 import { NotifContext } from "../notifContext/NotifContext";
 import NOTIF_CONTEXT_ACTIONS from "../notifContext/notifContextActions";
+import newNotifSfx from "../../audio/newNotifSfx.mp3";
+import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
+const newNotifAudio = new Audio(newNotifSfx);
+newNotifAudio.volume = 0.6;
 
 export const ActiveGroupChatContext = createContext("");
 
@@ -264,6 +268,8 @@ export default function ActiveGroupChatContextProvider({ children }) {
           type: NOTIF_CONTEXT_ACTIONS.loaded,
           payload: newNotifs,
         });
+
+        playAudio(newNotifAudio);
       }
 
       // add the new notice message to the group

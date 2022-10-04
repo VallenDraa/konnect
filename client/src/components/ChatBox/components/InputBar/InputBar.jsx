@@ -149,7 +149,7 @@ export default function inputBar({ messageLogRef }) {
   return (
     <footer
       className={`sticky bottom-0 ${
-        hasQuitGroup ? "bg-gray-200" : "bg-gray-100"
+        hasQuitGroup ? "bg-gray-200" : "bg-transparent"
       }`}
     >
       <RenderIf conditionIs={!hasQuitGroup}>

@@ -51,6 +51,7 @@ export default function NewGroup() {
 
   return (
     <SearchBox
+      title="Search For Users In Contact"
       submitBtn={
         <>
           <IoPeopleSharp />

@@ -11,6 +11,7 @@ import searchResultsReducer, {
 import { FaUserAlt } from "react-icons/fa";
 import { SettingsContext } from "../../../../context/settingsContext/SettingsContext";
 import PP from "../../../PP/PP";
+import LoadingSpinner from "../../../LoadingSpinner/LoadingSpinner";
 
 export default function SearchList() {
   const [query, setQuery] = useState("");
@@ -84,7 +85,11 @@ export default function SearchList() {
         />
         {/* this will appear when the user is done typing and the search value is not empty */}
         <RenderIf conditionIs={SVPreview !== ""}>
-          <div className="flex flex-col gap-1 sticky top-0">
+          <div
+            className={`flex flex-col gap-1 sticky top-0 ${
+              general?.animation ? "animate-fade-in" : ""
+            }`}
+          >
             <span className="font-semibold text-gray-700 max-w-full truncate">
               Results for <span className="italic ">{SVPreview}</span>
             </span>
@@ -97,14 +102,19 @@ export default function SearchList() {
       <main className="relative flex flex-col grow">
         {/*  placeholder for when user is still typing */}
         <RenderIf conditionIs={isTyping || searchResults.loading}>
-          <span>Loading</span>
+          <div className="mt-6">
+            <LoadingSpinner />
+          </div>
         </RenderIf>
-
         <RenderIf conditionIs={!isTyping && !searchResults.loading}>
           <div>
             {/* this svg will appear when the query is empty */}
             <RenderIf conditionIs={query === ""}>
-              <div className="text-center space-y-10 mt-10 overflow-x-hidden">
+              <div
+                className={`text-center space-y-10 mt-10 overflow-x-hidden ${
+                  general?.animation ? "animate-fade-in" : ""
+                }`}
+              >
                 <span className="block font-semibold text-xl lg:text-lg text-gray-500">
                   Find others and Konnect !
                 </span>
@@ -123,7 +133,12 @@ export default function SearchList() {
               }
             >
               {searchResults.content?.map(({ username, profilePicture }, i) => (
-                <li key={i}>
+                <li
+                  className={`${
+                    general?.animation ? "animate-d-down-open" : ""
+                  }`}
+                  key={i}
+                >
                   <Link
                     // this link will open a modal containing info of the user (code is ini Menu.jsx)
                     title={`Go To ${username}'s Profile`}
@@ -157,12 +172,16 @@ export default function SearchList() {
                 query !== ""
               }
             >
-              <li className="text-center space-y-10 mt-10">
+              <li
+                className={`text-center space-y-10 mt-10 ${
+                  general?.animation ? "animate-fade-in" : ""
+                }`}
+              >
                 <span className="block font-semibold text-xl lg:text-lg text-gray-600">
-                  Welp nothing here :(
+                  No Results Found
                 </span>
                 <span className="font-light text-gray-400 text-xs">
-                  Try other keywords...
+                  Try other keywords and maybe we can find something for you
                 </span>
               </li>
             </RenderIf>

@@ -11,6 +11,10 @@ import notifReducer from "./notifContextReducer";
 import { UserContext } from "../user/userContext";
 import socket from "../../utils/socketClient/socketClient";
 import { MdOutlineMoveToInbox, MdOutlineOutbox } from "react-icons/md";
+import newNotifSfx from "../../audio/newNotifSfx.mp3";
+import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
+const newNotifAudio = new Audio(newNotifSfx);
+newNotifAudio.volume = 0.6;
 
 const NOTIF_DEFAULT = {
   isStarting: false,
@@ -82,7 +86,7 @@ export default function NotifContextProvider({ children }) {
   const { userState } = useContext(UserContext);
   const [activeBox, setActiveBox] = useState(NOTIFICATION_TABS[0]);
 
-  useEffect(() => console.log(notifs.content), [notifs.content]);
+  // useEffect(() => console.log(notifs.content), [notifs.content]);
   // get all notifications for initial loading
   useEffect(() => {
     if (
@@ -198,6 +202,10 @@ export function receiveSendAddContact({
         type: notifActions.updateLoaded,
         payload: updatedNotifs,
       });
+
+      if (type === "inbox") {
+        playAudio(newNotifAudio);
+      }
 
       // execute the passed in callback if it exist
       if (cb) cb({ success, notif, type });

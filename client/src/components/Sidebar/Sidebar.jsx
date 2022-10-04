@@ -19,6 +19,7 @@ import {
 } from "../../context/settingsContext/SettingsContext";
 import { SidebarContext } from "../../pages/Home/Home";
 import PP from "../PP/PP";
+import tile from "../../svg/home/tile.png";
 
 export const Sidebar = ({ urlHistory }) => {
   const Navigate = useNavigate();
@@ -151,8 +152,8 @@ export const Sidebar = ({ urlHistory }) => {
   };
 
   return (
-    <aside ref={sidebar}>
-      <div className="min-h-full flex flex-col bg-white dark:bg-gray-800 max-w-screen-sm mx-auto">
+    <aside style={{ backgroundImage: `url(${tile})` }} ref={sidebar}>
+      <div className="min-h-full flex flex-col bg-white max-w-screen-sm mx-auto">
         <header className="space-y-5 basis-1/6 p-3 border-b-2 border-slate-200">
           {/* profile and more menu */}
           <div className="flex justify-between items-center gap-2">
