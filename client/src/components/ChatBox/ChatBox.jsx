@@ -35,6 +35,7 @@ import { SettingsContext } from "../../context/settingsContext/SettingsContext";
 import { ActiveGroupChatContext } from "../../context/activeGroupChat/ActiveGroupChatContext";
 import lastIdx from "../../utils/others/lastIdx";
 import { CachedUserContext } from "../../context/cachedUser/CachedUserContext";
+import { createContext } from "react";
 
 const msgSentAudio = new Audio(msgSent);
 const newNotifAudio = new Audio(newNotifSfx);
@@ -50,6 +51,8 @@ const userOnlineStatusSwitcher = (status) => {
       : { isOnline: false, lastSeen: status };
   }
 };
+
+export const MessageLogRefContext = createContext(null);
 
 export const ChatBox = () => {
   const { fetchCachedUsers } = useContext(CachedUserContext);
@@ -552,26 +555,28 @@ export const ChatBox = () => {
 
   return (
     <>
-      <RenderIf conditionIs={!activePrivateChat?._id && !activeGroupChat}>
-        <StartScreen />
-      </RenderIf>
-      <RenderIf conditionIs={activePrivateChat?._id || activeGroupChat}>
-        <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
-          {/* invisible wall */}
-          <div
-            ref={invisibleWallRef}
-            className="absolute inset-0 z-20 hidden"
-          />
+      <MessageLogRefContext.Provider value={messageLogRef}>
+        <RenderIf conditionIs={!activePrivateChat?._id && !activeGroupChat}>
+          <StartScreen />
+        </RenderIf>
+        <RenderIf conditionIs={activePrivateChat?._id || activeGroupChat}>
+          <main className="relative basis-full lg:basis-3/4 shadow-inner bg-gray-100 min-h-screen flex flex-col">
+            {/* invisible wall */}
+            <div
+              ref={invisibleWallRef}
+              className="absolute inset-0 z-20 hidden"
+            />
 
-          <ChatBoxHeader invisibleWallRef={invisibleWallRef} />
+            <ChatBoxHeader invisibleWallRef={invisibleWallRef} />
 
-          {/* message */}
-          <Log messageLogRef={messageLogRef} />
+            {/* message */}
+            <Log messageLogRef={messageLogRef} />
 
-          {/* input */}
-          <InputBar messageLogRef={messageLogRef} />
-        </main>
-      </RenderIf>
+            {/* input */}
+            <InputBar messageLogRef={messageLogRef} />
+          </main>
+        </RenderIf>
+      </MessageLogRefContext.Provider>
     </>
   );
 };

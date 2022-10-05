@@ -16,7 +16,7 @@ import { playAudio } from "../../utils/AudioPlayer/audioPlayer";
 const newNotifAudio = new Audio(newNotifSfx);
 newNotifAudio.volume = 0.6;
 
-const NOTIF_DEFAULT = {
+export const NOTIF_DEFAULT = {
   isStarting: false,
   isLoading: false,
   isLoaded: false,

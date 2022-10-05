@@ -214,8 +214,9 @@ export const Sidebar = ({ urlHistory }) => {
             noSwipingClass="no-swipe"
             spaceBetween={0}
             slidesPerView={"auto"}
-            className={`absolute inset-0 
-                    ${settings?.general?.menuSwiping ? "cursor-grab" : ""}`}
+            className={`absolute inset-0 ${
+              settings?.general?.menuSwiping ? "cursor-grab" : ""
+            }`}
             onActiveIndexChange={({ activeIndex }) => navigateMenu(activeIndex)}
           >
             <SwiperSlide className="no-swipe relative">

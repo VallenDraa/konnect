@@ -32,14 +32,15 @@ export const Login = ({ user }) => {
   const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
   const { setActiveGroupChat } = useContext(ActiveGroupChatContext);
   const { modalDispatch } = useContext(ModalContext);
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    userDispatch({ type: USER_ACTIONS.loginStart });
-    const formValue = { username, password };
-
     try {
+      e.preventDefault();
+
+      userDispatch({ type: USER_ACTIONS.loginStart });
+      const formValue = { username, password };
+      setHasBeenPressed(true);
       const { data } = await api.post(
         "/auth/login",
 
@@ -77,6 +78,7 @@ export const Login = ({ user }) => {
           }, THREE_HOURS - 5000);
         } else {
           alert(message);
+          setHasBeenPressed(false);
         }
       };
 
@@ -87,6 +89,7 @@ export const Login = ({ user }) => {
         loginCb
       );
     } catch (error) {
+      setHasBeenPressed(false);
       console.log(error);
     }
   };
@@ -162,6 +165,7 @@ export const Login = ({ user }) => {
             {/* login button */}
             <div className="w-full flex flex-col items-center gap-3">
               <Pill
+                disabled={hasBeenPressed}
                 type="submit"
                 className="h-full text-base max-w-xs bg-blue-400 hover:bg-blue-300 text-gray-50 font-bold duration-200 border-0"
               >

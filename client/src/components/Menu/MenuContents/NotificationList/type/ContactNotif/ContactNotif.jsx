@@ -2,7 +2,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import { ImBlocked } from "react-icons/im";
 import { Link } from "react-router-dom";
 import { UserContext } from "../../../../../../context/user/userContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import socket from "../../../../../../utils/socketClient/socketClient";
 import RenderIf from "../../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../../context/settingsContext/SettingsContext";
@@ -14,6 +14,7 @@ export default function ContactNotif({ info, type }) {
   const { userState } = useContext(UserContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
 
   const handleResponse = useCallback(
     (answer, type) => {
@@ -24,6 +25,7 @@ export default function ContactNotif({ info, type }) {
           senderId: info.by?._id,
           recipientId: userState.user._id,
         };
+        setHasBeenPressed(true);
         socket.emit("contact-requests-response", payload);
       }
     },
@@ -36,6 +38,7 @@ export default function ContactNotif({ info, type }) {
       senderId: userState.user._id,
       recipientId: info.by?._id,
     };
+    setHasBeenPressed(true);
 
     socket.emit("cancel-add-contact", payload);
   }, [userState]);
@@ -117,6 +120,7 @@ export default function ContactNotif({ info, type }) {
         <RenderIf conditionIs={type === "inbox"}>
           <footer className="flex items-center gap-2 mt-2 self-end">
             <Pill
+              disabled={hasBeenPressed}
               className={`h-full text-xs bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
               type="button"
               onClick={() => handleResponse(false, type)}
@@ -125,6 +129,7 @@ export default function ContactNotif({ info, type }) {
               Reject
             </Pill>
             <Pill
+              disabled={hasBeenPressed}
               className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
               type="button"
               onClick={() => handleResponse(true, type)}

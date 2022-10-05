@@ -1,6 +1,6 @@
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { UserContext } from "../../../../../../context/user/userContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import socket from "../../../../../../utils/socketClient/socketClient";
 import RenderIf from "../../../../../../utils/React/RenderIf";
 import { SettingsContext } from "../../../../../../context/settingsContext/SettingsContext";
@@ -11,6 +11,7 @@ export default function GroupInviteNotif({ info }) {
   const { userState } = useContext(UserContext);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
 
   const handleResponse = (answer) => {
     const payload = {
@@ -18,6 +19,8 @@ export default function GroupInviteNotif({ info }) {
       userId: userState.user._id,
       token: sessionStorage.getItem("token"),
     };
+
+    setHasBeenPressed(true);
 
     answer
       ? socket.emit("accept-group-invite", payload)
@@ -73,6 +76,7 @@ export default function GroupInviteNotif({ info }) {
       <RenderIf conditionIs={info.answer === null}>
         <footer className="flex items-center gap-2 mt-6 self-end">
           <Pill
+            disabled={hasBeenPressed}
             className={`h-full text-xs bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-100 font-bold border-0`}
             type="button"
             onClick={() => handleResponse(false)}
@@ -81,6 +85,7 @@ export default function GroupInviteNotif({ info }) {
             Reject
           </Pill>
           <Pill
+            disabled={hasBeenPressed}
             className="h-full text-xs bg-blue-400 hover:bg-blue-300 text-gray-50 hover:text-white hover:shadow-blue-100 active:shadow-blue-100 font-bold border-0"
             type="button"
             onClick={() => handleResponse(true)}

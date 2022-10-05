@@ -35,7 +35,7 @@ export const App = () => {
   return (
     <ActiveChatHandlerProvider>
       <div
-        className={`animate-d-down-open text-gray-800 antialiased font-sans ${
+        className={`text-gray-800 antialiased font-sans ${
           general?.theme === "dark" ? "dark" : ""
         }`}
       >

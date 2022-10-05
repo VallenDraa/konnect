@@ -1,6 +1,6 @@
 import { useContext, useEffect, useReducer, useState } from "react";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "../../../../utils/apiAxios/apiAxios";
 import RenderIf from "../../../../utils/React/RenderIf";
 import Input from "../../../Input/Input";
@@ -23,6 +23,9 @@ export default function SearchList() {
   const [isTyping, setIsTyping] = useState(false);
   const { settings } = useContext(SettingsContext);
   const { general } = settings;
+  const location = useLocation();
+
+  useEffect(() => setQuery(""), [location]);
 
   useEffect(() => {
     const searchDebounce = setTimeout(async () => {

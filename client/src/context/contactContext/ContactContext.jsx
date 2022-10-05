@@ -66,7 +66,6 @@ export default function ContactsContextProvider({ children }) {
 
     const groupContact = () => {
       if (contacts.length === 0) return [];
-
       const temp = {};
       const sortedContacts = contacts.sort((a, b) =>
         a.user.username < b.user.username ? -1 : 1

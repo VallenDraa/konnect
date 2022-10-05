@@ -23,7 +23,9 @@ const io = new Server(httpServer, {
     origin:
       process.env.NODE_ENV === "production"
         ? ["https://kon-nect.herokuapp.com/"]
-        : ["http://localhost:3000", "http://192.168.1.13:3000"],
+        : ["http://localhost:3000", "http://192.168.126.43:3000"],
+    // 172.27.138.123 FST 4
+    // 192.168.126.43 hotspot
   },
 });
 
@@ -53,7 +55,9 @@ if (process.env.NODE_ENV !== "production") {
         origin:
           process.env.NODE_ENV === "production"
             ? ["https://kon-nect.herokuapp.com/"]
-            : ["http://localhost:3000", "http://192.168.1.13:3000"],
+            : ["http://localhost:3000", "http://192.168.126.43:3000"],
+        // 172.27.138.123 FST 4
+        // 192.168.126.43 hotspot
       })
     );
   } catch (error) {
@@ -118,7 +122,7 @@ httpServer.listen(process.env.PORT || 3001, async () => {
     socketInit(io);
   } catch (error) {
     console.log(
-      "🚀 ~ file: server.js ~ line 104 ~ httpServer.listen ~ error",
+      "🚀 ~ file: server.js ~ line 121 ~ httpServer.listen ~ error",
       error.message
     );
   }

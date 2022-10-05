@@ -23,13 +23,15 @@ export default function PrivateLog({ messageLogRef }) {
 
   return (
     <div
-      id="log"
+      id="group"
       style={{ backgroundImage: `url(${tile})` }}
-      ref={messageLogRef}
       aria-label="message-log"
       className={`relative flex flex-col grow pb-3`}
     >
-      <ul className="h-0 w-full grow overflow-auto mx-auto max-w-screen-sm lg:max-w-screen-lg">
+      <ul
+        ref={messageLogRef}
+        className="h-0 w-full grow overflow-auto mx-auto max-w-screen-sm lg:max-w-screen-lg"
+      >
         {msgLogs.content[activeGroupChat] &&
           msgLogs?.content[activeGroupChat]?.chat?.map(
             ({ date, messages }, i) => {

@@ -12,12 +12,26 @@ import socket from "../../utils/socketClient/socketClient";
 import Pill from "./Pill";
 import { ModalContext } from "../../context/modal/modalContext";
 import MODAL_ACTIONS from "../../context/modal/modalActions";
+import {
+  MessageLogsContext,
+  MESSAGE_LOGS_DEFAULT,
+} from "../../context/messageLogs/MessageLogsContext";
+import { ContactsContext } from "../../context/contactContext/ContactContext";
+import {
+  NotifContext,
+  NOTIF_DEFAULT,
+} from "../../context/notifContext/NotifContext";
+import MESSAGE_LOGS_ACTIONS from "../../context/messageLogs/messageLogsActions";
+import NOTIF_CONTEXT_ACTIONS from "../../context/notifContext/notifContextActions";
 
 export default function LogoutBtn() {
   const { userState, userDispatch } = useContext(UserContext);
   const { setActivePrivateChat } = useContext(ActivePrivateChatContext);
   const { setActiveGroupChat } = useContext(ActiveGroupChatContext);
   const { modalDispatch } = useContext(ModalContext);
+  const { msgLogsDispatch } = useContext(MessageLogsContext);
+  const { setContacts } = useContext(ContactsContext);
+  const { notifsDispatch } = useContext(NotifContext);
   const Navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,6 +40,15 @@ export default function LogoutBtn() {
         // deactivate chat
         setActivePrivateChat(ACTIVE_PRIVATE_CHAT_DEFAULT);
         setActiveGroupChat(null);
+        msgLogsDispatch({
+          type: MESSAGE_LOGS_ACTIONS.updateLoaded,
+          payload: MESSAGE_LOGS_DEFAULT.content,
+        });
+        notifsDispatch({
+          type: NOTIF_CONTEXT_ACTIONS.updateLoaded,
+          payload: NOTIF_DEFAULT.content,
+        });
+        setContacts([]);
 
         // close the modal so that when a user logs back in, it doesn't jitter
         modalDispatch({ type: MODAL_ACTIONS.close });

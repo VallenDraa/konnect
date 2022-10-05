@@ -12,12 +12,17 @@ export const Register = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [hasBeenPressed, setHasBeenPressed] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formValue = { email, username, password };
-
     try {
+      e.preventDefault();
+      if (/\s/.test(email) || /\s/.test(username) || /\s/.test(password)) {
+        return alert("No Whitespaces Allowed !");
+      }
+
+      const formValue = { email, username, password };
+      setHasBeenPressed(true);
       const { data } = await api.post(
         "/auth/register",
 
@@ -33,6 +38,7 @@ export const Register = () => {
         navigate("/login");
       }
     } catch (error) {
+      setHasBeenPressed(false);
       console.log(error);
     }
   };
@@ -88,6 +94,7 @@ export const Register = () => {
             {/* Register button */}
             <div className="w-full flex flex-col items-center gap-3">
               <Pill
+                disabled={hasBeenPressed}
                 type="submit"
                 className="h-full text-base max-w-xs bg-blue-400 hover:bg-blue-300 text-gray-50  font-bold duration-200 border-0"
               >

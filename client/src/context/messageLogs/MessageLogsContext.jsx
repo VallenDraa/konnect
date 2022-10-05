@@ -13,7 +13,7 @@ import getUsersPreview from "../../utils/apis/getusersPreview";
 import { ContactsContext } from "../contactContext/ContactContext";
 import { cloneDeep } from "lodash";
 
-const MESSAGE_LOGS_DEFAULT = {
+export const MESSAGE_LOGS_DEFAULT = {
   isStarting: true,
   isInitialLoading: false,
   isLoaded: false,
