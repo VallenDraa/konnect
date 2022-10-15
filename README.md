@@ -5,6 +5,7 @@ A real-time chat web app, Insipired by the likes of **Whatsapp**, **Skype**, and
 > List of Frameworks and Libraries:
 >  - React.js
 >  - Node.js
+>  - Express.js
 >  - Socket.io
 >  - Tailwind css
 > 
