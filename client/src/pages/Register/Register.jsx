@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import patternBgLight from "../../svg/authPage/patternBgLight.svg";
 import { RiLoginCircleLine } from "react-icons/ri";
 import { Logo } from "../../components/Logo/Logo";
 import Input from "../../components/Input/Input";
 import api from "../../utils/apiAxios/apiAxios";
 import { useState } from "react";
 import Pill from "../../components/Buttons/Pill";
+import AuthBackground from "../../components/AuthBackground/AuthBackground";
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -44,16 +44,10 @@ export const Register = () => {
   };
   return (
     <main className="flex min-h-screen w-full">
-      <div
-        className="basis-full lg:basis-2/3 min-h-screen shadow-inner blur-2xl lg:blur-none sticky top-0"
-        style={{
-          backgroundImage: `url(${patternBgLight})`,
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-        }}
-      />
-      <section className="lg:bg-tile lg:basis-1/3 lg:min-w-[400px] h-screen overflow-y-auto lg:bg-gray-50 shadow-xl absolute lg:static inset-x-0 flex flex-col">
+      <div className="basis-full lg:basis-2/3 min-h-screen shadow-inner blur-2xl lg:blur-none sticky top-0">
+        <AuthBackground />
+      </div>
+      <section className="lg:basis-1/3 lg:min-w-[400px] h-screen overflow-y-auto lg:bg-gray-50 shadow-xl absolute lg:relative z-20 inset-x-0 flex flex-col">
         <div className="px-5 py-10 space-y-10 h-full flex flex-col max-w-screen-sm lg:max-w-full container mx-auto">
           <header className="space-y-3 lg:space-y-5">
             <div className="absolute top-0 h-16 inset-x-0 p-2 z-20">
