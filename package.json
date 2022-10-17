@@ -5,7 +5,6 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "build": "cd ./client && npm run build && mv dist ../",
     "start": "node app.js"
   },
   "keywords": [],

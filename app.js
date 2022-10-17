@@ -1,4 +1,3 @@
-import path from "express";
 import express from "express";
 import { createServer } from "http";
 import mongoose from "mongoose";
@@ -84,10 +83,20 @@ app.get("/api", (req, res) => {
 });
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static("dist"));
-  app.get("*", (req, res) => {
-    res.sendFile(__dirname, "dist", "index.html");
-  });
+  try {
+    const { default: path } = await import("path");
+    const { default: url } = await import("url");
+
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    app.use(express.static("dist"));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(__dirname, "dist", "index.html"));
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 // error handling
 app.use((err, req, res, next) => {
