@@ -22,8 +22,8 @@ const io = new Server(httpServer, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://kon-nect.herokuapp.com/"]
-        : ["http://localhost:3000", "http://192.168.126.43:3000"],
+        ? ["https://konnect.vercel.app/"]
+        : ["http://localhost:3000"],
   },
 });
 
@@ -108,7 +108,9 @@ httpServer.listen(process.env.PORT || 3001, async () => {
       console.log("db connected");
     });
 
-    console.log("listening on 3001");
+    if (process.env.NODE_ENV !== "production") {
+      console.log("listening on 3001");
+    }
     socketInit(io);
   } catch (error) {
     console.log(
