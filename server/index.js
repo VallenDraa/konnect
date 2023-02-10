@@ -22,7 +22,7 @@ const io = new Server(httpServer, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://kon-nect.netlify.app/"]
+        ? process.env.ALLOWED_URL
         : ["http://localhost:3000"],
   },
 });
@@ -56,7 +56,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://kon-nect.netlify.app/"]
+        ? process.env.ALLOWED_URL
         : ["http://localhost:3000"],
   })
 );
